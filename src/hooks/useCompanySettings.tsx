@@ -34,7 +34,7 @@ export const useCompanySettings = () => {
         .from('company_settings' as any)
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle() as { data: any, error: any };
 
       if (error) {
         console.error('Erro Supabase ao buscar configurações:', error);
@@ -111,7 +111,7 @@ export const useCompanySettings = () => {
           .eq('id', settings.id)
           .eq('user_id', user.id)
           .select()
-          .single();
+          .single() as { data: any, error: any };
 
         if (error) throw error;
         
@@ -136,7 +136,7 @@ export const useCompanySettings = () => {
             accent_color: updatedSettings.accent_color,
           })
           .select()
-          .single();
+          .single() as { data: any, error: any };
 
         if (error) throw error;
         
