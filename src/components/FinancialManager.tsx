@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,13 +23,20 @@ import {
 import { useFinancialRecords } from '@/hooks/useFinancialRecords';
 
 const FinancialManager = () => {
-  const { records, loading, createRecord, updateRecord } = useFinancialRecords();
+  const { records, loading, createRecord } = useFinancialRecords();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   
-  const [newRecord, setNewRecord] = useState({
-    type: 'receita' as const,
+  const [newRecord, setNewRecord] = useState<{
+    type: 'receita' | 'despesa';
+    amount: number;
+    description: string;
+    category: string;
+    date: string;
+    payment_method: string;
+  }>({
+    type: 'receita',
     amount: 0,
     description: '',
     category: '',

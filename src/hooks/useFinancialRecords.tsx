@@ -94,6 +94,50 @@ export const useFinancialRecords = () => {
     }
   };
 
+  const updateRecord = async (id: string, recordData: Partial<FinancialRecordInsert>) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Atualizando registro financeiro:', id, recordData);
+      
+      const { data, error } = await supabase
+        .from('financial_records')
+        .update(recordData)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase ao atualizar registro financeiro:', error);
+        throw error;
+      }
+      
+      console.log('Registro financeiro atualizado com sucesso:', data);
+      setRecords(prev => prev.map(record => record.id === id ? data : record));
+      toast({
+        title: "Registro Atualizado",
+        description: "O registro financeiro foi atualizado com sucesso!",
+      });
+      return { success: true, data };
+    } catch (error) {
+      console.error('Erro ao atualizar registro financeiro:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar registro financeiro.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   useEffect(() => {
     fetchRecords();
   }, [user]);
@@ -102,6 +146,7 @@ export const useFinancialRecords = () => {
     records,
     loading,
     createRecord,
+    updateRecord,
     refetch: fetchRecords,
   };
 };

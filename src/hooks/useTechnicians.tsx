@@ -94,6 +94,92 @@ export const useTechnicians = () => {
     }
   };
 
+  const updateTechnician = async (id: string, technicianData: Partial<TechnicianInsert>) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Atualizando técnico:', id, technicianData);
+      
+      const { data, error } = await supabase
+        .from('technicians')
+        .update(technicianData)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase ao atualizar técnico:', error);
+        throw error;
+      }
+      
+      console.log('Técnico atualizado com sucesso:', data);
+      setTechnicians(prev => prev.map(technician => technician.id === id ? data : technician));
+      toast({
+        title: "Técnico Atualizado",
+        description: "O técnico foi atualizado com sucesso!",
+      });
+      return { success: true, data };
+    } catch (error) {
+      console.error('Erro ao atualizar técnico:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar técnico.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
+  const deleteTechnician = async (id: string) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Removendo técnico:', id);
+      
+      const { error } = await supabase
+        .from('technicians')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro Supabase ao remover técnico:', error);
+        throw error;
+      }
+      
+      console.log('Técnico removido com sucesso');
+      setTechnicians(prev => prev.filter(technician => technician.id !== id));
+      toast({
+        title: "Técnico Removido",
+        description: "O técnico foi removido com sucesso!",
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao remover técnico:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover técnico.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   useEffect(() => {
     fetchTechnicians();
   }, [user]);
@@ -102,6 +188,8 @@ export const useTechnicians = () => {
     technicians,
     loading,
     createTechnician,
+    updateTechnician,
+    deleteTechnician,
     refetch: fetchTechnicians,
   };
 };
