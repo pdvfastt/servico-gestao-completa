@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,15 +19,19 @@ import {
   PiggyBank,
   ArrowUpCircle,
   ArrowDownCircle,
-  BarChart3
+  BarChart3,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { useFinancialRecords } from '@/hooks/useFinancialRecords';
 
 const FinancialManager = () => {
-  const { records, loading, createRecord } = useFinancialRecords();
+  const { records, loading, createRecord, updateRecord, deleteRecord } = useFinancialRecords();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<any>(null);
   
   const [newRecord, setNewRecord] = useState<{
     type: 'receita' | 'despesa';
@@ -73,6 +78,31 @@ const FinancialManager = () => {
         date: new Date().toISOString().split('T')[0],
         payment_method: 'dinheiro',
       });
+    }
+  };
+
+  const handleEditRecord = (record: any) => {
+    setEditingRecord({
+      ...record,
+      date: record.date.split('T')[0] // Format date for input
+    });
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateRecord = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRecord) return;
+    
+    const result = await updateRecord(editingRecord.id, editingRecord);
+    if (result.success) {
+      setIsEditOpen(false);
+      setEditingRecord(null);
+    }
+  };
+
+  const handleDeleteRecord = async (recordId: string) => {
+    if (confirm('Tem certeza que deseja excluir este registro?')) {
+      await deleteRecord(recordId);
     }
   };
 
@@ -296,6 +326,7 @@ const FinancialManager = () => {
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -343,6 +374,26 @@ const FinancialManager = () => {
                             {record.status}
                           </Badge>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleEditRecord(record)}
+                              className="hover:bg-blue-50 hover:border-blue-300"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleDeleteRecord(record.id)}
+                              className="hover:bg-red-50 hover:border-red-300"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -351,6 +402,91 @@ const FinancialManager = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Dialog de Edição */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar Registro Financeiro</DialogTitle>
+              <DialogDescription>
+                Atualize os dados do registro
+              </DialogDescription>
+            </DialogHeader>
+            {editingRecord && (
+              <form onSubmit={handleUpdateRecord} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit_type">Tipo</Label>
+                    <Select
+                      value={editingRecord.type}
+                      onValueChange={(value: 'receita' | 'despesa') => setEditingRecord(prev => ({ ...prev, type: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="receita">Receita</SelectItem>
+                        <SelectItem value="despesa">Despesa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_amount">Valor (R$)</Label>
+                    <Input
+                      id="edit_amount"
+                      type="number"
+                      step="0.01"
+                      value={editingRecord.amount}
+                      onChange={(e) => setEditingRecord(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit_description">Descrição</Label>
+                  <Input
+                    id="edit_description"
+                    value={editingRecord.description}
+                    onChange={(e) => setEditingRecord(prev => ({ ...prev, description: e.target.value }))}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit_category">Categoria</Label>
+                    <Input
+                      id="edit_category"
+                      value={editingRecord.category}
+                      onChange={(e) => setEditingRecord(prev => ({ ...prev, category: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_date">Data</Label>
+                    <Input
+                      id="edit_date"
+                      type="date"
+                      value={editingRecord.date}
+                      onChange={(e) => setEditingRecord(prev => ({ ...prev, date: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700">
+                    Atualizar Registro
+                  </Button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {!loading && filteredRecords.length === 0 && (
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
