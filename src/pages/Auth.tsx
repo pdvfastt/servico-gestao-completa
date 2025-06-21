@@ -33,6 +33,7 @@ const Auth = () => {
       const { error } = await signIn(email, password);
       
       if (error) {
+        console.error('Sign in error:', error);
         toast({
           title: "Erro no login",
           description: error.message === 'Invalid login credentials' 
@@ -47,6 +48,7 @@ const Auth = () => {
         });
       }
     } catch (error) {
+      console.error('Unexpected sign in error:', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente em alguns instantes",
@@ -66,10 +68,13 @@ const Auth = () => {
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
 
+    console.log('Starting sign up process...');
+
     try {
       const { error } = await signUp(email, password, fullName);
       
       if (error) {
+        console.error('Sign up error:', error);
         if (error.message.includes('already registered')) {
           toast({
             title: "Email já cadastrado",
@@ -84,12 +89,14 @@ const Auth = () => {
           });
         }
       } else {
+        console.log('Sign up successful');
         toast({
           title: "Cadastro realizado com sucesso!",
           description: "Verifique seu email para confirmar a conta",
         });
       }
     } catch (error) {
+      console.error('Unexpected sign up error:', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente em alguns instantes",
