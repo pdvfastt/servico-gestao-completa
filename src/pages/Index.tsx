@@ -15,8 +15,10 @@ import {
   AlertCircle,
   DollarSign,
   Calendar,
-  User
+  User,
+  LogOut
 } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
 import Dashboard from "@/components/Dashboard";
 import OrdersManager from "@/components/OrdersManager";
 import ClientsManager from "@/components/ClientsManager";
@@ -27,6 +29,7 @@ import ReportsManager from "@/components/ReportsManager";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const { user, signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -48,8 +51,17 @@ const Index = () => {
               </Badge>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <User className="h-4 w-4" />
-                <span>Administrador</span>
+                <span>{user?.email}</span>
               </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={signOut}
+                className="flex items-center space-x-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Sair</span>
+              </Button>
             </div>
           </div>
         </div>
