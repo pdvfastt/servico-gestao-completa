@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,13 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   Plus, 
   Search, 
   Filter, 
   Eye, 
   Edit, 
-  Trash2, 
+  Share, 
   FileText, 
   Calendar,
   User,
@@ -27,8 +29,6 @@ import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
 import { useTechnicians } from '@/hooks/useTechnicians';
 import { useServices } from '@/hooks/useServices';
-import OrderView from './OrderView';
-import OrderEdit from './OrderEdit';
 
 const OrdersManager = () => {
   const { orders, loading, createOrder, updateOrder, deleteOrder } = useServiceOrders();
@@ -62,17 +62,6 @@ const OrdersManager = () => {
     );
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const priorityConfig = {
-      'Alta': { className: 'bg-red-100 text-red-800' },
-      'Média': { className: 'bg-yellow-100 text-yellow-800' },
-      'Baixa': { className: 'bg-gray-100 text-gray-800' },
-    };
-    
-    const config = priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig['Média'];
-    return <Badge variant="outline" className={config.className}>{priority}</Badge>;
-  };
-
   const filteredOrders = orders.filter(order => {
     const client = clients.find(c => c.id === order.client_id);
     const matchesSearch = order.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -85,10 +74,7 @@ const OrdersManager = () => {
   });
 
   const handleCreateOrder = async (orderData: any) => {
-    console.log('HandleCreateOrder chamado com:', orderData);
     const result = await createOrder(orderData);
-    console.log('Resultado da criação:', result);
-    
     if (result?.success) {
       setIsNewOrderOpen(false);
     }
@@ -112,69 +98,34 @@ const OrdersManager = () => {
     }
   };
 
-  const handleDeleteOrder = async (orderId: string) => {
-    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
-      await deleteOrder(orderId);
-    }
-  };
+  const handleShareWhatsApp = (order: any) => {
+    const client = clients.find(c => c.id === order.client_id);
+    const technician = technicians.find(t => t.id === order.technician_id);
+    
+    const message = `
+🔧 *ORDEM DE SERVIÇO #${order.id.slice(-8)}*
 
-  const exportToPDF = () => {
-    const printContent = `
-      <html>
-        <head>
-          <title>Relatório de Ordens de Serviço</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { color: #333; text-align: center; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-            .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-            .status-aberta { background-color: #dbeafe; color: #1e40af; }
-            .status-andamento { background-color: #fef3c7; color: #92400e; }
-            .status-finalizada { background-color: #dcfce7; color: #166534; }
-          </style>
-        </head>
-        <body>
-          <h1>Relatório de Ordens de Serviço</h1>
-          <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>OS</th>
-                <th>Cliente</th>
-                <th>Status</th>
-                <th>Prioridade</th>
-                <th>Valor Total</th>
-                <th>Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${filteredOrders.map(order => {
-                const client = clients.find(c => c.id === order.client_id);
-                return `
-                  <tr>
-                    <td>#${order.id.slice(-8)}</td>
-                    <td>${client?.name || 'N/A'}</td>
-                    <td><span class="status status-${order.status.toLowerCase().replace(' ', '-')}">${order.status}</span></td>
-                    <td>${order.priority}</td>
-                    <td>R$ ${(order.total_value || 0).toFixed(2)}</td>
-                    <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
+👤 *Cliente:* ${client?.name || 'N/A'}
+📱 *Telefone:* ${client?.phone || 'N/A'}
 
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(printContent);
-      printWindow.document.close();
-      printWindow.print();
-    }
+📋 *Descrição:* ${order.description}
+${order.diagnosis ? `🔍 *Diagnóstico:* ${order.diagnosis}` : ''}
+
+📊 *Status:* ${order.status}
+⚡ *Prioridade:* ${order.priority}
+👨‍🔧 *Técnico:* ${technician?.name || 'Não atribuído'}
+
+💰 *Valor Total:* R$ ${(order.total_value || 0).toFixed(2)}
+
+📅 *Criada em:* ${new Date(order.created_at).toLocaleDateString('pt-BR')}
+${order.expected_date ? `🕐 *Data Prevista:* ${new Date(order.expected_date).toLocaleDateString('pt-BR')}` : ''}
+
+---
+Sistema de Gestão de OS
+    `.trim();
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading) {
@@ -184,9 +135,6 @@ const OrdersManager = () => {
       </div>
     );
   }
-
-  const selectedClient = selectedOrder ? clients.find(c => c.id === selectedOrder.client_id) : null;
-  const selectedTechnician = selectedOrder ? technicians.find(t => t.id === selectedOrder.technician_id) : null;
 
   return (
     <div className="space-y-6">
@@ -198,38 +146,28 @@ const OrdersManager = () => {
               <CardTitle>Gestão de Ordens de Serviço</CardTitle>
               <CardDescription>Controle e acompanhe todas as ordens de serviço</CardDescription>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={exportToPDF}
-                className="flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Exportar PDF
-              </Button>
-              <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Nova OS
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Nova Ordem de Serviço</DialogTitle>
-                    <DialogDescription>
-                      Preencha os dados da nova ordem de serviço
-                    </DialogDescription>
-                  </DialogHeader>
-                  <NewOrderForm 
-                    onSubmit={handleCreateOrder}
-                    clients={clients}
-                    technicians={technicians}
-                    services={services}
-                  />
-                </DialogContent>
-              </Dialog>
-            </div>
+            <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova OS
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Nova Ordem de Serviço</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados da nova ordem de serviço
+                  </DialogDescription>
+                </DialogHeader>
+                <NewOrderForm 
+                  onSubmit={handleCreateOrder}
+                  clients={clients}
+                  technicians={technicians}
+                  services={services}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
@@ -261,90 +199,74 @@ const OrdersManager = () => {
         </CardContent>
       </Card>
 
-      {/* Lista de ordens */}
-      {filteredOrders.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {orders.length === 0 ? "Nenhuma OS encontrada" : "Nenhuma OS encontrada"}
-            </h3>
-            <p className="text-gray-600">
-              {orders.length === 0 ? "Comece criando sua primeira ordem de serviço." : "Tente ajustar os filtros de busca."}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {filteredOrders.map((order) => {
-            const client = clients.find(c => c.id === order.client_id);
-            const technician = technicians.find(t => t.id === order.technician_id);
-            
-            return (
-              <Card key={order.id} className="hover:shadow-lg transition-shadow duration-200">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">OS #{order.id.slice(-8)}</CardTitle>
-                      <p className="text-sm text-gray-600 mt-1">{client?.name || 'Cliente não encontrado'}</p>
-                    </div>
-                    <div className="flex flex-col space-y-1">
-                      {getStatusBadge(order.status)}
-                      {getPriorityBadge(order.priority)}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <p className="text-sm text-gray-700">{order.description}</p>
+      {/* Tabela de ordens */}
+      <Card>
+        <CardContent className="p-0">
+          {filteredOrders.length === 0 ? (
+            <div className="p-12 text-center">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {orders.length === 0 ? "Nenhuma OS encontrada" : "Nenhuma OS encontrada"}
+              </h3>
+              <p className="text-gray-600">
+                {orders.length === 0 ? "Comece criando sua primeira ordem de serviço." : "Tente ajustar os filtros de busca."}
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>OS</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Técnico</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredOrders.map((order) => {
+                  const client = clients.find(c => c.id === order.client_id);
+                  const technician = technicians.find(t => t.id === order.technician_id);
                   
-                  {technician && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <User className="h-4 w-4" />
-                      <span>{technician.name}</span>
-                    </div>
-                  )}
-                  
-                  {order.expected_date && (
-                    <div className="flex items-center space-x-2 text-sm text-gray-600">
-                      <Calendar className="h-4 w-4" />
-                      <span>{new Date(order.expected_date).toLocaleDateString('pt-BR')}</span>
-                      <Clock className="h-4 w-4 ml-2" />
-                      <span>{new Date(order.expected_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                  )}
-                  
-                  {order.total_value && order.total_value > 0 && (
-                    <div className="text-lg font-semibold text-green-600">
-                      R$ {order.total_value.toFixed(2)}
-                    </div>
-                  )}
-                  
-                  <div className="flex space-x-2 pt-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewOrder(order)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleEditOrder(order)}>
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDeleteOrder(order.id)}>
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">#{order.id.slice(-8)}</TableCell>
+                      <TableCell>{client?.name || 'N/A'}</TableCell>
+                      <TableCell className="max-w-xs truncate">{order.description}</TableCell>
+                      <TableCell>{getStatusBadge(order.status)}</TableCell>
+                      <TableCell>{technician?.name || 'Não atribuído'}</TableCell>
+                      <TableCell>R$ {(order.total_value || 0).toFixed(2)}</TableCell>
+                      <TableCell>{new Date(order.created_at).toLocaleDateString('pt-BR')}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-1">
+                          <Button variant="outline" size="sm" onClick={() => handleViewOrder(order)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleEditOrder(order)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => handleShareWhatsApp(order)}>
+                            <Share className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Modals */}
-      <OrderView
+      <OrderViewModal
         order={selectedOrder}
-        client={selectedClient}
-        technician={selectedTechnician}
+        client={selectedOrder ? clients.find(c => c.id === selectedOrder.client_id) : null}
+        technician={selectedOrder ? technicians.find(t => t.id === selectedOrder.technician_id) : null}
         isOpen={isViewOpen}
         onClose={() => {
           setIsViewOpen(false);
@@ -356,7 +278,7 @@ const OrdersManager = () => {
         }}
       />
 
-      <OrderEdit
+      <OrderEditModal
         order={selectedOrder}
         clients={clients}
         technicians={technicians}
@@ -372,7 +294,7 @@ const OrdersManager = () => {
   );
 };
 
-// Componente do formulário de nova OS com novos campos
+// Componente do formulário de nova OS
 const NewOrderForm = ({ 
   onSubmit, 
   clients, 
@@ -396,13 +318,11 @@ const NewOrderForm = ({
 
   const totalValue = serviceValue + partsValue;
 
-  // Verificar se é serviço de Instalação NPD
   const handleServiceChange = (serviceId: string) => {
     setSelectedService(serviceId);
     const service = services.find(s => s.id === serviceId);
     if (service) {
       setServiceValue(service.price || 0);
-      // Mostrar campo Serial Receptor se for Instalação NPD
       setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
     }
   };
@@ -472,7 +392,6 @@ const NewOrderForm = ({
         status: 'Aberta'
       };
 
-      console.log('Dados a serem enviados:', data);
       await onSubmit(data);
     } catch (error) {
       console.error('Erro no submit:', error);
@@ -533,7 +452,7 @@ const NewOrderForm = ({
           </div>
 
           <div>
-            <Label htmlFor="service">Tipo de Serviço (Referência de Preço)</Label>
+            <Label htmlFor="service">Tipo de Serviço</Label>
             <Select value={selectedService} onValueChange={handleServiceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
@@ -552,7 +471,6 @@ const NewOrderForm = ({
             </Select>
           </div>
 
-          {/* Campo obrigatório: Número da Nota Fiscal */}
           <div>
             <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
             <Input 
@@ -563,7 +481,6 @@ const NewOrderForm = ({
             />
           </div>
 
-          {/* Campo condicional: Serial Receptor (apenas para Instalação NPD) */}
           {showSerialField && (
             <div>
               <Label htmlFor="serialReceiver">Serial Receptor *</Label>
@@ -700,6 +617,336 @@ const NewOrderForm = ({
         </Button>
       </div>
     </form>
+  );
+};
+
+// Modal para visualizar ordem
+const OrderViewModal = ({ order, client, technician, isOpen, onClose, onEdit }: any) => {
+  if (!order) return null;
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      'Aberta': { className: 'bg-blue-100 text-blue-800' },
+      'Em Andamento': { className: 'bg-yellow-100 text-yellow-800' },
+      'Aguardando Peças': { className: 'bg-orange-100 text-orange-800' },
+      'Finalizada': { className: 'bg-green-100 text-green-800' },
+      'Cancelada': { className: 'bg-red-100 text-red-800' },
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['Aberta'];
+    return <Badge variant="outline" className={config.className}>{status}</Badge>;
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <DialogTitle>OS #{order.id.slice(-8)}</DialogTitle>
+              <DialogDescription>
+                Criada em {new Date(order.created_at).toLocaleDateString('pt-BR')}
+              </DialogDescription>
+            </div>
+            <div className="flex space-x-2">
+              {getStatusBadge(order.status)}
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {client && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Cliente</h3>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <p><strong>Nome:</strong> {client.name}</p>
+                <p><strong>Telefone:</strong> {client.phone}</p>
+                <p><strong>Email:</strong> {client.email}</p>
+              </div>
+            </div>
+          )}
+
+          {technician && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Técnico Responsável</h3>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <p><strong>Nome:</strong> {technician.name}</p>
+                <p><strong>Telefone:</strong> {technician.phone}</p>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Detalhes do Serviço</h3>
+            <div className="space-y-4">
+              <div>
+                <strong>Descrição:</strong>
+                <p className="mt-1 text-gray-700">{order.description}</p>
+              </div>
+              
+              {order.diagnosis && (
+                <div>
+                  <strong>Diagnóstico:</strong>
+                  <p className="mt-1 text-gray-700">{order.diagnosis}</p>
+                </div>
+              )}
+              
+              {order.observations && (
+                <div>
+                  <strong>Observações:</strong>
+                  <p className="mt-1 text-gray-700">{order.observations}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Informações Financeiras</h3>
+            <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+              <div className="flex justify-between">
+                <span>Valor dos Serviços:</span>
+                <span>R$ {(order.service_value || 0).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Valor das Peças:</span>
+                <span>R$ {(order.parts_value || 0).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-semibold text-lg">
+                <span>Total:</span>
+                <span className="text-green-600">R$ {(order.total_value || 0).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button variant="outline" onClick={onClose}>
+              Fechar
+            </Button>
+            <Button onClick={onEdit}>
+              Editar OS
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Modal para editar ordem
+const OrderEditModal = ({ order, clients, technicians, services, isOpen, onClose, onSave }: any) => {
+  const [serviceValue, setServiceValue] = useState(order?.service_value || 0);
+  const [partsValue, setPartsValue] = useState(order?.parts_value || 0);
+  const [selectedClient, setSelectedClient] = useState(order?.client_id || "");
+  const [selectedTechnician, setSelectedTechnician] = useState(order?.technician_id || "");
+  const [selectedStatus, setSelectedStatus] = useState(order?.status || "Aberta");
+  const [selectedPriority, setSelectedPriority] = useState(order?.priority || "Média");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(order?.payment_method || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const totalValue = serviceValue + partsValue;
+
+  React.useEffect(() => {
+    if (order) {
+      setServiceValue(order.service_value || 0);
+      setPartsValue(order.parts_value || 0);
+      setSelectedClient(order.client_id || "");
+      setSelectedTechnician(order.technician_id || "");
+      setSelectedStatus(order.status || "Aberta");
+      setSelectedPriority(order.priority || "Média");
+      setSelectedPaymentMethod(order.payment_method || "");
+    }
+  }, [order]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    const form = e.target as HTMLFormElement;
+    const formDataObj = new FormData(form);
+    
+    const description = (formDataObj.get('description') as string)?.trim();
+    
+    if (!description) {
+      alert('Descrição é obrigatória');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const data = {
+        client_id: selectedClient || null,
+        technician_id: selectedTechnician || null,
+        status: selectedStatus,
+        priority: selectedPriority,
+        description,
+        diagnosis: (formDataObj.get('diagnosis') as string) || null,
+        observations: (formDataObj.get('observations') as string) || null,
+        service_value: serviceValue || 0,
+        parts_value: partsValue || 0,
+        total_value: totalValue || 0,
+        payment_method: selectedPaymentMethod || null,
+      };
+
+      await onSave(order.id, data);
+    } catch (error) {
+      console.error('Erro no submit:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!order) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Editar OS #{order.id.slice(-8)}</DialogTitle>
+          <DialogDescription>
+            Altere as informações da ordem de serviço
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="client">Cliente</Label>
+              <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client: any) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="technician">Técnico Responsável</Label>
+              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o técnico" />
+                </SelectTrigger>
+                <SelectContent>
+                  {technicians.map((technician: any) => (
+                    <SelectItem key={technician.id} value={technician.id}>
+                      {technician.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Aberta">Aberta</SelectItem>
+                  <SelectItem value="Em Andamento">Em Andamento</SelectItem>
+                  <SelectItem value="Aguardando Peças">Aguardando Peças</SelectItem>
+                  <SelectItem value="Finalizada">Finalizada</SelectItem>
+                  <SelectItem value="Cancelada">Cancelada</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="priority">Prioridade</Label>
+              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a prioridade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Média">Média</SelectItem>
+                  <SelectItem value="Baixa">Baixa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Descrição do Problema *</Label>
+            <Textarea 
+              name="description"
+              placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
+              className="min-h-[100px]"
+              defaultValue={order.description}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="diagnosis">Diagnóstico</Label>
+            <Textarea 
+              name="diagnosis"
+              placeholder="Diagnóstico técnico do problema..."
+              className="min-h-[100px]"
+              defaultValue={order.diagnosis || ''}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="serviceValue">Valor dos Serviços</Label>
+              <Input 
+                placeholder="0.00" 
+                type="number" 
+                step="0.01"
+                value={serviceValue || ''}
+                onChange={(e) => setServiceValue(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="partsValue">Valor das Peças</Label>
+              <Input 
+                placeholder="0.00" 
+                type="number" 
+                step="0.01"
+                value={partsValue || ''}
+                onChange={(e) => setPartsValue(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="totalValue">Valor Total</Label>
+            <Input 
+              placeholder="R$ 0,00" 
+              value={`R$ ${totalValue.toFixed(2)}`}
+              readOnly
+              className="bg-gray-50"
+            />
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 };
 

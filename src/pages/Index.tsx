@@ -25,6 +25,7 @@ import TechniciansManager from "@/components/TechniciansManager";
 import ServicesManager from "@/components/ServicesManager";
 import FinancialManager from "@/components/FinancialManager";
 import ReportsManager from "@/components/ReportsManager";
+import OrdersManager from "@/components/OrdersManager";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -103,7 +104,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="orders">
-            <SimpleOrdersManager />
+            <OrdersManager />
           </TabsContent>
 
           <TabsContent value="clients">
@@ -127,39 +128,6 @@ const Index = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
-};
-
-// Componente simplificado para gerenciar ordens de serviço
-const SimpleOrdersManager = () => {
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Gestão de Ordens de Serviço</CardTitle>
-          <CardDescription>
-            Esta funcionalidade está em desenvolvimento. Use o Dashboard para criar novas ordens.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Gerenciamento de Ordens
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Use o Dashboard para criar e visualizar ordens de serviço.
-            </p>
-            <Button 
-              onClick={() => window.location.href = '#dashboard'}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Ir para Dashboard
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
