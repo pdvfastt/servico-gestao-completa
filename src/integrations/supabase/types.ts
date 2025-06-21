@@ -9,6 +9,78 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          birth_date: string | null
+          cep: string | null
+          city: string | null
+          complement: string | null
+          contact_person: string | null
+          created_at: string | null
+          document: string
+          email: string
+          fantasy_name: string | null
+          id: string
+          name: string
+          neighborhood: string | null
+          number: string | null
+          phone: string
+          secondary_document: string | null
+          state: string | null
+          status: string
+          street: string | null
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          birth_date?: string | null
+          cep?: string | null
+          city?: string | null
+          complement?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          document: string
+          email: string
+          fantasy_name?: string | null
+          id?: string
+          name: string
+          neighborhood?: string | null
+          number?: string | null
+          phone: string
+          secondary_document?: string | null
+          state?: string | null
+          status?: string
+          street?: string | null
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          birth_date?: string | null
+          cep?: string | null
+          city?: string | null
+          complement?: string | null
+          contact_person?: string | null
+          created_at?: string | null
+          document?: string
+          email?: string
+          fantasy_name?: string | null
+          id?: string
+          name?: string
+          neighborhood?: string | null
+          number?: string | null
+          phone?: string
+          secondary_document?: string | null
+          state?: string | null
+          status?: string
+          street?: string | null
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile: {
         Row: {
           created_at: string
@@ -51,6 +123,129 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      service_orders: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          description: string
+          diagnosis: string | null
+          expected_date: string | null
+          id: string
+          observations: string | null
+          parts_value: number | null
+          payment_method: string | null
+          priority: string
+          service_value: number | null
+          status: string
+          technician_id: string | null
+          total_value: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          description: string
+          diagnosis?: string | null
+          expected_date?: string | null
+          id?: string
+          observations?: string | null
+          parts_value?: number | null
+          payment_method?: string | null
+          priority?: string
+          service_value?: number | null
+          status?: string
+          technician_id?: string | null
+          total_value?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          description?: string
+          diagnosis?: string | null
+          expected_date?: string | null
+          id?: string
+          observations?: string | null
+          parts_value?: number | null
+          payment_method?: string | null
+          priority?: string
+          service_value?: number | null
+          status?: string
+          technician_id?: string | null
+          total_value?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_orders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_orders_technician_id_fkey"
+            columns: ["technician_id"]
+            isOneToOne: false
+            referencedRelation: "technicians"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      technicians: {
+        Row: {
+          address: string | null
+          cpf: string
+          created_at: string | null
+          email: string
+          hourly_rate: number | null
+          id: string
+          level: string
+          name: string
+          phone: string
+          rating: number | null
+          specialties: string[] | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          cpf: string
+          created_at?: string | null
+          email: string
+          hourly_rate?: number | null
+          id?: string
+          level: string
+          name: string
+          phone: string
+          rating?: number | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          cpf?: string
+          created_at?: string | null
+          email?: string
+          hourly_rate?: number | null
+          id?: string
+          level?: string
+          name?: string
+          phone?: string
+          rating?: number | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

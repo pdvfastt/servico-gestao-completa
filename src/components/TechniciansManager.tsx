@@ -22,16 +22,13 @@ import {
   Star,
   Clock
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useTechnicians } from '@/hooks/useTechnicians';
 
 const TechniciansManager = () => {
-  const { toast } = useToast();
+  const { technicians, loading, createTechnician } = useTechnicians();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewTechnicianOpen, setIsNewTechnicianOpen] = useState(false);
-
-  // Empty data - will be replaced with real data from database
-  const technicians: any[] = [];
 
   const getLevelBadge = (level: string) => {
     const levelConfig = {
@@ -80,13 +77,20 @@ const TechniciansManager = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleCreateTechnician = () => {
-    toast({
-      title: "Técnico Cadastrado",
-      description: "O novo técnico foi cadastrado com sucesso!",
-    });
-    setIsNewTechnicianOpen(false);
+  const handleCreateTechnician = async (technicianData: any) => {
+    const result = await createTechnician(technicianData);
+    if (result?.success) {
+      setIsNewTechnicianOpen(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -146,71 +150,162 @@ const TechniciansManager = () => {
       </Card>
 
       {/* Lista de técnicos */}
-      <Card>
-        <CardContent className="p-12 text-center">
-          <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum técnico cadastrado</h3>
-          <p className="text-gray-600">Comece cadastrando seu primeiro técnico na equipe.</p>
-        </CardContent>
-      </Card>
+      {filteredTechnicians.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {technicians.length === 0 ? "Nenhum técnico cadastrado" : "Nenhum técnico encontrado"}
+            </h3>
+            <p className="text-gray-600">
+              {technicians.length === 0 ? "Comece cadastrando seu primeiro técnico na equipe." : "Tente ajustar os filtros de busca."}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTechnicians.map((technician) => (
+            <Card key={technician.id} className="hover:shadow-lg transition-shadow duration-200">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg">{technician.name}</CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">{technician.cpf}</p>
+                  </div>
+                  <div className="flex flex-col space-y-1">
+                    {getLevelBadge(technician.level)}
+                    {getStatusBadge(technician.status)}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <Phone className="h-4 w-4" />
+                  <span>{technician.phone}</span>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-gray-600">
+                  <Mail className="h-4 w-4" />
+                  <span>{technician.email}</span>
+                </div>
+                {technician.address && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <MapPin className="h-4 w-4" />
+                    <span>{technician.address}</span>
+                  </div>
+                )}
+                {technician.hourly_rate && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <Clock className="h-4 w-4" />
+                    <span>R$ {technician.hourly_rate}/hora</span>
+                  </div>
+                )}
+                {technician.specialties && technician.specialties.length > 0 && (
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <Wrench className="h-4 w-4" />
+                    <span>{technician.specialties.join(', ')}</span>
+                  </div>
+                )}
+                {technician.rating && technician.rating > 0 && (
+                  <div className="pt-2">
+                    {getRatingStars(technician.rating)}
+                  </div>
+                )}
+                <div className="flex space-x-2 pt-2">
+                  <Button variant="outline" size="sm">
+                    <Eye className="h-4 w-4 mr-1" />
+                    Ver
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
 // Componente do formulário de novo técnico
-const NewTechnicianForm = ({ onSubmit }: { onSubmit: () => void }) => {
+const NewTechnicianForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formDataObj = new FormData(form);
+    
+    const specialtiesText = formDataObj.get('specialties') as string;
+    const specialties = specialtiesText ? specialtiesText.split(',').map(s => s.trim()).filter(Boolean) : [];
+    
+    const data = {
+      name: formDataObj.get('name') as string,
+      cpf: formDataObj.get('cpf') as string,
+      phone: formDataObj.get('phone') as string,
+      email: formDataObj.get('email') as string,
+      address: formDataObj.get('address') as string || null,
+      level: formDataObj.get('level') as string,
+      hourly_rate: formDataObj.get('hourlyRate') ? parseFloat(formDataObj.get('hourlyRate') as string) : null,
+      specialties: specialties.length > 0 ? specialties : null,
+    };
+
+    onSubmit(data);
+  };
+
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Nome Completo</Label>
-          <Input placeholder="Digite o nome completo" />
+          <Input name="name" placeholder="Digite o nome completo" required />
         </div>
         <div>
           <Label htmlFor="cpf">CPF</Label>
-          <Input placeholder="000.000.000-00" />
+          <Input name="cpf" placeholder="000.000.000-00" required />
         </div>
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="phone">Telefone</Label>
-          <Input placeholder="(00) 00000-0000" />
+          <Input name="phone" placeholder="(00) 00000-0000" required />
         </div>
         <div>
           <Label htmlFor="email">E-mail</Label>
-          <Input type="email" placeholder="email@exemplo.com" />
+          <Input name="email" type="email" placeholder="email@exemplo.com" required />
         </div>
       </div>
       
       <div>
         <Label htmlFor="address">Endereço</Label>
-        <Input placeholder="Endereço completo" />
+        <Input name="address" placeholder="Endereço completo" />
       </div>
       
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="level">Nível</Label>
-          <Select>
+          <Select name="level" required>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o nível" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="junior">Júnior</SelectItem>
-              <SelectItem value="pleno">Pleno</SelectItem>
-              <SelectItem value="senior">Sênior</SelectItem>
+              <SelectItem value="Júnior">Júnior</SelectItem>
+              <SelectItem value="Pleno">Pleno</SelectItem>
+              <SelectItem value="Sênior">Sênior</SelectItem>
             </SelectContent>
           </Select>
+          <Input name="level" type="hidden" />
         </div>
         <div>
           <Label htmlFor="hourlyRate">Valor por Hora</Label>
-          <Input placeholder="R$ 0,00" />
+          <Input name="hourlyRate" placeholder="0.00" type="number" step="0.01" />
         </div>
       </div>
       
       <div>
         <Label htmlFor="specialties">Especialidades</Label>
-        <Input placeholder="Ex: Manutenção, Instalação, Reparos (separar por vírgula)" />
+        <Input name="specialties" placeholder="Ex: Manutenção, Instalação, Reparos (separar por vírgula)" />
       </div>
       
       <div className="flex justify-end space-x-2">

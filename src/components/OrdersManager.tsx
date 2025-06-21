@@ -23,16 +23,17 @@ import {
   CheckCircle,
   AlertCircle
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useServiceOrders } from '@/hooks/useServiceOrders';
+import { useClients } from '@/hooks/useClients';
+import { useTechnicians } from '@/hooks/useTechnicians';
 
 const OrdersManager = () => {
-  const { toast } = useToast();
+  const { orders, loading, createOrder } = useServiceOrders();
+  const { clients } = useClients();
+  const { technicians } = useTechnicians();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
-
-  // Empty data - will be replaced with real data from database
-  const orders: any[] = [];
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -66,8 +67,9 @@ const OrdersManager = () => {
   };
 
   const filteredOrders = orders.filter(order => {
+    const client = clients.find(c => c.id === order.client_id);
     const matchesSearch = order.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.client?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
@@ -75,13 +77,20 @@ const OrdersManager = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleCreateOrder = () => {
-    toast({
-      title: "Ordem de Serviço Criada",
-      description: "A nova OS foi criada com sucesso!",
-    });
-    setIsNewOrderOpen(false);
+  const handleCreateOrder = async (orderData: any) => {
+    const result = await createOrder(orderData);
+    if (result?.success) {
+      setIsNewOrderOpen(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -107,7 +116,11 @@ const OrdersManager = () => {
                     Preencha os dados da nova ordem de serviço
                   </DialogDescription>
                 </DialogHeader>
-                <NewOrderForm onSubmit={handleCreateOrder} />
+                <NewOrderForm 
+                  onSubmit={handleCreateOrder}
+                  clients={clients}
+                  technicians={technicians}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -141,22 +154,121 @@ const OrdersManager = () => {
         </CardContent>
       </Card>
 
-      {/* Estado vazio */}
-      <Card>
-        <CardContent className="p-12 text-center">
-          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma OS encontrada</h3>
-          <p className="text-gray-600">Comece criando sua primeira ordem de serviço.</p>
-        </CardContent>
-      </Card>
+      {/* Lista de ordens */}
+      {filteredOrders.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {orders.length === 0 ? "Nenhuma OS encontrada" : "Nenhuma OS encontrada"}
+            </h3>
+            <p className="text-gray-600">
+              {orders.length === 0 ? "Comece criando sua primeira ordem de serviço." : "Tente ajustar os filtros de busca."}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredOrders.map((order) => {
+            const client = clients.find(c => c.id === order.client_id);
+            const technician = technicians.find(t => t.id === order.technician_id);
+            
+            return (
+              <Card key={order.id} className="hover:shadow-lg transition-shadow duration-200">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">OS #{order.id.slice(-8)}</CardTitle>
+                      <p className="text-sm text-gray-600 mt-1">{client?.name || 'Cliente não encontrado'}</p>
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                      {getStatusBadge(order.status)}
+                      {getPriorityBadge(order.priority)}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-gray-700">{order.description}</p>
+                  
+                  {technician && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <User className="h-4 w-4" />
+                      <span>{technician.name}</span>
+                    </div>
+                  )}
+                  
+                  {order.expected_date && (
+                    <div className="flex items-center space-x-2 text-sm text-gray-600">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(order.expected_date).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  )}
+                  
+                  {order.total_value && order.total_value > 0 && (
+                    <div className="text-lg font-semibold text-green-600">
+                      R$ {order.total_value.toFixed(2)}
+                    </div>
+                  )}
+                  
+                  <div className="flex space-x-2 pt-2">
+                    <Button variant="outline" size="sm">
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4 mr-1" />
+                      Editar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
 
 // Componente do formulário de nova OS
-const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
+const NewOrderForm = ({ 
+  onSubmit, 
+  clients, 
+  technicians 
+}: { 
+  onSubmit: (data: any) => void;
+  clients: any[];
+  technicians: any[];
+}) => {
+  const [serviceValue, setServiceValue] = useState(0);
+  const [partsValue, setPartsValue] = useState(0);
+
+  const totalValue = serviceValue + partsValue;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formDataObj = new FormData(form);
+    
+    const data = {
+      client_id: formDataObj.get('client') as string || null,
+      technician_id: formDataObj.get('technician') as string || null,
+      priority: formDataObj.get('priority') as string,
+      expected_date: formDataObj.get('expectedDate') as string || null,
+      description: formDataObj.get('description') as string,
+      diagnosis: formDataObj.get('diagnosis') as string || null,
+      observations: formDataObj.get('observations') as string || null,
+      service_value: serviceValue || 0,
+      parts_value: partsValue || 0,
+      total_value: totalValue || 0,
+      payment_method: formDataObj.get('paymentMethod') as string || null,
+    };
+
+    onSubmit(data);
+  };
+
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="basic" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
@@ -168,45 +280,64 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="client">Cliente</Label>
-              <Select>
+              <Select name="client">
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="empty">Nenhum cliente cadastrado</SelectItem>
+                  {clients.length === 0 ? (
+                    <SelectItem value="" disabled>Nenhum cliente cadastrado</SelectItem>
+                  ) : (
+                    clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              <Input name="client" type="hidden" />
             </div>
             <div>
               <Label htmlFor="technician">Técnico Responsável</Label>
-              <Select>
+              <Select name="technician">
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o técnico" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="empty">Nenhum técnico cadastrado</SelectItem>
+                  {technicians.length === 0 ? (
+                    <SelectItem value="" disabled>Nenhum técnico cadastrado</SelectItem>
+                  ) : (
+                    technicians.map(technician => (
+                      <SelectItem key={technician.id} value={technician.id}>
+                        {technician.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
+              <Input name="technician" type="hidden" />
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="priority">Prioridade</Label>
-              <Select>
+              <Select name="priority" defaultValue="Média" required>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="alta">Alta</SelectItem>
-                  <SelectItem value="media">Média</SelectItem>
-                  <SelectItem value="baixa">Baixa</SelectItem>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Média">Média</SelectItem>
+                  <SelectItem value="Baixa">Baixa</SelectItem>
                 </SelectContent>
               </Select>
+              <Input name="priority" type="hidden" />
             </div>
             <div>
               <Label htmlFor="expectedDate">Data Prevista</Label>
-              <Input type="date" />
+              <Input name="expectedDate" type="date" />
             </div>
           </div>
         </TabsContent>
@@ -215,14 +346,17 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
           <div>
             <Label htmlFor="description">Descrição do Problema</Label>
             <Textarea 
+              name="description"
               placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
               className="min-h-[100px]"
+              required
             />
           </div>
           
           <div>
             <Label htmlFor="diagnosis">Diagnóstico</Label>
             <Textarea 
+              name="diagnosis"
               placeholder="Diagnóstico técnico do problema..."
               className="min-h-[100px]"
             />
@@ -231,6 +365,7 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
           <div>
             <Label htmlFor="observations">Observações Internas</Label>
             <Textarea 
+              name="observations"
               placeholder="Observações visíveis apenas para a equipe..."
               className="min-h-[80px]"
             />
@@ -241,22 +376,39 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="serviceValue">Valor dos Serviços</Label>
-              <Input placeholder="R$ 0,00" />
+              <Input 
+                placeholder="0.00" 
+                type="number" 
+                step="0.01"
+                value={serviceValue || ''}
+                onChange={(e) => setServiceValue(parseFloat(e.target.value) || 0)}
+              />
             </div>
             <div>
               <Label htmlFor="partsValue">Valor das Peças</Label>
-              <Input placeholder="R$ 0,00" />
+              <Input 
+                placeholder="0.00" 
+                type="number" 
+                step="0.01"
+                value={partsValue || ''}
+                onChange={(e) => setPartsValue(parseFloat(e.target.value) || 0)}
+              />
             </div>
           </div>
           
           <div>
             <Label htmlFor="totalValue">Valor Total</Label>
-            <Input placeholder="R$ 0,00" />
+            <Input 
+              placeholder="R$ 0,00" 
+              value={`R$ ${totalValue.toFixed(2)}`}
+              readOnly
+              className="bg-gray-50"
+            />
           </div>
           
           <div>
             <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select>
+            <Select name="paymentMethod">
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
@@ -267,6 +419,7 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
                 <SelectItem value="boleto">Boleto</SelectItem>
               </SelectContent>
             </Select>
+            <Input name="paymentMethod" type="hidden" />
           </div>
         </TabsContent>
       </Tabs>
