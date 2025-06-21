@@ -23,18 +23,15 @@ export const useTechnicians = () => {
     
     try {
       setLoading(true);
-      console.log('🔍 Buscando técnicos para usuário:', user.id);
+      console.log('🔍 Buscando todos os técnicos');
       
       const { data, error } = await supabase
         .from('technicians')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erro Supabase ao buscar técnicos:', error);
-        console.error('❌ Código do erro:', error.code);
-        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
@@ -44,7 +41,7 @@ export const useTechnicians = () => {
       console.error('❌ Erro geral ao buscar técnicos:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar técnicos. Verifique o console para mais detalhes.",
+        description: "Erro ao carregar técnicos.",
         variant: "destructive",
       });
     } finally {
@@ -114,7 +111,6 @@ export const useTechnicians = () => {
         .from('technicians')
         .update(technicianData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -157,8 +153,7 @@ export const useTechnicians = () => {
       const { error } = await supabase
         .from('technicians')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover técnico:', error);
@@ -184,7 +179,6 @@ export const useTechnicians = () => {
   };
 
   useEffect(() => {
-    console.log('🚀 useTechnicians: useEffect disparado, user:', user?.id);
     fetchTechnicians();
   }, [user]);
 

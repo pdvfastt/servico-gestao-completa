@@ -240,7 +240,6 @@ const PermissionsManager = () => {
                           onCheckedChange={(checked) => 
                             handleQuickPermissionToggle(user.id, permission as PermissionType, isGranted)
                           }
-                          size="sm"
                         />
                       </div>
                     );

@@ -23,18 +23,15 @@ export const useServiceOrders = () => {
     
     try {
       setLoading(true);
-      console.log('🔍 Buscando ordens de serviço para usuário:', user.id);
+      console.log('🔍 Buscando todas as ordens de serviço');
       
       const { data, error } = await supabase
         .from('service_orders')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erro Supabase ao buscar ordens de serviço:', error);
-        console.error('❌ Código do erro:', error.code);
-        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
@@ -44,7 +41,7 @@ export const useServiceOrders = () => {
       console.error('❌ Erro geral ao buscar ordens de serviço:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar ordens de serviço. Verifique o console para mais detalhes.",
+        description: "Erro ao carregar ordens de serviço.",
         variant: "destructive",
       });
     } finally {
@@ -114,7 +111,6 @@ export const useServiceOrders = () => {
         .from('service_orders')
         .update(orderData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -157,8 +153,7 @@ export const useServiceOrders = () => {
       const { error } = await supabase
         .from('service_orders')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover ordem de serviço:', error);
@@ -184,7 +179,6 @@ export const useServiceOrders = () => {
   };
 
   useEffect(() => {
-    console.log('🚀 useServiceOrders: useEffect disparado, user:', user?.id);
     fetchOrders();
   }, [user]);
 

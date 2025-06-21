@@ -23,18 +23,15 @@ export const useServices = () => {
     
     try {
       setLoading(true);
-      console.log('🔍 Buscando serviços para usuário:', user.id);
+      console.log('🔍 Buscando todos os serviços');
       
       const { data, error } = await supabase
         .from('services')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erro Supabase ao buscar serviços:', error);
-        console.error('❌ Código do erro:', error.code);
-        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
@@ -44,7 +41,7 @@ export const useServices = () => {
       console.error('❌ Erro geral ao buscar serviços:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar serviços. Verifique o console para mais detalhes.",
+        description: "Erro ao carregar serviços.",
         variant: "destructive",
       });
     } finally {
@@ -114,7 +111,6 @@ export const useServices = () => {
         .from('services')
         .update(serviceData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -157,8 +153,7 @@ export const useServices = () => {
       const { error } = await supabase
         .from('services')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover serviço:', error);
@@ -184,7 +179,6 @@ export const useServices = () => {
   };
 
   useEffect(() => {
-    console.log('🚀 useServices: useEffect disparado, user:', user?.id);
     fetchServices();
   }, [user]);
 
