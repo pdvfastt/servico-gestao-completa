@@ -138,4 +138,62 @@
   .stat-card-green {
     @apply bg-gradient-to-br from-green-50 to-green-100 border-green-200;
   }
+
+  /* Responsive PWA styles */
+  @media (max-width: 768px) {
+    .container {
+      @apply px-4;
+    }
+    
+    .card-responsive {
+      @apply mx-2 rounded-lg;
+    }
+    
+    .text-responsive {
+      @apply text-sm;
+    }
+    
+    .header-responsive {
+      @apply text-2xl;
+    }
+    
+    .tabs-responsive {
+      @apply overflow-x-auto scrollbar-hide;
+    }
+    
+    .tabs-list-responsive {
+      @apply min-w-max;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .header-responsive {
+      @apply text-xl;
+    }
+    
+    .text-responsive {
+      @apply text-xs;
+    }
+  }
+  
+  /* PWA specific styles */
+  @media (display-mode: standalone) {
+    body {
+      @apply select-none;
+    }
+    
+    .pwa-header {
+      @apply pt-safe-area-inset-top;
+    }
+  }
+  
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
