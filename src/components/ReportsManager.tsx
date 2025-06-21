@@ -23,6 +23,14 @@ import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useFinancialRecords } from '@/hooks/useFinancialRecords';
 import { useTechnicians } from '@/hooks/useTechnicians';
 
+// Interface para os dados dos técnicos no relatório
+interface TechnicianStats {
+  name: string;
+  orders: number;
+  rating: number;
+  revenue: number;
+}
+
 const ReportsManager = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30');
   const { orders, loading: ordersLoading } = useServiceOrders();
@@ -98,7 +106,7 @@ const ReportsManager = () => {
 
   // Distribuição de status das ordens
   const ordersStatusData = useMemo(() => {
-    const statusCount = {};
+    const statusCount: { [key: string]: number } = {};
     filteredData.filteredOrders.forEach(order => {
       statusCount[order.status] = (statusCount[order.status] || 0) + 1;
     });
@@ -112,8 +120,8 @@ const ReportsManager = () => {
   }, [filteredData.filteredOrders]);
 
   // Top técnicos por performance
-  const topTechnicians = useMemo(() => {
-    const technicianStats = {};
+  const topTechnicians = useMemo((): TechnicianStats[] => {
+    const technicianStats: { [key: string]: { orders: number; revenue: number; technician: any } } = {};
     
     filteredData.filteredOrders.forEach(order => {
       if (order.technician_id) {
