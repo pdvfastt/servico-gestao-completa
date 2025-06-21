@@ -75,12 +75,11 @@ export const useServiceOrders = () => {
     }
 
     try {
-      // Preparar dados para inserção
+      // Preparar dados para inserção (removendo service_id que não existe)
       const insertData: ServiceOrderInsert = {
         user_id: user.id,
         client_id: orderData.client_id || null,
         technician_id: orderData.technician_id || null,
-        service_id: orderData.service_id || null,
         description: orderData.description.trim(),
         diagnosis: orderData.diagnosis || null,
         observations: orderData.observations || null,

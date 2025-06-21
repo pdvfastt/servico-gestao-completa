@@ -372,7 +372,6 @@ const NewOrderForm = ({
       const data = {
         client_id: selectedClient || null,
         technician_id: selectedTechnician || null,
-        service_id: selectedService || null,
         priority: selectedPriority,
         expected_date,
         description,
@@ -446,7 +445,7 @@ const NewOrderForm = ({
           </div>
 
           <div>
-            <Label htmlFor="service">Tipo de Serviço</Label>
+            <Label htmlFor="service">Tipo de Serviço (Referência de Preço)</Label>
             <Select value={selectedService} onValueChange={handleServiceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
