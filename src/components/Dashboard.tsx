@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,9 @@ import {
   AlertCircle,
   FileText,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  BarChart3,
+  Activity
 } from "lucide-react";
 import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
@@ -49,7 +52,7 @@ const Dashboard = () => {
   const openOrders = orders.filter(o => o.status === 'Aberta').length;
   const inProgressOrders = orders.filter(o => o.status === 'Em Andamento').length;
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+  const COLORS = ['#3b82f6', '#10b981', '#8b5cf6'];
 
   const [isNewOrderOpen, setIsNewOrderOpen] = React.useState(false);
 
@@ -63,222 +66,313 @@ const Dashboard = () => {
   const recentOrders = orders.slice(0, 5);
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-        <p className="text-muted-foreground">
-          Visão geral do seu sistema de gestão
-        </p>
-      </div>
-
-      {/* Cards de estatísticas */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total de Clientes
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{clients.length}</div>
-            <p className="text-xs text-muted-foreground">
-              +2% desde o mês passado
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Ordens de Serviço
-            </CardTitle>
-            <Wrench className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{orders.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {orders.filter(o => o.status === 'Aberta').length} em aberto
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Receita do Mês
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              R$ {records
-                .filter(r => r.type === 'receita')
-                .reduce((sum, r) => sum + (r.amount || 0), 0)
-                .toFixed(2)}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+      {/* Header Section */}
+      <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
+        <div className="p-6">
+          <div className="flex items-center space-x-4">
+            <div className="bg-gradient-to-r from-blue-600 to-green-600 p-3 rounded-xl">
+              <BarChart3 className="h-8 w-8 text-white" />
             </div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% desde o mês passado
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Técnicos Ativos
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {technicians.filter(t => t.status === 'Ativo').length}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              de {technicians.length} cadastrados
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Gráficos */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Status das Ordens de Serviço</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={[
-                { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
-                { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
-                { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Distribuição por Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie
-                  data={[
-                    { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
-                    { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
-                    { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
-                  ]}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  <Cell fill="#0088FE" />
-                  <Cell fill="#00C49F" />
-                  <Cell fill="#FFBB28" />
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Ordens de Serviço Recentes */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Ordens de Serviço Recentes</CardTitle>
-              <CardDescription>
-                Últimas 5 ordens de serviço criadas
-              </CardDescription>
-            </div>
-            <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Cadastrar
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Nova Ordem de Serviço</DialogTitle>
-                  <DialogDescription>
-                    Preencha os dados da nova ordem de serviço
-                  </DialogDescription>
-                </DialogHeader>
-                <QuickOrderForm 
-                  onSubmit={handleCreateOrder}
-                  clients={clients}
-                  technicians={technicians}
-                  services={services}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {recentOrders.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Nenhuma ordem de serviço encontrada
-              </h3>
-              <p className="text-gray-600">
-                Comece criando sua primeira ordem de serviço.
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                Dashboard
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Visão geral do seu sistema de gestão
               </p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {recentOrders.map((order) => {
-                const client = clients.find(c => c.id === order.client_id);
-                const getStatusIcon = (status: string) => {
-                  switch (status) {
-                    case 'Finalizada':
-                      return <CheckCircle className="h-4 w-4 text-green-600" />;
-                    case 'Em Andamento':
-                      return <Clock className="h-4 w-4 text-yellow-600" />;
-                    default:
-                      return <AlertCircle className="h-4 w-4 text-blue-600" />;
-                  }
-                };
+          </div>
+        </div>
+      </div>
 
-                return (
-                  <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center space-x-4">
-                      {getStatusIcon(order.status)}
-                      <div>
-                        <p className="font-semibold">OS #{order.id.slice(-8)}</p>
-                        <p className="text-sm text-gray-600">{client?.name || 'Cliente não encontrado'}</p>
-                        <p className="text-xs text-gray-500">{order.description}</p>
+      <div className="p-6 space-y-8">
+        {/* Stats Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="stat-card-blue border-0 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-blue-700">
+                Total de Clientes
+              </CardTitle>
+              <div className="bg-blue-600 p-2 rounded-lg">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-blue-700 mb-2">{clients.length}</div>
+              <div className="flex items-center space-x-1">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <p className="text-sm text-green-600 font-medium">
+                  +2% desde o mês passado
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="stat-card-green border-0 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-green-700">
+                Ordens de Serviço
+              </CardTitle>
+              <div className="bg-green-600 p-2 rounded-lg">
+                <Wrench className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-700 mb-2">{orders.length}</div>
+              <p className="text-sm text-gray-600">
+                <span className="font-semibold text-green-600">{openOrders}</span> em aberto
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="stat-card-purple border-0 shadow-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-purple-700">
+                Receita do Mês
+              </CardTitle>
+              <div className="bg-purple-600 p-2 rounded-lg">
+                <DollarSign className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-purple-700 mb-2">
+                R$ {totalRevenue.toFixed(2)}
+              </div>
+              <div className="flex items-center space-x-1">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <p className="text-sm text-green-600 font-medium">
+                  +20.1% desde o mês passado
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="stat-card border-0 shadow-lg bg-gradient-to-br from-gray-50 to-gray-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <CardTitle className="text-sm font-semibold text-gray-700">
+                Técnicos Ativos
+              </CardTitle>
+              <div className="bg-gray-600 p-2 rounded-lg">
+                <Activity className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-gray-700 mb-2">
+                {technicians.filter(t => t.status === 'Ativo').length}
+              </div>
+              <p className="text-sm text-gray-600">
+                de <span className="font-semibold">{technicians.length}</span> cadastrados
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Section */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+          <Card className="col-span-4 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-t-lg">
+              <CardTitle className="text-xl flex items-center space-x-2">
+                <BarChart3 className="h-6 w-6" />
+                <span>Status das Ordens de Serviço</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={[
+                  { name: 'Aberta', value: openOrders },
+                  { name: 'Em Andamento', value: inProgressOrders },
+                  { name: 'Finalizada', value: completedOrders },
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: 'none', 
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                    }} 
+                  />
+                  <Bar dataKey="value" fill="url(#blueGreenGradient)" radius={[4, 4, 0, 0]} />
+                  <defs>
+                    <linearGradient id="blueGreenGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#10b981" />
+                    </linearGradient>
+                  </defs>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="col-span-3 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardHeader className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
+              <CardTitle className="text-xl flex items-center space-x-2">
+                <Activity className="h-6 w-6" />
+                <span>Distribuição por Status</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Aberta', value: openOrders },
+                      { name: 'Em Andamento', value: inProgressOrders },
+                      { name: 'Finalizada', value: completedOrders },
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    <Cell fill="#3b82f6" />
+                    <Cell fill="#10b981" />
+                    <Cell fill="#8b5cf6" />
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: 'none', 
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                    }} 
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Orders Section */}
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-t-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <FileText className="h-6 w-6" />
+                <div>
+                  <CardTitle className="text-xl">Ordens de Serviço Recentes</CardTitle>
+                  <CardDescription className="text-green-100">
+                    Últimas 5 ordens de serviço criadas
+                  </CardDescription>
+                </div>
+              </div>
+              <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-white text-green-600 hover:bg-green-50 border-0 shadow-md">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova OS
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                      Nova Ordem de Serviço
+                    </DialogTitle>
+                    <DialogDescription className="text-gray-600">
+                      Preencha os dados da nova ordem de serviço
+                    </DialogDescription>
+                  </DialogHeader>
+                  <QuickOrderForm 
+                    onSubmit={handleCreateOrder}
+                    clients={clients}
+                    technicians={technicians}
+                    services={services}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            {recentOrders.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-6 rounded-2xl inline-block mb-4">
+                  <FileText className="h-16 w-16 text-gray-400 mx-auto" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                  Nenhuma ordem de serviço encontrada
+                </h3>
+                <p className="text-gray-500 mb-6">
+                  Comece criando sua primeira ordem de serviço.
+                </p>
+                <Button 
+                  onClick={() => setIsNewOrderOpen(true)}
+                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 shadow-lg"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar primeira OS
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentOrders.map((order, index) => {
+                  const client = clients.find(c => c.id === order.client_id);
+                  const getStatusIcon = (status: string) => {
+                    switch (status) {
+                      case 'Finalizada':
+                        return <CheckCircle className="h-5 w-5 text-green-600" />;
+                      case 'Em Andamento':
+                        return <Clock className="h-5 w-5 text-blue-600" />;
+                      default:
+                        return <AlertCircle className="h-5 w-5 text-purple-600" />;
+                    }
+                  };
+
+                  const getStatusColor = (status: string) => {
+                    switch (status) {
+                      case 'Finalizada':
+                        return 'bg-green-100 text-green-700 border-green-200';
+                      case 'Em Andamento':
+                        return 'bg-blue-100 text-blue-700 border-blue-200';
+                      default:
+                        return 'bg-purple-100 text-purple-700 border-purple-200';
+                    }
+                  };
+
+                  return (
+                    <div 
+                      key={order.id} 
+                      className={`flex items-center justify-between p-4 rounded-xl border bg-gradient-to-r ${
+                        index % 3 === 0 ? 'from-blue-50 to-blue-100 border-blue-200' :
+                        index % 3 === 1 ? 'from-green-50 to-green-100 border-green-200' :
+                        'from-purple-50 to-purple-100 border-purple-200'
+                      } hover:shadow-md transition-all duration-300 hover:-translate-y-1`}
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-white p-2 rounded-lg shadow-sm">
+                          {getStatusIcon(order.status)}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-lg text-gray-800">OS #{order.id.slice(-8)}</p>
+                          <p className="text-gray-600 font-medium">{client?.name || 'Cliente não encontrado'}</p>
+                          <p className="text-sm text-gray-500 line-clamp-1">{order.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Badge className={`${getStatusColor(order.status)} border font-medium px-3 py-1`}>
+                          {order.status}
+                        </Badge>
+                        {order.total_value && order.total_value > 0 && (
+                          <div className="bg-white px-3 py-1 rounded-lg border shadow-sm">
+                            <span className="font-bold text-green-600">
+                              R$ {order.total_value.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline">
-                        {order.status}
-                      </Badge>
-                      {order.total_value && order.total_value > 0 && (
-                        <span className="font-semibold text-green-600">
-                          R$ {order.total_value.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
@@ -403,10 +497,10 @@ const QuickOrderForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
-          <TabsTrigger value="technical">Dados Técnicos</TabsTrigger>
-          <TabsTrigger value="financial">Dados Financeiros</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-blue-100 to-green-100">
+          <TabsTrigger value="basic" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Básicos</TabsTrigger>
+          <TabsTrigger value="technical" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Técnicos</TabsTrigger>
+          <TabsTrigger value="financial" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Financeiros</TabsTrigger>
         </TabsList>
         
         <TabsContent value="basic" className="space-y-4">
@@ -606,12 +700,14 @@ const QuickOrderForm = ({
           variant="outline" 
           onClick={() => window.location.reload()}
           disabled={isSubmitting}
+          className="border-gray-300 hover:bg-gray-50"
         >
           Cancelar
         </Button>
         <Button 
           type="submit" 
           disabled={isSubmitting}
+          className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 shadow-lg"
         >
           {isSubmitting ? 'Criando...' : 'Criar OS'}
         </Button>
