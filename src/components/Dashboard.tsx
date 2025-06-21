@@ -152,7 +152,11 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={chartData}>
+              <BarChart data={[
+                { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
+                { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
+                { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
+              ]}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -170,7 +174,11 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={350}>
               <PieChart>
                 <Pie
-                  data={chartData}
+                  data={[
+                    { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
+                    { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
+                    { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
+                  ]}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -179,9 +187,9 @@ const Dashboard = () => {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
+                  <Cell fill="#0088FE" />
+                  <Cell fill="#00C49F" />
+                  <Cell fill="#FFBB28" />
                 </Pie>
                 <Tooltip />
               </PieChart>
