@@ -16,55 +16,34 @@ export const useUserManagement = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const checkAdminStatus = async () => {
-    if (!user) {
-      console.log('useUserManagement: Nenhum usuário logado');
-      setIsAdmin(false);
-      return false;
-    }
+    if (!user) return false;
     
     try {
-      console.log('useUserManagement: Verificando status admin para usuário:', user.id);
-      
       const { data, error } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
 
-      if (error) {
-        console.error('useUserManagement: Erro ao verificar status admin:', error);
-        setIsAdmin(false);
-        return false;
-      }
+      if (error) throw error;
       
-      console.log('useUserManagement: Dados do perfil:', data);
       const adminStatus = data?.role === 'admin';
-      console.log('useUserManagement: Status admin:', adminStatus);
-      
       setIsAdmin(adminStatus);
       return adminStatus;
     } catch (error) {
-      console.error('useUserManagement: Erro inesperado ao verificar status admin:', error);
-      setIsAdmin(false);
+      console.error('Erro ao verificar status admin:', error);
       return false;
     }
   };
 
   const fetchUsers = async () => {
-    if (!user) {
-      console.log('useUserManagement: Não é possível buscar usuários sem usuário logado');
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
     
     try {
       setLoading(true);
-      console.log('useUserManagement: Buscando usuários...');
-      
       const adminStatus = await checkAdminStatus();
       
       if (!adminStatus) {
-        console.log('useUserManagement: Usuário não é admin, não buscando usuários');
         setLoading(false);
         return;
       }
@@ -74,15 +53,11 @@ export const useUserManagement = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('useUserManagement: Erro ao buscar usuários:', error);
-        throw error;
-      }
+      if (error) throw error;
       
-      console.log('useUserManagement: Usuários encontrados:', data?.length || 0);
       setUsers(data || []);
     } catch (error) {
-      console.error('useUserManagement: Erro ao buscar usuários:', error);
+      console.error('Erro ao buscar usuários:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar usuários.",
@@ -249,16 +224,7 @@ export const useUserManagement = () => {
   };
 
   useEffect(() => {
-    console.log('useUserManagement: useEffect executado, usuário:', user?.email);
-    if (user) {
-      checkAdminStatus().then(() => {
-        fetchUsers();
-      });
-    } else {
-      setIsAdmin(false);
-      setUsers([]);
-      setLoading(false);
-    }
+    fetchUsers();
   }, [user]);
 
   return {

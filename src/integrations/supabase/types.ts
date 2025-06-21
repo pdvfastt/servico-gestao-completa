@@ -81,42 +81,6 @@ export type Database = {
         }
         Relationships: []
       }
-      company_settings: {
-        Row: {
-          accent_color: string
-          company_logo_url: string | null
-          company_name: string
-          created_at: string
-          id: string
-          primary_color: string
-          secondary_color: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          accent_color?: string
-          company_logo_url?: string | null
-          company_name: string
-          created_at?: string
-          id?: string
-          primary_color?: string
-          secondary_color?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          accent_color?: string
-          company_logo_url?: string | null
-          company_name?: string
-          created_at?: string
-          id?: string
-          primary_color?: string
-          secondary_color?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       financial_records: {
         Row: {
           amount: number

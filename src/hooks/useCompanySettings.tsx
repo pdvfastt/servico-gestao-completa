@@ -29,11 +29,12 @@ export const useCompanySettings = () => {
       setLoading(true);
       console.log('Buscando configurações da empresa para usuário:', user.id);
       
+      // Usar query direta já que a tabela não está nos tipos ainda
       const { data, error } = await supabase
-        .from('company_settings')
+        .from('company_settings' as any)
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle() as { data: any, error: any };
 
       if (error) {
         console.error('Erro Supabase ao buscar configurações:', error);
@@ -97,9 +98,9 @@ export const useCompanySettings = () => {
       const updatedSettings = { ...settings, ...newSettings };
       
       if (settings?.id) {
-        // Atualizar configurações existentes
+        // Atualizar configurações existentes usando query direta
         const { data, error } = await supabase
-          .from('company_settings')
+          .from('company_settings' as any)
           .update({
             company_name: updatedSettings.company_name,
             company_logo_url: updatedSettings.company_logo_url,
@@ -110,7 +111,7 @@ export const useCompanySettings = () => {
           .eq('id', settings.id)
           .eq('user_id', user.id)
           .select()
-          .single();
+          .single() as { data: any, error: any };
 
         if (error) throw error;
         
@@ -123,9 +124,9 @@ export const useCompanySettings = () => {
           accent_color: data.accent_color,
         });
       } else {
-        // Criar novas configurações
+        // Criar novas configurações usando query direta
         const { data, error } = await supabase
-          .from('company_settings')
+          .from('company_settings' as any)
           .insert({
             user_id: user.id,
             company_name: updatedSettings.company_name,
@@ -135,7 +136,7 @@ export const useCompanySettings = () => {
             accent_color: updatedSettings.accent_color,
           })
           .select()
-          .single();
+          .single() as { data: any, error: any };
 
         if (error) throw error;
         
