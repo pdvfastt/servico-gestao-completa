@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,12 +49,6 @@ const Dashboard = () => {
   const completedOrders = orders.filter(o => o.status === 'Finalizada').length;
   const openOrders = orders.filter(o => o.status === 'Aberta').length;
   const inProgressOrders = orders.filter(o => o.status === 'Em Andamento').length;
-
-  const chartData = [
-    { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
-    { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
-    { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
-  ];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
@@ -303,6 +298,17 @@ const QuickOrderForm = ({
 }) => {
   const [selectedClient, setSelectedClient] = React.useState("");
   const [selectedService, setSelectedService] = React.useState("");
+  const [showSerialField, setShowSerialField] = React.useState(false);
+
+  // Verificar se é serviço de Instalação NPD
+  const handleServiceChange = (serviceId: string) => {
+    setSelectedService(serviceId);
+    const service = services.find(s => s.id === serviceId);
+    if (service) {
+      // Mostrar campo Serial Receptor se for Instalação NPD
+      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -311,6 +317,7 @@ const QuickOrderForm = ({
     
     const description = formDataObj.get('description') as string;
     const invoiceNumber = formDataObj.get('invoiceNumber') as string;
+    const serialReceiver = formDataObj.get('serialReceiver') as string;
     
     if (!description || description.trim() === '') {
       alert('Descrição é obrigatória');
@@ -321,10 +328,18 @@ const QuickOrderForm = ({
       alert('Número da Nota Fiscal é obrigatório');
       return;
     }
+
+    if (showSerialField && !serialReceiver) {
+      alert('Serial do Receptor é obrigatório para Instalação NPD');
+      return;
+    }
     
     let fullDescription = description.trim();
     if (invoiceNumber) {
       fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
+    }
+    if (showSerialField && serialReceiver) {
+      fullDescription += `\nSerial Receptor: ${serialReceiver}`;
     }
     
     const data = {
@@ -360,7 +375,7 @@ const QuickOrderForm = ({
 
       <div>
         <Label htmlFor="service">Tipo de Serviço</Label>
-        <Select value={selectedService} onValueChange={setSelectedService}>
+        <Select value={selectedService} onValueChange={handleServiceChange}>
           <SelectTrigger>
             <SelectValue placeholder="Selecione o tipo de serviço" />
           </SelectTrigger>
@@ -383,6 +398,18 @@ const QuickOrderForm = ({
           required
         />
       </div>
+
+      {/* Campo condicional: Serial Receptor (apenas para Instalação NPD) */}
+      {showSerialField && (
+        <div>
+          <Label htmlFor="serialReceiver">Serial Receptor *</Label>
+          <Input 
+            name="serialReceiver"
+            placeholder="Digite o serial do receptor"
+            required={showSerialField}
+          />
+        </div>
+      )}
 
       <div>
         <Label htmlFor="description">Descrição do Problema *</Label>
