@@ -5,7 +5,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/integrations/supabase/types';
 
-type ServiceOrder = Database['public']['Tables']['service_orders']['Row'];
+type ServiceOrder = Database['public']['Tables']['service_orders']['Row'] & {
+  clients?: {
+    name: string;
+    phone: string;
+    email: string;
+  } | null;
+  technicians?: {
+    name: string;
+  } | null;
+};
 
 export const useTechnicianOrders = () => {
   const { user } = useAuth();
