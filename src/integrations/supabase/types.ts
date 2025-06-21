@@ -9,33 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      profile: {
+        Row: {
+          created_at: string
+          id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
-          created_at: string | null
+          created_at: string
           email: string
           full_name: string
           id: string
           phone: string | null
           role: Database["public"]["Enums"]["user_role"]
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           email: string
           full_name: string
           id: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           email?: string
           full_name?: string
           id?: string
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

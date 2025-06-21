@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, Settings } from 'lucide-react';
+import { LogIn, UserPlus, Settings, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
@@ -17,6 +17,7 @@ const Auth = () => {
   // Redirect se já estiver logado
   React.useEffect(() => {
     if (user) {
+      console.log('Usuário já logado, redirecionando...');
       window.location.href = '/';
     }
   }, [user]);
@@ -29,26 +30,39 @@ const Auth = () => {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
+    console.log('Tentando fazer login...');
+
     try {
       const { error } = await signIn(email, password);
       
       if (error) {
-        console.error('Sign in error:', error);
+        console.error('Erro no login:', error);
+        
+        let errorMessage = 'Erro no login';
+        
+        if (error.message === 'Invalid login credentials') {
+          errorMessage = 'Email ou senha incorretos';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Verifique seu email para confirmar a conta';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Muitas tentativas. Tente novamente em alguns minutos';
+        } else {
+          errorMessage = error.message;
+        }
+        
         toast({
           title: "Erro no login",
-          description: error.message === 'Invalid login credentials' 
-            ? "Email ou senha incorretos" 
-            : error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
         toast({
           title: "Login realizado com sucesso!",
-          description: "Bem-vindo ao sistema de gestão de OS",
+          description: "Redirecionando...",
         });
       }
     } catch (error) {
-      console.error('Unexpected sign in error:', error);
+      console.error('Erro inesperado no login:', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente em alguns instantes",
@@ -68,35 +82,60 @@ const Auth = () => {
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
 
-    console.log('Starting sign up process...');
+    console.log('Tentando fazer cadastro...');
+
+    // Validações simples
+    if (!fullName.trim()) {
+      toast({
+        title: "Nome obrigatório",
+        description: "Por favor, informe seu nome completo",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 6 caracteres",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       const { error } = await signUp(email, password, fullName);
       
       if (error) {
-        console.error('Sign up error:', error);
-        if (error.message.includes('already registered')) {
-          toast({
-            title: "Email já cadastrado",
-            description: "Este email já está sendo usado. Tente fazer login.",
-            variant: "destructive",
-          });
+        console.error('Erro no cadastro:', error);
+        
+        let errorMessage = 'Erro no cadastro';
+        
+        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+          errorMessage = 'Este email já está cadastrado. Tente fazer login';
+        } else if (error.message.includes('Password should be')) {
+          errorMessage = 'A senha deve ter pelo menos 6 caracteres';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'Email inválido';
         } else {
-          toast({
-            title: "Erro no cadastro",
-            description: error.message,
-            variant: "destructive",
-          });
+          errorMessage = error.message;
         }
+        
+        toast({
+          title: "Erro no cadastro",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } else {
-        console.log('Sign up successful');
         toast({
           title: "Cadastro realizado com sucesso!",
-          description: "Verifique seu email para confirmar a conta",
+          description: "Verifique seu email para confirmar a conta ou aguarde o redirecionamento",
         });
       }
     } catch (error) {
-      console.error('Unexpected sign up error:', error);
+      console.error('Erro inesperado no cadastro:', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente em alguns instantes",
@@ -154,6 +193,7 @@ const Auth = () => {
                       type="email"
                       placeholder="seu@email.com"
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -164,10 +204,18 @@ const Auth = () => {
                       type="password"
                       placeholder="Sua senha"
                       required
+                      disabled={loading}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Entrando..." : "Entrar"}
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Entrando...
+                      </>
+                    ) : (
+                      "Entrar"
+                    )}
                   </Button>
                 </form>
               </TabsContent>
@@ -182,6 +230,7 @@ const Auth = () => {
                       type="text"
                       placeholder="Seu nome completo"
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -192,6 +241,7 @@ const Auth = () => {
                       type="email"
                       placeholder="seu@email.com"
                       required
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -203,10 +253,18 @@ const Auth = () => {
                       placeholder="Mínimo 6 caracteres"
                       minLength={6}
                       required
+                      disabled={loading}
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? "Cadastrando..." : "Criar Conta"}
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Cadastrando...
+                      </>
+                    ) : (
+                      "Criar Conta"
+                    )}
                   </Button>
                 </form>
               </TabsContent>
