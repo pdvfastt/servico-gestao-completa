@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -296,136 +295,321 @@ const QuickOrderForm = ({
   technicians: any[];
   services: any[];
 }) => {
+  // Estados para persistir dados entre as abas
   const [selectedClient, setSelectedClient] = React.useState("");
+  const [selectedTechnician, setSelectedTechnician] = React.useState("");
   const [selectedService, setSelectedService] = React.useState("");
+  const [selectedPriority, setSelectedPriority] = React.useState("Média");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState("");
+  const [serviceValue, setServiceValue] = React.useState(0);
+  const [partsValue, setPartsValue] = React.useState(0);
   const [showSerialField, setShowSerialField] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  
+  // Estados para campos de texto
+  const [formData, setFormData] = React.useState({
+    invoiceNumber: '',
+    serialReceiver: '',
+    expectedDate: '',
+    expectedTime: '',
+    description: '',
+    diagnosis: '',
+    observations: ''
+  });
 
-  // Verificar se é serviço de Instalação NPD
+  const totalValue = serviceValue + partsValue;
+
   const handleServiceChange = (serviceId: string) => {
     setSelectedService(serviceId);
     const service = services.find(s => s.id === serviceId);
     if (service) {
-      // Mostrar campo Serial Receptor se for Instalação NPD
+      setServiceValue(service.price || 0);
       setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
     }
   };
 
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formDataObj = new FormData(form);
     
-    const description = formDataObj.get('description') as string;
-    const invoiceNumber = formDataObj.get('invoiceNumber') as string;
-    const serialReceiver = formDataObj.get('serialReceiver') as string;
-    
-    if (!description || description.trim() === '') {
+    if (!formData.description || formData.description.trim() === '') {
       alert('Descrição é obrigatória');
       return;
     }
 
-    if (!invoiceNumber) {
+    if (!formData.invoiceNumber) {
       alert('Número da Nota Fiscal é obrigatório');
       return;
     }
 
-    if (showSerialField && !serialReceiver) {
+    if (showSerialField && !formData.serialReceiver) {
       alert('Serial do Receptor é obrigatório para Instalação NPD');
       return;
     }
     
-    let fullDescription = description.trim();
-    if (invoiceNumber) {
-      fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
-    }
-    if (showSerialField && serialReceiver) {
-      fullDescription += `\nSerial Receptor: ${serialReceiver}`;
-    }
+    setIsSubmitting(true);
     
-    const data = {
-      client_id: selectedClient || null,
-      priority: 'Média',
-      description: fullDescription,
-      status: 'Aberta',
-      service_value: 0,
-      parts_value: 0,
-      total_value: 0
-    };
+    try {
+      let expected_date = null;
+      if (formData.expectedDate) {
+        if (formData.expectedTime) {
+          expected_date = `${formData.expectedDate}T${formData.expectedTime}:00`;
+        } else {
+          expected_date = `${formData.expectedDate}T09:00:00`;
+        }
+      }
+      
+      let fullDescription = formData.description.trim();
+      if (formData.invoiceNumber) {
+        fullDescription += `\n\nNº Nota Fiscal: ${formData.invoiceNumber}`;
+      }
+      if (showSerialField && formData.serialReceiver) {
+        fullDescription += `\nSerial Receptor: ${formData.serialReceiver}`;
+      }
+      
+      const data = {
+        client_id: selectedClient || null,
+        technician_id: selectedTechnician || null,
+        priority: selectedPriority,
+        expected_date,
+        description: fullDescription,
+        diagnosis: formData.diagnosis || null,
+        observations: formData.observations || null,
+        service_value: serviceValue || 0,
+        parts_value: partsValue || 0,
+        total_value: totalValue || 0,
+        payment_method: selectedPaymentMethod || null,
+        status: 'Aberta'
+      };
 
-    onSubmit(data);
+      onSubmit(data);
+    } catch (error) {
+      console.error('Erro no submit:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="client">Cliente</Label>
-        <Select value={selectedClient} onValueChange={setSelectedClient}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o cliente" />
-          </SelectTrigger>
-          <SelectContent>
-            {clients.map(client => (
-              <SelectItem key={client.id} value={client.id}>
-                {client.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <Tabs defaultValue="basic" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
+          <TabsTrigger value="technical">Dados Técnicos</TabsTrigger>
+          <TabsTrigger value="financial">Dados Financeiros</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="basic" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="client">Cliente</Label>
+              <Select value={selectedClient} onValueChange={setSelectedClient}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o cliente" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map(client => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="technician">Técnico Responsável</Label>
+              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o técnico" />
+                </SelectTrigger>
+                <SelectContent>
+                  {technicians.map(technician => (
+                    <SelectItem key={technician.id} value={technician.id}>
+                      {technician.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-      <div>
-        <Label htmlFor="service">Tipo de Serviço</Label>
-        <Select value={selectedService} onValueChange={handleServiceChange}>
-          <SelectTrigger>
-            <SelectValue placeholder="Selecione o tipo de serviço" />
-          </SelectTrigger>
-          <SelectContent>
-            {services.map(service => (
-              <SelectItem key={service.id} value={service.id}>
-                {service.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+          <div>
+            <Label htmlFor="service">Tipo de Serviço</Label>
+            <Select value={selectedService} onValueChange={handleServiceChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de serviço" />
+              </SelectTrigger>
+              <SelectContent>
+                {services.map(service => (
+                  <SelectItem key={service.id} value={service.id}>
+                    {service.name} - R$ {service.price?.toFixed(2)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div>
-        <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
-        <Input 
-          name="invoiceNumber"
-          type="number"
-          placeholder="Digite o número da nota fiscal"
-          required
-        />
-      </div>
+          <div>
+            <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
+            <Input 
+              type="number"
+              placeholder="Digite o número da nota fiscal"
+              value={formData.invoiceNumber}
+              onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
+              required
+            />
+          </div>
 
-      {/* Campo condicional: Serial Receptor (apenas para Instalação NPD) */}
-      {showSerialField && (
-        <div>
-          <Label htmlFor="serialReceiver">Serial Receptor *</Label>
-          <Input 
-            name="serialReceiver"
-            placeholder="Digite o serial do receptor"
-            required={showSerialField}
-          />
-        </div>
-      )}
+          {showSerialField && (
+            <div>
+              <Label htmlFor="serialReceiver">Serial Receptor *</Label>
+              <Input 
+                placeholder="Digite o serial do receptor"
+                value={formData.serialReceiver}
+                onChange={(e) => handleInputChange('serialReceiver', e.target.value)}
+                required={showSerialField}
+              />
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="priority">Prioridade</Label>
+              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a prioridade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Média">Média</SelectItem>
+                  <SelectItem value="Baixa">Baixa</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="expectedDate">Data Prevista</Label>
+              <Input 
+                type="date" 
+                value={formData.expectedDate}
+                onChange={(e) => handleInputChange('expectedDate', e.target.value)}
+              />
+            </div>
+          </div>
 
-      <div>
-        <Label htmlFor="description">Descrição do Problema *</Label>
-        <Textarea 
-          name="description"
-          placeholder="Descreva o problema..."
-          required
-        />
-      </div>
+          <div>
+            <Label htmlFor="expectedTime">Horário Previsto</Label>
+            <Input 
+              type="time" 
+              value={formData.expectedTime}
+              onChange={(e) => handleInputChange('expectedTime', e.target.value)}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="technical" className="space-y-4">
+          <div>
+            <Label htmlFor="description">Descrição do Problema *</Label>
+            <Textarea 
+              placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
+              className="min-h-[100px]"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              required
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="diagnosis">Diagnóstico</Label>
+            <Textarea 
+              placeholder="Diagnóstico técnico do problema..."
+              className="min-h-[100px]"
+              value={formData.diagnosis}
+              onChange={(e) => handleInputChange('diagnosis', e.target.value)}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="observations">Observações Internas</Label>
+            <Textarea 
+              placeholder="Observações visíveis apenas para a equipe..."
+              className="min-h-[80px]"
+              value={formData.observations}
+              onChange={(e) => handleInputChange('observations', e.target.value)}
+            />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="financial" className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="serviceValue">Valor dos Serviços</Label>
+              <Input 
+                placeholder="0.00" 
+                type="number" 
+                step="0.01"
+                value={serviceValue || ''}
+                onChange={(e) => setServiceValue(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="partsValue">Valor das Peças</Label>
+              <Input 
+                placeholder="0.00" 
+                type="number" 
+                step="0.01"
+                value={partsValue || ''}
+                onChange={(e) => setPartsValue(parseFloat(e.target.value) || 0)}
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="totalValue">Valor Total</Label>
+            <Input 
+              placeholder="R$ 0,00" 
+              value={`R$ ${totalValue.toFixed(2)}`}
+              readOnly
+              className="bg-gray-50"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
+            <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a forma de pagamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                <SelectItem value="cartao">Cartão</SelectItem>
+                <SelectItem value="pix">PIX</SelectItem>
+                <SelectItem value="boleto">Boleto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </TabsContent>
+      </Tabs>
       
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => window.location.reload()}
+          disabled={isSubmitting}
+        >
           Cancelar
         </Button>
-        <Button type="submit">
-          Criar OS
+        <Button 
+          type="submit" 
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Criando...' : 'Criar OS'}
         </Button>
       </div>
     </form>
