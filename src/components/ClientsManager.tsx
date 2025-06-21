@@ -30,61 +30,8 @@ const ClientsManager = () => {
   const [clientTypeFilter, setClientTypeFilter] = useState("all");
   const [isNewClientOpen, setIsNewClientOpen] = useState(false);
 
-  // Dados de exemplo dos clientes
-  const clients = [
-    {
-      id: '001',
-      name: 'Tech Solutions Ltda',
-      type: 'Jurídica',
-      document: '12.345.678/0001-90',
-      phone: '(11) 99999-9999',
-      email: 'contato@techsolutions.com.br',
-      address: 'Av. Paulista, 1000 - São Paulo, SP',
-      contact: 'Carlos Silva',
-      totalOS: 15,
-      totalValue: 'R$ 25.000,00',
-      status: 'Ativo'
-    },
-    {
-      id: '002',
-      name: 'Maria Silva',
-      type: 'Física',
-      document: '123.456.789-00',
-      phone: '(11) 88888-8888',
-      email: 'maria.silva@email.com',
-      address: 'Rua das Flores, 123 - São Paulo, SP',
-      contact: '-',
-      totalOS: 8,
-      totalValue: 'R$ 3.200,00',
-      status: 'Ativo'
-    },
-    {
-      id: '003',
-      name: 'Empresa ABC Ltda',
-      type: 'Jurídica',
-      document: '98.765.432/0001-10',
-      phone: '(11) 77777-7777',
-      email: 'admin@empresaabc.com.br',
-      address: 'Rua Comercial, 456 - São Paulo, SP',
-      contact: 'Ana Costa',
-      totalOS: 22,
-      totalValue: 'R$ 45.800,00',
-      status: 'Ativo'
-    },
-    {
-      id: '004',
-      name: 'João Santos',
-      type: 'Física',
-      document: '987.654.321-00',
-      phone: '(11) 66666-6666',
-      email: 'joao.santos@email.com',
-      address: 'Av. Central, 789 - São Paulo, SP',
-      contact: '-',
-      totalOS: 3,
-      totalValue: 'R$ 850,00',
-      status: 'Inativo'
-    }
-  ];
+  // Empty data - will be replaced with real data from database
+  const clients: any[] = [];
 
   const getClientTypeBadge = (type: string) => {
     return type === 'Física' ? (
@@ -109,9 +56,9 @@ const ClientsManager = () => {
   };
 
   const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         client.document.includes(searchTerm) ||
-                         client.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.document?.includes(searchTerm) ||
+                         client.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesType = clientTypeFilter === 'all' || client.type === clientTypeFilter;
     
@@ -181,94 +128,14 @@ const ClientsManager = () => {
         </CardContent>
       </Card>
 
-      {/* Lista de clientes */}
-      <div className="grid gap-4">
-        {filteredClients.map((client) => (
-          <Card key={client.id} className="hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    {client.type === 'Física' ? (
-                      <Users className="h-6 w-6 text-blue-600" />
-                    ) : (
-                      <Building className="h-6 w-6 text-blue-600" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
-                      {getClientTypeBadge(client.type)}
-                      {getStatusBadge(client.status)}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <FileText className="h-4 w-4 mr-2" />
-                        {client.document}
-                      </div>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2" />
-                        {client.phone}
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2" />
-                        {client.email}
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        {client.address}
-                      </div>
-                    </div>
-                    {client.contact !== '-' && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        <strong>Contato:</strong> {client.contact}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-6">
-                  <div className="text-right">
-                    <div className="bg-gray-50 p-3 rounded-lg mb-2">
-                      <p className="text-sm text-gray-600">Total de OS</p>
-                      <p className="text-2xl font-bold text-gray-900">{client.totalOS}</p>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600">Valor Total</p>
-                      <p className="text-lg font-bold text-green-700">{client.totalValue}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col space-y-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredClients.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum cliente encontrado</h3>
-            <p className="text-gray-600">Tente alterar os filtros ou cadastrar um novo cliente.</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Estado vazio */}
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum cliente cadastrado</h3>
+          <p className="text-gray-600">Comece cadastrando seu primeiro cliente.</p>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -407,7 +274,6 @@ const NewClientForm = ({ onSubmit }: { onSubmit: () => void }) => {
                 <SelectItem value="SP">São Paulo</SelectItem>
                 <SelectItem value="RJ">Rio de Janeiro</SelectItem>
                 <SelectItem value="MG">Minas Gerais</SelectItem>
-                {/* Adicionar outros estados */}
               </SelectContent>
             </Select>
           </div>

@@ -30,69 +30,8 @@ const TechniciansManager = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewTechnicianOpen, setIsNewTechnicianOpen] = useState(false);
 
-  // Dados de exemplo dos técnicos
-  const technicians = [
-    {
-      id: '001',
-      name: 'João Santos',
-      cpf: '123.456.789-00',
-      phone: '(11) 99999-9999',
-      email: 'joao.santos@empresa.com',
-      address: 'Rua A, 123 - São Paulo, SP',
-      specialties: ['Manutenção', 'Instalação', 'Reparos'],
-      level: 'Sênior',
-      status: 'Ativo',
-      totalOS: 45,
-      completedOS: 42,
-      rating: 4.8,
-      hourlyRate: 'R$ 85,00'
-    },
-    {
-      id: '002',
-      name: 'Pedro Costa',
-      cpf: '987.654.321-00',
-      phone: '(11) 88888-8888',
-      email: 'pedro.costa@empresa.com',
-      address: 'Av. B, 456 - São Paulo, SP',
-      specialties: ['Eletrônica', 'Reparos'],
-      level: 'Pleno',
-      status: 'Ativo',
-      totalOS: 28,
-      completedOS: 25,
-      rating: 4.5,
-      hourlyRate: 'R$ 65,00'
-    },
-    {
-      id: '003',
-      name: 'Ana Lima',
-      cpf: '456.789.123-00',
-      phone: '(11) 77777-7777',
-      email: 'ana.lima@empresa.com',
-      address: 'Rua C, 789 - São Paulo, SP',
-      specialties: ['Instalação', 'Configuração'],
-      level: 'Júnior',
-      status: 'Ativo',
-      totalOS: 18,
-      completedOS: 16,
-      rating: 4.2,
-      hourlyRate: 'R$ 45,00'
-    },
-    {
-      id: '004',
-      name: 'Roberto Silva',
-      cpf: '789.123.456-00',
-      phone: '(11) 66666-6666',
-      email: 'roberto.silva@empresa.com',
-      address: 'Av. D, 321 - São Paulo, SP',
-      specialties: ['Manutenção', 'Consultoria'],
-      level: 'Sênior',
-      status: 'Férias',
-      totalOS: 62,
-      completedOS: 60,
-      rating: 4.9,
-      hourlyRate: 'R$ 95,00'
-    }
-  ];
+  // Empty data - will be replaced with real data from database
+  const technicians: any[] = [];
 
   const getLevelBadge = (level: string) => {
     const levelConfig = {
@@ -207,97 +146,13 @@ const TechniciansManager = () => {
       </Card>
 
       {/* Lista de técnicos */}
-      <div className="grid gap-4">
-        {filteredTechnicians.map((technician) => (
-          <Card key={technician.id} className="hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <User className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">{technician.name}</h3>
-                      {getLevelBadge(technician.level)}
-                      {getStatusBadge(technician.status)}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-2">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-2" />
-                        {technician.cpf}
-                      </div>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2" />
-                        {technician.phone}
-                      </div>
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2" />
-                        {technician.email}
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2" />
-                        {technician.address}
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center">
-                        <Wrench className="h-4 w-4 mr-2 text-gray-500" />
-                        <span className="text-sm text-gray-600">
-                          {technician.specialties.join(', ')}
-                        </span>
-                      </div>
-                      {getRatingStars(technician.rating)}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-6">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600">Total OS</p>
-                      <p className="text-xl font-bold text-blue-700">{technician.totalOS}</p>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg">
-                      <p className="text-sm text-gray-600">Concluídas</p>
-                      <p className="text-xl font-bold text-green-700">{technician.completedOS}</p>
-                    </div>
-                    <div className="bg-yellow-50 p-3 rounded-lg col-span-2">
-                      <p className="text-sm text-gray-600">Valor/Hora</p>
-                      <p className="text-lg font-bold text-yellow-700">{technician.hourlyRate}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col space-y-2">
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Editar
-                    </Button>
-                    <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700">
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredTechnicians.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum técnico encontrado</h3>
-            <p className="text-gray-600">Tente alterar os filtros ou cadastrar um novo técnico.</p>
-          </CardContent>
-        </Card>
-      )}
+      <Card>
+        <CardContent className="p-12 text-center">
+          <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum técnico cadastrado</h3>
+          <p className="text-gray-600">Comece cadastrando seu primeiro técnico na equipe.</p>
+        </CardContent>
+      </Card>
     </div>
   );
 };

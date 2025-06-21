@@ -21,52 +21,12 @@ import {
   CheckCircle,
   FileX
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
 
 const ReportsManager = () => {
   const { toast } = useToast();
   const [selectedReport, setSelectedReport] = useState("os-status");
   const [dateRange, setDateRange] = useState("last-30-days");
-
-  // Dados para os relatórios
-  const osStatusData = [
-    { name: 'Abertas', value: 24, color: '#3b82f6' },
-    { name: 'Em Andamento', value: 18, color: '#eab308' },
-    { name: 'Aguardando Peças', value: 8, color: '#f97316' },
-    { name: 'Finalizadas', value: 142, color: '#22c55e' },
-    { name: 'Canceladas', value: 3, color: '#ef4444' },
-  ];
-
-  const technicianData = [
-    { name: 'João Santos', completed: 42, pending: 3, rating: 4.8 },
-    { name: 'Pedro Costa', completed: 25, pending: 3, rating: 4.5 },
-    { name: 'Ana Lima', completed: 16, pending: 2, rating: 4.2 },
-    { name: 'Roberto Silva', completed: 60, pending: 2, rating: 4.9 },
-  ];
-
-  const monthlyOSData = [
-    { month: 'Jan', abertas: 45, finalizadas: 42, canceladas: 2 },
-    { month: 'Fev', abertas: 52, finalizadas: 48, canceladas: 1 },
-    { month: 'Mar', abertas: 68, finalizadas: 65, canceladas: 3 },
-    { month: 'Abr', abertas: 71, finalizadas: 68, canceladas: 2 },
-    { month: 'Mai', abertas: 58, finalizadas: 55, canceladas: 1 },
-    { month: 'Jun', abertas: 63, finalizadas: 60, canceladas: 2 },
-  ];
-
-  const clientData = [
-    { client: 'Tech Solutions Ltda', totalOS: 15, totalValue: 25000, avgValue: 1667 },
-    { client: 'Empresa ABC Ltda', totalOS: 22, totalValue: 45800, avgValue: 2082 },
-    { client: 'Maria Silva', totalOS: 8, totalValue: 3200, avgValue: 400 },
-    { client: 'João Santos', totalOS: 3, totalValue: 850, avgValue: 283 },
-  ];
-
-  const serviceData = [
-    { service: 'Manutenção Preventiva', quantity: 35, revenue: 5250 },
-    { service: 'Reparo de Hardware', quantity: 28, revenue: 3360 },
-    { service: 'Instalação de Software', quantity: 22, revenue: 1760 },
-    { service: 'Consultoria Técnica', quantity: 15, revenue: 3000 },
-  ];
 
   const reportTypes = [
     {
@@ -121,115 +81,15 @@ const ReportsManager = () => {
   };
 
   const renderChart = () => {
-    const currentReport = reportTypes.find(r => r.id === selectedReport);
-    
-    switch (selectedReport) {
-      case 'os-status':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <RechartsPieChart>
-              <Pie
-                data={osStatusData}
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                fill="#8884d8"
-                dataKey="value"
-                label={(entry) => `${entry.name}: ${entry.value}`}
-              >
-                {osStatusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </RechartsPieChart>
-          </ResponsiveContainer>
-        );
-      
-      case 'technician-performance':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={technicianData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="completed" fill="#22c55e" name="Concluídas" />
-              <Bar dataKey="pending" fill="#eab308" name="Pendentes" />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-      
-      case 'monthly-os':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart data={monthlyOSData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="abertas" stroke="#3b82f6" strokeWidth={2} name="Abertas" />
-              <Line type="monotone" dataKey="finalizadas" stroke="#22c55e" strokeWidth={2} name="Finalizadas" />
-              <Line type="monotone" dataKey="canceladas" stroke="#ef4444" strokeWidth={2} name="Canceladas" />
-            </LineChart>
-          </ResponsiveContainer>
-        );
-      
-      case 'service-analysis':
-        return (
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={serviceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="service" />
-              <YAxis />
-              <Tooltip formatter={(value, name) => name === 'revenue' ? `R$ ${value}` : value} />
-              <Bar dataKey="quantity" fill="#3b82f6" name="Quantidade" />
-              <Bar dataKey="revenue" fill="#22c55e" name="Receita" />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-      
-      default:
-        return (
-          <div className="flex items-center justify-center h-400 bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Relatório em Desenvolvimento</h3>
-              <p className="text-gray-600">Este tipo de relatório estará disponível em breve.</p>
-            </div>
-          </div>
-        );
-    }
-  };
-
-  const renderTable = () => {
-    if (selectedReport === 'client-analysis') {
-      return (
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-200">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="border border-gray-200 px-4 py-2 text-left">Cliente</th>
-                <th className="border border-gray-200 px-4 py-2 text-center">Total OS</th>
-                <th className="border border-gray-200 px-4 py-2 text-right">Valor Total</th>
-                <th className="border border-gray-200 px-4 py-2 text-right">Ticket Médio</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientData.map((client, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2 font-medium">{client.client}</td>
-                  <td className="border border-gray-200 px-4 py-2 text-center">{client.totalOS}</td>
-                  <td className="border border-gray-200 px-4 py-2 text-right">R$ {client.totalValue.toLocaleString('pt-BR')}</td>
-                  <td className="border border-gray-200 px-4 py-2 text-right">R$ {client.avgValue.toLocaleString('pt-BR')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    return (
+      <div className="flex items-center justify-center h-400 bg-gray-50 rounded-lg">
+        <div className="text-center">
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum dado disponível</h3>
+          <p className="text-gray-600">Dados dos relatórios aparecerão aqui quando houver informações cadastradas no sistema.</p>
         </div>
-      );
-    }
-    return null;
+      </div>
+    );
   };
 
   return (
@@ -336,7 +196,7 @@ const ReportsManager = () => {
             </div>
           </CardHeader>
           <CardContent>
-            {selectedReport === 'client-analysis' ? renderTable() : renderChart()}
+            {renderChart()}
           </CardContent>
         </Card>
       </div>
@@ -388,7 +248,7 @@ const ReportsManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Total de OS</p>
-                <p className="text-3xl font-bold text-blue-700">195</p>
+                <p className="text-3xl font-bold text-blue-700">0</p>
               </div>
               <FileText className="h-8 w-8 text-blue-600" />
             </div>
@@ -400,7 +260,7 @@ const ReportsManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Finalizadas</p>
-                <p className="text-3xl font-bold text-green-700">142</p>
+                <p className="text-3xl font-bold text-green-700">0</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
             </div>
@@ -412,7 +272,7 @@ const ReportsManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Em Andamento</p>
-                <p className="text-3xl font-bold text-yellow-700">42</p>
+                <p className="text-3xl font-bold text-yellow-700">0</p>
               </div>
               <Clock className="h-8 w-8 text-yellow-600" />
             </div>
@@ -424,7 +284,7 @@ const ReportsManager = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Canceladas</p>
-                <p className="text-3xl font-bold text-red-700">8</p>
+                <p className="text-3xl font-bold text-red-700">0</p>
               </div>
               <FileX className="h-8 w-8 text-red-600" />
             </div>

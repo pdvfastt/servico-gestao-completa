@@ -31,57 +31,8 @@ const OrdersManager = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
 
-  // Dados de exemplo das ordens de serviço
-  const orders = [
-    {
-      id: '2024001',
-      client: 'Tech Solutions Ltda',
-      clientPhone: '(11) 99999-9999',
-      technician: 'João Santos',
-      description: 'Manutenção preventiva em servidores',
-      status: 'Em Andamento',
-      priority: 'Alta',
-      createdDate: '2024-01-15',
-      expectedDate: '2024-01-20',
-      value: 'R$ 2.500,00'
-    },
-    {
-      id: '2024002',
-      client: 'Maria Silva',
-      clientPhone: '(11) 88888-8888',
-      technician: 'Pedro Costa',
-      description: 'Reparo em impressora laser',
-      status: 'Aberta',
-      priority: 'Média',
-      createdDate: '2024-01-15',
-      expectedDate: '2024-01-18',
-      value: 'R$ 350,00'
-    },
-    {
-      id: '2024003',
-      client: 'Empresa ABC Ltda',
-      clientPhone: '(11) 77777-7777',
-      technician: 'Ana Lima',
-      description: 'Instalação de sistema de monitoramento',
-      status: 'Aguardando Peças',
-      priority: 'Baixa',
-      createdDate: '2024-01-14',
-      expectedDate: '2024-01-25',
-      value: 'R$ 4.200,00'
-    },
-    {
-      id: '2024004',
-      client: 'Carlos Mendes',
-      clientPhone: '(11) 66666-6666',
-      technician: 'Roberto Silva',
-      description: 'Formatação e instalação de programas',
-      status: 'Finalizada',
-      priority: 'Alta',
-      createdDate: '2024-01-12',
-      expectedDate: '2024-01-14',
-      value: 'R$ 200,00'
-    }
-  ];
+  // Empty data - will be replaced with real data from database
+  const orders: any[] = [];
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -115,9 +66,9 @@ const OrdersManager = () => {
   };
 
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = order.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.client?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     
@@ -190,72 +141,14 @@ const OrdersManager = () => {
         </CardContent>
       </Card>
 
-      {/* Lista de ordens de serviço */}
-      <div className="grid gap-4">
-        {filteredOrders.map((order) => (
-          <Card key={order.id} className="hover:shadow-lg transition-shadow duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-blue-100 p-3 rounded-lg">
-                    <FileText className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <h3 className="text-lg font-semibold text-gray-900">OS #{order.id}</h3>
-                      {getStatusBadge(order.status)}
-                      {getPriorityBadge(order.priority)}
-                    </div>
-                    <p className="text-gray-600 mb-1">{order.client}</p>
-                    <p className="text-sm text-gray-500">{order.description}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-6">
-                  <div className="text-right">
-                    <div className="flex items-center text-sm text-gray-600 mb-1">
-                      <User className="h-4 w-4 mr-1" />
-                      {order.technician}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600 mb-1">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Criada: {order.createdDate}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock className="h-4 w-4 mr-1" />
-                      Previsão: {order.expectedDate}
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">{order.value}</p>
-                    <div className="flex items-center space-x-2 mt-2">
-                      <Button size="sm" variant="outline">
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Edit className="h-4 w-4 mr-1" />
-                        Editar
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredOrders.length === 0 && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma OS encontrada</h3>
-            <p className="text-gray-600">Tente alterar os filtros ou criar uma nova ordem de serviço.</p>
-          </CardContent>
-        </Card>
-      )}
+      {/* Estado vazio */}
+      <Card>
+        <CardContent className="p-12 text-center">
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma OS encontrada</h3>
+          <p className="text-gray-600">Comece criando sua primeira ordem de serviço.</p>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -280,9 +173,7 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="client1">Tech Solutions Ltda</SelectItem>
-                  <SelectItem value="client2">Maria Silva</SelectItem>
-                  <SelectItem value="client3">João Santos</SelectItem>
+                  <SelectItem value="empty">Nenhum cliente cadastrado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -293,9 +184,7 @@ const NewOrderForm = ({ onSubmit }: { onSubmit: () => void }) => {
                   <SelectValue placeholder="Selecione o técnico" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tech1">João Santos</SelectItem>
-                  <SelectItem value="tech2">Pedro Costa</SelectItem>
-                  <SelectItem value="tech3">Ana Lima</SelectItem>
+                  <SelectItem value="empty">Nenhum técnico cadastrado</SelectItem>
                 </SelectContent>
               </Select>
             </div>

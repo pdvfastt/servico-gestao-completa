@@ -17,64 +17,45 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
-  // Dados de exemplo
+  // Empty data states - will be replaced with real data from database
   const stats = [
     {
       title: "OS Abertas",
-      value: "24",
-      change: "+12%",
+      value: "0",
+      change: "+0%",
       icon: FileText,
       color: "text-blue-600",
       bgColor: "bg-blue-50"
     },
     {
       title: "Em Andamento",
-      value: "18",
-      change: "+8%",
+      value: "0",
+      change: "+0%",
       icon: Clock,
       color: "text-yellow-600",
       bgColor: "bg-yellow-50"
     },
     {
       title: "Finalizadas (Mês)",
-      value: "142",
-      change: "+25%",
+      value: "0",
+      change: "+0%",
       icon: CheckCircle,
       color: "text-green-600",
       bgColor: "bg-green-50"
     },
     {
       title: "Faturamento (Mês)",
-      value: "R$ 45.280",
-      change: "+18%",
+      value: "R$ 0,00",
+      change: "+0%",
       icon: DollarSign,
       color: "text-emerald-600",
       bgColor: "bg-emerald-50"
     }
   ];
 
-  const chartData = [
-    { name: 'Jan', os: 65, faturamento: 28000 },
-    { name: 'Fev', os: 59, faturamento: 32000 },
-    { name: 'Mar', os: 80, faturamento: 45000 },
-    { name: 'Abr', os: 81, faturamento: 48000 },
-    { name: 'Mai', os: 56, faturamento: 35000 },
-    { name: 'Jun', os: 55, faturamento: 38000 },
-  ];
-
-  const statusData = [
-    { name: 'Abertas', value: 24, color: '#3b82f6' },
-    { name: 'Em Andamento', value: 18, color: '#eab308' },
-    { name: 'Aguardando Peças', value: 8, color: '#f97316' },
-    { name: 'Finalizadas', value: 142, color: '#22c55e' },
-  ];
-
-  const recentOrders = [
-    { id: '2024001', client: 'Tech Solutions Ltda', status: 'Em Andamento', priority: 'Alta', date: '2024-01-15' },
-    { id: '2024002', client: 'João Silva', status: 'Aberta', priority: 'Média', date: '2024-01-15' },
-    { id: '2024003', client: 'Empresa ABC', status: 'Aguardando Peças', priority: 'Baixa', date: '2024-01-14' },
-    { id: '2024004', client: 'Maria Santos', status: 'Finalizada', priority: 'Alta', date: '2024-01-14' },
-  ];
+  const chartData = [];
+  const statusData = [];
+  const recentOrders = [];
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -133,15 +114,12 @@ const Dashboard = () => {
             <CardDescription>Quantidade de OS abertas nos últimos 6 meses</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="os" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg">
+              <div className="text-center">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">Nenhum dado disponível</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -152,24 +130,12 @@ const Dashboard = () => {
             <CardDescription>Status atual de todas as ordens de serviço</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg">
+              <div className="text-center">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600">Nenhum dado disponível</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -189,28 +155,12 @@ const Dashboard = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentOrders.map((order) => (
-              <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">OS #{order.id}</p>
-                    <p className="text-sm text-gray-600">{order.client}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-sm text-gray-600">{order.date}</span>
-                  </div>
-                  {getPriorityBadge(order.priority)}
-                  {getStatusBadge(order.status)}
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center justify-center p-12">
+            <div className="text-center">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhuma OS encontrada</h3>
+              <p className="text-gray-600">Comece criando sua primeira ordem de serviço.</p>
+            </div>
           </div>
         </CardContent>
       </Card>
