@@ -1,462 +1,436 @@
+
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Users, 
+  Plus, 
+  Search, 
+  UserCheck, 
+  Building2,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Filter
+} from "lucide-react";
 import { useClients } from '@/hooks/useClients';
-import { Loader2, Eye } from 'lucide-react';
 
 const ClientsManager = () => {
   const { clients, loading, createClient } = useClients();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [selectedClient, setSelectedClient] = useState<any>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [formData, setFormData] = useState({
-    type: '',
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [newClient, setNewClient] = useState({
     name: '',
-    fantasy_name: '',
-    document: '',
-    secondary_document: '',
-    contact_person: '',
-    phone: '',
     email: '',
-    birth_date: '',
-    cep: '',
+    phone: '',
+    document: '',
+    type: 'Física',
+    status: 'Ativo',
+    fantasy_name: '',
+    contact_person: '',
     street: '',
     number: '',
-    complement: '',
     neighborhood: '',
     city: '',
     state: '',
-    status: 'Ativo'
+    cep: '',
+    complement: '',
+    birth_date: '',
+    secondary_document: ''
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.type || !formData.name || !formData.document || !formData.phone || !formData.email) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    const result = await createClient({
-      type: formData.type as 'fisica' | 'juridica',
-      name: formData.name,
-      fantasy_name: formData.fantasy_name || null,
-      document: formData.document,
-      secondary_document: formData.secondary_document || null,
-      contact_person: formData.contact_person || null,
-      phone: formData.phone,
-      email: formData.email,
-      birth_date: formData.birth_date || null,
-      cep: formData.cep || null,
-      street: formData.street || null,
-      number: formData.number || null,
-      complement: formData.complement || null,
-      neighborhood: formData.neighborhood || null,
-      city: formData.city || null,
-      state: formData.state || null,
-      status: formData.status as 'Ativo' | 'Inativo'
-    });
-
+    const result = await createClient(newClient);
     if (result.success) {
-      setFormData({
-        type: '',
+      setIsCreateOpen(false);
+      setNewClient({
         name: '',
-        fantasy_name: '',
-        document: '',
-        secondary_document: '',
-        contact_person: '',
-        phone: '',
         email: '',
-        birth_date: '',
-        cep: '',
+        phone: '',
+        document: '',
+        type: 'Física',
+        status: 'Ativo',
+        fantasy_name: '',
+        contact_person: '',
         street: '',
         number: '',
-        complement: '',
         neighborhood: '',
         city: '',
         state: '',
-        status: 'Ativo'
+        cep: '',
+        complement: '',
+        birth_date: '',
+        secondary_document: ''
       });
-      setIsDialogOpen(false);
     }
-    
-    setIsSubmitting(false);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const filteredClients = clients.filter(client => {
+    const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.document.includes(searchTerm);
+    const matchesStatus = statusFilter === 'all' || client.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const getStatusBadge = (status: string) => {
+    return status === 'Ativo' 
+      ? <Badge className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
+      : <Badge className="bg-red-100 text-red-800 border-red-200">Inativo</Badge>;
   };
 
-  const handleViewClient = (client: any) => {
-    setSelectedClient(client);
-    setIsViewDialogOpen(true);
+  const getTypeBadge = (type: string) => {
+    return type === 'Física' 
+      ? <Badge className="bg-blue-100 text-blue-800 border-blue-200">Pessoa Física</Badge>
+      : <Badge className="bg-purple-100 text-purple-800 border-purple-200">Pessoa Jurídica</Badge>;
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Gestão de Clientes</h2>
-          <p className="text-muted-foreground">Gerencie seus clientes</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <Users className="h-8 w-8 text-blue-600" />
+            Gerenciamento de Clientes
+          </h1>
+          <p className="text-gray-600">
+            Gerencie todos os clientes cadastrados no sistema
+          </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Cadastrar Cliente</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Cadastrar Novo Cliente</DialogTitle>
-              <DialogDescription>
-                Preencha as informações do novo cliente
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="type">Tipo de Cliente</Label>
-                  <Select value={formData.type} onValueChange={(value) => handleInputChange('type', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="fisica">Pessoa Física</SelectItem>
-                      <SelectItem value="juridica">Pessoa Jurídica</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="name">Nome/Razão Social</Label>
+        {/* Filtros e Busca */}
+        <Card className="mb-6 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
+                    placeholder="Buscar por nome, email ou documento..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
                   />
                 </div>
               </div>
+              <div className="flex gap-3">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="Ativo">Ativos</SelectItem>
+                    <SelectItem value="Inativo">Inativos</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white shadow-lg">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Novo Cliente
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Cadastrar Novo Cliente</DialogTitle>
+                      <DialogDescription>
+                        Preencha os dados do novo cliente
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateClient} className="space-y-6">
+                      {/* Dados Básicos */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="type">Tipo de Pessoa</Label>
+                          <Select value={newClient.type} onValueChange={(value) => setNewClient(prev => ({ ...prev, type: value }))}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Física">Pessoa Física</SelectItem>
+                              <SelectItem value="Jurídica">Pessoa Jurídica</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="status">Status</Label>
+                          <Select value={newClient.status} onValueChange={(value) => setNewClient(prev => ({ ...prev, status: value }))}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Ativo">Ativo</SelectItem>
+                              <SelectItem value="Inativo">Inativo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
 
-              {formData.type === 'juridica' && (
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="fantasy_name">Nome Fantasia</Label>
-                  <Input
-                    id="fantasy_name"
-                    value={formData.fantasy_name}
-                    onChange={(e) => handleInputChange('fantasy_name', e.target.value)}
-                  />
-                </div>
-              )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="name">{newClient.type === 'Física' ? 'Nome Completo' : 'Razão Social'}</Label>
+                          <Input
+                            id="name"
+                            value={newClient.name}
+                            onChange={(e) => setNewClient(prev => ({ ...prev, name: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        {newClient.type === 'Jurídica' && (
+                          <div>
+                            <Label htmlFor="fantasy_name">Nome Fantasia</Label>
+                            <Input
+                              id="fantasy_name"
+                              value={newClient.fantasy_name}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, fantasy_name: e.target.value }))}
+                            />
+                          </div>
+                        )}
+                      </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="document">
-                    {formData.type === 'fisica' ? 'CPF' : 'CNPJ'}
-                  </Label>
-                  <Input
-                    id="document"
-                    value={formData.document}
-                    onChange={(e) => handleInputChange('document', e.target.value)}
-                    required
-                  />
-                </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="document">{newClient.type === 'Física' ? 'CPF' : 'CNPJ'}</Label>
+                          <Input
+                            id="document"
+                            value={newClient.document}
+                            onChange={(e) => setNewClient(prev => ({ ...prev, document: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        {newClient.type === 'Física' && (
+                          <div>
+                            <Label htmlFor="birth_date">Data de Nascimento</Label>
+                            <Input
+                              id="birth_date"
+                              type="date"
+                              value={newClient.birth_date}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, birth_date: e.target.value }))}
+                            />
+                          </div>
+                        )}
+                      </div>
 
-                {formData.type === 'fisica' && (
-                  <div className="grid w-full items-center gap-1.5">
-                    <Label htmlFor="birth_date">Data de Nascimento</Label>
-                    <Input
-                      id="birth_date"
-                      type="date"
-                      value={formData.birth_date}
-                      onChange={(e) => handleInputChange('birth_date', e.target.value)}
-                    />
-                  </div>
-                )}
+                      {/* Contato */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={newClient.email}
+                            onChange={(e) => setNewClient(prev => ({ ...prev, email: e.target.value }))}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phone">Telefone</Label>
+                          <Input
+                            id="phone"
+                            value={newClient.phone}
+                            onChange={(e) => setNewClient(prev => ({ ...prev, phone: e.target.value }))}
+                            required
+                          />
+                        </div>
+                      </div>
 
-                {formData.type === 'juridica' && (
-                  <div className="grid w-full items-center gap-1.5">
-                    <Label htmlFor="secondary_document">Inscrição Estadual</Label>
-                    <Input
-                      id="secondary_document"
-                      value={formData.secondary_document}
-                      onChange={(e) => handleInputChange('secondary_document', e.target.value)}
-                    />
-                  </div>
-                )}
+                      {newClient.type === 'Jurídica' && (
+                        <div>
+                          <Label htmlFor="contact_person">Pessoa de Contato</Label>
+                          <Input
+                            id="contact_person"
+                            value={newClient.contact_person}
+                            onChange={(e) => setNewClient(prev => ({ ...prev, contact_person: e.target.value }))}
+                          />
+                        </div>
+                      )}
+
+                      {/* Endereço */}
+                      <div className="space-y-4 border-t pt-4">
+                        <h4 className="font-medium text-gray-900">Endereço</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="md:col-span-2">
+                            <Label htmlFor="street">Rua/Avenida</Label>
+                            <Input
+                              id="street"
+                              value={newClient.street}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, street: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="number">Número</Label>
+                            <Input
+                              id="number"
+                              value={newClient.number}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, number: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="neighborhood">Bairro</Label>
+                            <Input
+                              id="neighborhood"
+                              value={newClient.neighborhood}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, neighborhood: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="city">Cidade</Label>
+                            <Input
+                              id="city"
+                              value={newClient.city}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, city: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="state">Estado</Label>
+                            <Input
+                              id="state"
+                              value={newClient.state}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, state: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="cep">CEP</Label>
+                            <Input
+                              id="cep"
+                              value={newClient.cep}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, cep: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="complement">Complemento</Label>
+                            <Input
+                              id="complement"
+                              value={newClient.complement}
+                              onChange={(e) => setNewClient(prev => ({ ...prev, complement: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button type="submit" className="bg-gradient-to-r from-blue-600 to-green-600">
+                          Cadastrar Cliente
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
-
-              {formData.type === 'juridica' && (
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="contact_person">Pessoa de Contato</Label>
-                  <Input
-                    id="contact_person"
-                    value={formData.contact_person}
-                    onChange={(e) => handleInputChange('contact_person', e.target.value)}
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="phone">Telefone</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="cep">CEP</Label>
-                  <Input
-                    id="cep"
-                    value={formData.cep}
-                    onChange={(e) => handleInputChange('cep', e.target.value)}
-                  />
-                </div>
-
-                <div className="grid w-full items-center gap-1.5 col-span-2">
-                  <Label htmlFor="street">Endereço</Label>
-                  <Input
-                    id="street"
-                    value={formData.street}
-                    onChange={(e) => handleInputChange('street', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4">
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="number">Número</Label>
-                  <Input
-                    id="number"
-                    value={formData.number}
-                    onChange={(e) => handleInputChange('number', e.target.value)}
-                  />
-                </div>
-
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="complement">Complemento</Label>
-                  <Input
-                    id="complement"
-                    value={formData.complement}
-                    onChange={(e) => handleInputChange('complement', e.target.value)}
-                  />
-                </div>
-
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="neighborhood">Bairro</Label>
-                  <Input
-                    id="neighborhood"
-                    value={formData.neighborhood}
-                    onChange={(e) => handleInputChange('neighborhood', e.target.value)}
-                  />
-                </div>
-
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="city">Cidade</Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="state">Estado</Label>
-                <Input
-                  id="state"
-                  value={formData.state}
-                  onChange={(e) => handleInputChange('state', e.target.value)}
-                />
-              </div>
-
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Cadastrando...
-                  </>
-                ) : (
-                  'Cadastrar Cliente'
-                )}
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Clientes Cadastrados</CardTitle>
-          <CardDescription>
-            Lista de todos os clientes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex justify-center p-4">
-              <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : clients.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              Nenhum cliente cadastrado ainda.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Documento</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {clients.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell className="font-medium">{client.name}</TableCell>
-                    <TableCell>{client.document}</TableCell>
-                    <TableCell>{client.phone}</TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        client.status === 'Ativo' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {client.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleViewClient(client)}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver
+          </CardContent>
+        </Card>
+
+        {/* Lista de Clientes */}
+        {loading ? (
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Carregando clientes...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredClients.map((client) => (
+              <Card key={client.id} className="bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 bg-white/20 rounded-full flex items-center justify-center">
+                        {client.type === 'Física' ? <UserCheck className="h-5 w-5" /> : <Building2 className="h-5 w-5" />}
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-white">{client.name}</CardTitle>
+                        {client.fantasy_name && (
+                          <p className="text-sm text-blue-100">{client.fantasy_name}</p>
+                        )}
+                      </div>
+                    </div>
+                    {getStatusBadge(client.status)}
+                  </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Mail className="h-4 w-4 text-blue-500" />
+                      <span>{client.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Phone className="h-4 w-4 text-green-500" />
+                      <span>{client.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <UserCheck className="h-4 w-4 text-purple-500" />
+                      <span>{client.document}</span>
+                    </div>
+                    {(client.city || client.state) && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4 text-red-500" />
+                        <span>{[client.city, client.state].filter(Boolean).join(', ')}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="h-4 w-4 text-orange-500" />
+                      <span>Cadastrado em {new Date(client.created_at!).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between">
+                      {getTypeBadge(client.type)}
+                      <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-300">
+                        Ver Detalhes
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Dialog para visualizar cliente */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Detalhes do Cliente</DialogTitle>
-          </DialogHeader>
-          {selectedClient && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Tipo</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedClient.type === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica'}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Status</Label>
-                  <p className="text-sm text-muted-foreground">{selectedClient.status}</p>
-                </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm font-medium">Nome/Razão Social</Label>
-                <p className="text-sm text-muted-foreground">{selectedClient.name}</p>
-              </div>
-
-              {selectedClient.fantasy_name && (
-                <div>
-                  <Label className="text-sm font-medium">Nome Fantasia</Label>
-                  <p className="text-sm text-muted-foreground">{selectedClient.fantasy_name}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">
-                    {selectedClient.type === 'fisica' ? 'CPF' : 'CNPJ'}
-                  </Label>
-                  <p className="text-sm text-muted-foreground">{selectedClient.document}</p>
-                </div>
-                {selectedClient.secondary_document && (
-                  <div>
-                    <Label className="text-sm font-medium">
-                      {selectedClient.type === 'fisica' ? 'RG' : 'Inscrição Estadual'}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">{selectedClient.secondary_document}</p>
+                    </div>
                   </div>
-                )}
-              </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Telefone</Label>
-                  <p className="text-sm text-muted-foreground">{selectedClient.phone}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">E-mail</Label>
-                  <p className="text-sm text-muted-foreground">{selectedClient.email}</p>
-                </div>
-              </div>
-
-              {(selectedClient.street || selectedClient.city) && (
-                <div>
-                  <Label className="text-sm font-medium">Endereço</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {[
-                      selectedClient.street,
-                      selectedClient.number,
-                      selectedClient.complement,
-                      selectedClient.neighborhood,
-                      selectedClient.city,
-                      selectedClient.state
-                    ].filter(Boolean).join(', ')}
-                  </p>
-                </div>
+        {!loading && filteredClients.length === 0 && (
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="text-center py-12">
+              <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum cliente encontrado</h3>
+              <p className="text-gray-600 mb-6">
+                {searchTerm || statusFilter !== 'all' 
+                  ? 'Tente ajustar os filtros de busca.' 
+                  : 'Comece cadastrando seu primeiro cliente.'}
+              </p>
+              {!searchTerm && statusFilter === 'all' && (
+                <Button 
+                  onClick={() => setIsCreateOpen(true)}
+                  className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar Primeiro Cliente
+                </Button>
               )}
-
-              {selectedClient.contact_person && (
-                <div>
-                  <Label className="text-sm font-medium">Pessoa de Contato</Label>
-                  <p className="text-sm text-muted-foreground">{selectedClient.contact_person}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };

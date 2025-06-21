@@ -16,9 +16,12 @@ import {
   DollarSign,
   Calendar,
   User,
-  LogOut
+  LogOut,
+  Wrench,
+  Cog
 } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
+import { useUserManagement } from '@/hooks/useUserManagement';
 import Dashboard from "@/components/Dashboard";
 import ClientsManager from "@/components/ClientsManager";
 import TechniciansManager from "@/components/TechniciansManager";
@@ -26,10 +29,12 @@ import ServicesManager from "@/components/ServicesManager";
 import FinancialManager from "@/components/FinancialManager";
 import ReportsManager from "@/components/ReportsManager";
 import OrdersManager from "@/components/OrdersManager";
+import SettingsManager from "@/components/SettingsManager";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserManagement();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -68,7 +73,7 @@ const Index = () => {
 
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 mb-8 bg-white shadow-sm">
+          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'} mb-8 bg-white shadow-sm`}>
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Dashboard</span>
@@ -86,7 +91,7 @@ const Index = () => {
               <span>Técnicos</span>
             </TabsTrigger>
             <TabsTrigger value="services" className="flex items-center space-x-2">
-              <Settings className="h-4 w-4" />
+              <Wrench className="h-4 w-4" />
               <span>Serviços</span>
             </TabsTrigger>
             <TabsTrigger value="financial" className="flex items-center space-x-2">
@@ -97,6 +102,12 @@ const Index = () => {
               <BarChart3 className="h-4 w-4" />
               <span>Relatórios</span>
             </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="settings" className="flex items-center space-x-2">
+                <Cog className="h-4 w-4" />
+                <span>Configurações</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="dashboard">
@@ -126,6 +137,12 @@ const Index = () => {
           <TabsContent value="reports">
             <ReportsManager />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="settings">
+              <SettingsManager />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
