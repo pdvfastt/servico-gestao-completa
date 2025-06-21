@@ -37,32 +37,38 @@ const Index = () => {
   const { isAdmin } = useUserManagement();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50">
       <div className="container mx-auto p-6">
-        {/* Header */}
+        {/* Modern Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Sistema de Gestão de OS
-              </h1>
-              <p className="text-gray-600">
-                Controle completo de ordens de serviço e gestão empresarial
-              </p>
+          <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
+            <div className="flex items-center space-x-4">
+              <div className="bg-gradient-to-br from-blue-500 to-green-500 p-3 rounded-xl shadow-md">
+                <Settings className="h-8 w-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
+                  Sistema de Gestão de OS
+                </h1>
+                <p className="text-gray-600 text-lg">
+                  Controle completo de ordens de serviço e gestão empresarial
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-3 py-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Sistema Online
               </Badge>
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <User className="h-4 w-4" />
-                <span>{user?.email}</span>
+              <div className="flex items-center space-x-2 bg-gray-50 rounded-lg px-3 py-2">
+                <User className="h-4 w-4 text-gray-500" />
+                <span className="text-sm text-gray-700 font-medium">{user?.email}</span>
               </div>
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={signOut}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sair</span>
@@ -72,78 +78,110 @@ const Index = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className={`grid w-full ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'} mb-8 bg-white shadow-sm`}>
-            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
-              <span>Dashboard</span>
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center space-x-2">
-              <FileText className="h-4 w-4" />
-              <span>Ordens de Serviço</span>
-            </TabsTrigger>
-            <TabsTrigger value="clients" className="flex items-center space-x-2">
-              <Users className="h-4 w-4" />
-              <span>Clientes</span>
-            </TabsTrigger>
-            <TabsTrigger value="technicians" className="flex items-center space-x-2">
-              <User className="h-4 w-4" />
-              <span>Técnicos</span>
-            </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center space-x-2">
-              <Wrench className="h-4 w-4" />
-              <span>Serviços</span>
-            </TabsTrigger>
-            <TabsTrigger value="financial" className="flex items-center space-x-2">
-              <DollarSign className="h-4 w-4" />
-              <span>Financeiro</span>
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
-              <span>Relatórios</span>
-            </TabsTrigger>
-            {isAdmin && (
-              <TabsTrigger value="settings" className="flex items-center space-x-2">
-                <Cog className="h-4 w-4" />
-                <span>Configurações</span>
-              </TabsTrigger>
-            )}
-          </TabsList>
+        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+          <CardContent className="p-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
+                <TabsList className={`w-full ${isAdmin ? 'grid-cols-8' : 'grid-cols-7'} bg-transparent h-auto p-2 gap-1`}>
+                  <TabsTrigger 
+                    value="dashboard" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span className="font-medium">Dashboard</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="orders" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span className="font-medium">Ordens de Serviço</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="clients" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span className="font-medium">Clientes</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="technicians" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="font-medium">Técnicos</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="services" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <Wrench className="h-4 w-4" />
+                    <span className="font-medium">Serviços</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="financial" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <DollarSign className="h-4 w-4" />
+                    <span className="font-medium">Financeiro</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="reports" 
+                    className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span className="font-medium">Relatórios</span>
+                  </TabsTrigger>
+                  {isAdmin && (
+                    <TabsTrigger 
+                      value="settings" 
+                      className="flex items-center space-x-2 px-4 py-3 data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-lg transition-all"
+                    >
+                      <Cog className="h-4 w-4" />
+                      <span className="font-medium">Configurações</span>
+                    </TabsTrigger>
+                  )}
+                </TabsList>
+              </div>
 
-          <TabsContent value="dashboard">
-            <Dashboard />
-          </TabsContent>
+              <div className="p-6">
+                <TabsContent value="dashboard" className="mt-0">
+                  <Dashboard />
+                </TabsContent>
 
-          <TabsContent value="orders">
-            <OrdersManager />
-          </TabsContent>
+                <TabsContent value="orders" className="mt-0">
+                  <OrdersManager />
+                </TabsContent>
 
-          <TabsContent value="clients">
-            <ClientsManager />
-          </TabsContent>
+                <TabsContent value="clients" className="mt-0">
+                  <ClientsManager />
+                </TabsContent>
 
-          <TabsContent value="technicians">
-            <TechniciansManager />
-          </TabsContent>
+                <TabsContent value="technicians" className="mt-0">
+                  <TechniciansManager />
+                </TabsContent>
 
-          <TabsContent value="services">
-            <ServicesManager />
-          </TabsContent>
+                <TabsContent value="services" className="mt-0">
+                  <ServicesManager />
+                </TabsContent>
 
-          <TabsContent value="financial">
-            <FinancialManager />
-          </TabsContent>
+                <TabsContent value="financial" className="mt-0">
+                  <FinancialManager />
+                </TabsContent>
 
-          <TabsContent value="reports">
-            <ReportsManager />
-          </TabsContent>
+                <TabsContent value="reports" className="mt-0">
+                  <ReportsManager />
+                </TabsContent>
 
-          {isAdmin && (
-            <TabsContent value="settings">
-              <SettingsManager />
-            </TabsContent>
-          )}
-        </Tabs>
+                {isAdmin && (
+                  <TabsContent value="settings" className="mt-0">
+                    <SettingsManager />
+                  </TabsContent>
+                )}
+              </div>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
