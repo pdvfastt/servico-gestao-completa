@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -19,16 +20,26 @@ import {
   Shield,
   UserCheck,
   UserX,
-  Trash2
+  Trash2,
+  Edit,
+  Save,
+  X
 } from "lucide-react";
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useUserManagement } from '@/hooks/useUserManagement';
+import { useToast } from '@/hooks/use-toast';
 
 const SettingsManager = () => {
   const { settings, loading: settingsLoading, updateSettings } = useCompanySettings();
   const { users, loading: usersLoading, isAdmin, createUser, updateUserRole, deleteUser } = useUserManagement();
+  const { toast } = useToast();
   
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [signUpEnabled, setSignUpEnabled] = useState(() => {
+    return localStorage.getItem('signUpEnabled') !== 'false';
+  });
+  
   const [newUser, setNewUser] = useState({
     email: '',
     password: '',
@@ -36,8 +47,23 @@ const SettingsManager = () => {
     role: 'attendant' as const
   });
 
+  const [editedUser, setEditedUser] = useState({
+    fullName: '',
+    email: '',
+    role: 'attendant' as const
+  });
+
   const handleSettingsUpdate = async (field: string, value: string) => {
     await updateSettings({ [field]: value });
+  };
+
+  const handleSignUpToggle = (enabled: boolean) => {
+    setSignUpEnabled(enabled);
+    localStorage.setItem('signUpEnabled', enabled.toString());
+    toast({
+      title: enabled ? "Cadastros habilitados" : "Cadastros desabilitados",
+      description: enabled ? "Novos usuários podem se cadastrar" : "Cadastro de novos usuários foi desabilitado",
+    });
   };
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -49,10 +75,46 @@ const SettingsManager = () => {
     }
   };
 
+  const handleEditUser = (user: any) => {
+    setEditingUser(user);
+    setEditedUser({
+      fullName: user.full_name,
+      email: user.email,
+      role: user.role
+    });
+  };
+
+  const handleSaveUser = async () => {
+    if (!editingUser) return;
+    
+    try {
+      // Atualizar o role se mudou
+      if (editedUser.role !== editingUser.role) {
+        await updateUserRole(editingUser.id, editedUser.role);
+      }
+      
+      toast({
+        title: "Usuário atualizado",
+        description: "As informações do usuário foram atualizadas com sucesso",
+      });
+      
+      setEditingUser(null);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar usuário",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteUser = async (userId: string, userName: string) => {
     const result = await deleteUser(userId);
     if (result.success) {
-      console.log(`Usuário ${userName} excluído com sucesso`);
+      toast({
+        title: "Usuário excluído",
+        description: `Usuário ${userName} foi excluído com sucesso`,
+      });
     }
   };
 
@@ -104,7 +166,7 @@ const SettingsManager = () => {
         </div>
 
         <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8 bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="company" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Empresa
@@ -116,6 +178,10 @@ const SettingsManager = () => {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuários
+            </TabsTrigger>
+            <TabsTrigger value="system" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Sistema
             </TabsTrigger>
           </TabsList>
 
@@ -362,54 +428,120 @@ const SettingsManager = () => {
                             {user.full_name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <h4 className="font-medium text-gray-900">{user.full_name}</h4>
-                            <p className="text-sm text-gray-600">{user.email}</p>
+                            {editingUser?.id === user.id ? (
+                              <div className="space-y-2">
+                                <Input
+                                  value={editedUser.fullName}
+                                  onChange={(e) => setEditedUser(prev => ({ ...prev, fullName: e.target.value }))}
+                                  className="font-medium"
+                                />
+                                <Input
+                                  value={editedUser.email}
+                                  onChange={(e) => setEditedUser(prev => ({ ...prev, email: e.target.value }))}
+                                  className="text-sm"
+                                />
+                              </div>
+                            ) : (
+                              <>
+                                <h4 className="font-medium text-gray-900">{user.full_name}</h4>
+                                <p className="text-sm text-gray-600">{user.email}</p>
+                              </>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
                           {getRoleBadge(user.role)}
-                          <Select 
-                            value={user.role} 
-                            onValueChange={(value) => updateUserRole(user.id, value as any)}
-                          >
-                            <SelectTrigger className="w-40">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="attendant">Atendente</SelectItem>
-                              <SelectItem value="technician">Técnico</SelectItem>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="outline" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50">
-                                <Trash2 className="h-4 w-4" />
+                          {editingUser?.id === user.id ? (
+                            <>
+                              <Select 
+                                value={editedUser.role} 
+                                onValueChange={(value) => setEditedUser(prev => ({ ...prev, role: value as any }))}
+                              >
+                                <SelectTrigger className="w-40">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="attendant">Atendente</SelectItem>
+                                  <SelectItem value="technician">Técnico</SelectItem>
+                                  <SelectItem value="admin">Administrador</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button size="icon" onClick={handleSaveUser} className="bg-green-600 hover:bg-green-700">
+                                <Save className="h-4 w-4" />
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Tem certeza que deseja excluir o usuário "{user.full_name}"? Esta ação não pode ser desfeita.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction 
-                                  onClick={() => handleDeleteUser(user.id, user.full_name)}
-                                  className="bg-red-600 hover:bg-red-700"
-                                >
-                                  Excluir
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                              <Button size="icon" variant="outline" onClick={() => setEditingUser(null)}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button size="icon" variant="outline" onClick={() => handleEditUser(user)}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="outline" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Tem certeza que deseja excluir o usuário "{user.full_name}"? Esta ação não pode ser desfeita.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleDeleteUser(user.id, user.full_name)}
+                                      className="bg-red-600 hover:bg-red-700"
+                                    >
+                                      Excluir
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="system">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Configurações do Sistema
+                </CardTitle>
+                <CardDescription className="text-orange-100">
+                  Configure o comportamento geral do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Users className="h-5 w-5 text-gray-500" />
+                      <div>
+                        <h4 className="font-medium text-gray-900">Permitir Novos Cadastros</h4>
+                        <p className="text-sm text-gray-600">
+                          Permite que novos usuários se cadastrem no sistema
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={signUpEnabled}
+                      onCheckedChange={handleSignUpToggle}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

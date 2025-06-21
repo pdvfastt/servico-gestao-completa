@@ -7,14 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield, Users } from 'lucide-react';
+import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [signUpEnabled, setSignUpEnabled] = useState(true);
+  
+  // Verificar se novos cadastros estão habilitados (padrão: true)
+  const signUpEnabled = localStorage.getItem('signUpEnabled') !== 'false';
 
   // Redirect se já estiver logado
   React.useEffect(() => {
@@ -333,24 +335,6 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
-
-            {/* Admin Toggle */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Permitir novos cadastros</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSignUpEnabled(!signUpEnabled)}
-                  className={`${signUpEnabled ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-red-300 text-red-700 hover:bg-red-50'}`}
-                >
-                  {signUpEnabled ? 'Ativado' : 'Desativado'}
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
