@@ -34,7 +34,11 @@ import SettingsManager from "@/components/SettingsManager";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserManagement();
+  const { isAdmin, loading: userManagementLoading } = useUserManagement();
+
+  console.log('Index: usuário atual:', user?.email);
+  console.log('Index: isAdmin:', isAdmin);
+  console.log('Index: userManagementLoading:', userManagementLoading);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -57,6 +61,9 @@ const Index = () => {
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <User className="h-4 w-4" />
                 <span>{user?.email}</span>
+                {isAdmin && (
+                  <Badge variant="secondary" className="ml-2">Admin</Badge>
+                )}
               </div>
               <Button 
                 variant="outline" 
