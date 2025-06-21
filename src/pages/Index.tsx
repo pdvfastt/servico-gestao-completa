@@ -40,7 +40,7 @@ import TechnicianOrdersPage from "@/components/TechnicianOrdersPage";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
-  const { isAdmin, userRole } = useUserManagement();
+  const { isAdmin } = useUserManagement();
   const { settings } = useCompanySettings();
   const isMobile = useIsMobile();
 
@@ -69,7 +69,7 @@ const Index = () => {
 
   // Função para verificar se deve mostrar a aba Configurações
   const shouldShowSettings = () => {
-    return isAdmin || userRole === 'admin';
+    return isAdmin;
   };
 
   const tabsConfig = [
