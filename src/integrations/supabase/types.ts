@@ -81,6 +81,104 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_records: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string | null
+          date: string
+          description: string
+          id: string
+          payment_method: string | null
+          service_order_id: string | null
+          status: string
+          type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          created_at?: string | null
+          date: string
+          description: string
+          id?: string
+          payment_method?: string | null
+          service_order_id?: string | null
+          status?: string
+          type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string | null
+          date?: string
+          description?: string
+          id?: string
+          payment_method?: string | null
+          service_order_id?: string | null
+          status?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_records_service_order_id_fkey"
+            columns: ["service_order_id"]
+            isOneToOne: false
+            referencedRelation: "service_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          category: string
+          cost_price: number
+          created_at: string | null
+          description: string | null
+          id: string
+          min_stock: number
+          name: string
+          sale_price: number
+          stock: number
+          supplier: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          cost_price: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          min_stock?: number
+          name: string
+          sale_price: number
+          stock?: number
+          supplier?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          cost_price?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          min_stock?: number
+          name?: string
+          sale_price?: number
+          stock?: number
+          supplier?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile: {
         Row: {
           created_at: string
@@ -197,6 +295,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      services: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          duration: string | null
+          id: string
+          name: string
+          price: number
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          name: string
+          price: number
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          id?: string
+          name?: string
+          price?: number
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       technicians: {
         Row: {
