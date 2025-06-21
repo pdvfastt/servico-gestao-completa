@@ -62,12 +62,22 @@ export const useServiceOrders = () => {
     try {
       console.log('Criando ordem de serviço:', orderData);
       
+      // Garantir que todos os campos obrigatórios estão preenchidos
+      const insertData = {
+        ...orderData,
+        user_id: user.id,
+        status: orderData.status || 'Aberta',
+        priority: orderData.priority || 'Média',
+        service_value: orderData.service_value || 0,
+        parts_value: orderData.parts_value || 0,
+        total_value: orderData.total_value || 0,
+      };
+
+      console.log('Dados para inserção:', insertData);
+      
       const { data, error } = await supabase
         .from('service_orders')
-        .insert({
-          ...orderData,
-          user_id: user.id,
-        })
+        .insert(insertData)
         .select()
         .single();
 

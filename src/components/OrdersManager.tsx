@@ -21,16 +21,19 @@ import {
   User,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Download
 } from "lucide-react";
 import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
 import { useTechnicians } from '@/hooks/useTechnicians';
+import { useServices } from '@/hooks/useServices';
 
 const OrdersManager = () => {
   const { orders, loading, createOrder } = useServiceOrders();
   const { clients } = useClients();
   const { technicians } = useTechnicians();
+  const { services } = useServices();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
@@ -84,6 +87,65 @@ const OrdersManager = () => {
     }
   };
 
+  const exportToPDF = () => {
+    const printContent = `
+      <html>
+        <head>
+          <title>Relatório de Ordens de Serviço</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { color: #333; text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+            .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+            .status-aberta { background-color: #dbeafe; color: #1e40af; }
+            .status-andamento { background-color: #fef3c7; color: #92400e; }
+            .status-finalizada { background-color: #dcfce7; color: #166534; }
+          </style>
+        </head>
+        <body>
+          <h1>Relatório de Ordens de Serviço</h1>
+          <p>Gerado em: ${new Date().toLocaleDateString('pt-BR')}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>OS</th>
+                <th>Cliente</th>
+                <th>Status</th>
+                <th>Prioridade</th>
+                <th>Valor Total</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredOrders.map(order => {
+                const client = clients.find(c => c.id === order.client_id);
+                return `
+                  <tr>
+                    <td>#${order.id.slice(-8)}</td>
+                    <td>${client?.name || 'N/A'}</td>
+                    <td><span class="status status-${order.status.toLowerCase().replace(' ', '-')}">${order.status}</span></td>
+                    <td>${order.priority}</td>
+                    <td>R$ ${(order.total_value || 0).toFixed(2)}</td>
+                    <td>${new Date(order.created_at).toLocaleDateString('pt-BR')}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -102,27 +164,38 @@ const OrdersManager = () => {
               <CardTitle>Gestão de Ordens de Serviço</CardTitle>
               <CardDescription>Controle e acompanhe todas as ordens de serviço</CardDescription>
             </div>
-            <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova OS
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Nova Ordem de Serviço</DialogTitle>
-                  <DialogDescription>
-                    Preencha os dados da nova ordem de serviço
-                  </DialogDescription>
-                </DialogHeader>
-                <NewOrderForm 
-                  onSubmit={handleCreateOrder}
-                  clients={clients}
-                  technicians={technicians}
-                />
-              </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={exportToPDF}
+                className="flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Exportar PDF
+              </Button>
+              <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
+                <DialogTrigger asChild>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nova OS
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Nova Ordem de Serviço</DialogTitle>
+                    <DialogDescription>
+                      Preencha os dados da nova ordem de serviço
+                    </DialogDescription>
+                  </DialogHeader>
+                  <NewOrderForm 
+                    onSubmit={handleCreateOrder}
+                    clients={clients}
+                    technicians={technicians}
+                    services={services}
+                  />
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -201,6 +274,8 @@ const OrdersManager = () => {
                     <div className="flex items-center space-x-2 text-sm text-gray-600">
                       <Calendar className="h-4 w-4" />
                       <span>{new Date(order.expected_date).toLocaleDateString('pt-BR')}</span>
+                      <Clock className="h-4 w-4 ml-2" />
+                      <span>{new Date(order.expected_date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   )}
                   
@@ -234,41 +309,74 @@ const OrdersManager = () => {
 const NewOrderForm = ({ 
   onSubmit, 
   clients, 
-  technicians 
+  technicians,
+  services 
 }: { 
   onSubmit: (data: any) => void;
   clients: any[];
   technicians: any[];
+  services: any[];
 }) => {
   const [serviceValue, setServiceValue] = useState(0);
   const [partsValue, setPartsValue] = useState(0);
   const [selectedClient, setSelectedClient] = useState("");
   const [selectedTechnician, setSelectedTechnician] = useState("");
+  const [selectedService, setSelectedService] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Média");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
 
   const totalValue = serviceValue + partsValue;
+
+  // Atualizar valor do serviço quando um serviço é selecionado
+  const handleServiceChange = (serviceId: string) => {
+    setSelectedService(serviceId);
+    const service = services.find(s => s.id === serviceId);
+    if (service) {
+      setServiceValue(service.price || 0);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const formDataObj = new FormData(form);
     
+    const description = formDataObj.get('description') as string;
+    
+    if (!description || description.trim() === '') {
+      alert('Descrição é obrigatória');
+      return;
+    }
+    
+    const expectedDateStr = formDataObj.get('expectedDate') as string;
+    const expectedTimeStr = formDataObj.get('expectedTime') as string;
+    
+    let expected_date = null;
+    if (expectedDateStr) {
+      if (expectedTimeStr) {
+        expected_date = `${expectedDateStr}T${expectedTimeStr}:00`;
+      } else {
+        expected_date = `${expectedDateStr}T09:00:00`;
+      }
+    }
+    
     const data = {
       client_id: selectedClient || null,
       technician_id: selectedTechnician || null,
+      service_id: selectedService || null,
       priority: selectedPriority,
-      expected_date: formDataObj.get('expectedDate') as string || null,
-      description: formDataObj.get('description') as string,
-      diagnosis: formDataObj.get('diagnosis') as string || null,
-      observations: formDataObj.get('observations') as string || null,
+      expected_date,
+      description: description.trim(),
+      diagnosis: (formDataObj.get('diagnosis') as string) || null,
+      observations: (formDataObj.get('observations') as string) || null,
       service_value: serviceValue || 0,
       parts_value: partsValue || 0,
       total_value: totalValue || 0,
       payment_method: selectedPaymentMethod || null,
+      status: 'Aberta'
     };
 
-    console.log('Dados do formulário:', data);
+    console.log('Dados do formulário para submissão:', data);
     onSubmit(data);
   };
 
@@ -322,6 +430,26 @@ const NewOrderForm = ({
               </Select>
             </div>
           </div>
+
+          <div>
+            <Label htmlFor="service">Tipo de Serviço</Label>
+            <Select value={selectedService} onValueChange={handleServiceChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo de serviço" />
+              </SelectTrigger>
+              <SelectContent>
+                {services.length === 0 ? (
+                  <SelectItem value="" disabled>Nenhum serviço cadastrado</SelectItem>
+                ) : (
+                  services.map(service => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - R$ {service.price?.toFixed(2)}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -342,11 +470,16 @@ const NewOrderForm = ({
               <Input name="expectedDate" type="date" />
             </div>
           </div>
+
+          <div>
+            <Label htmlFor="expectedTime">Horário Previsto</Label>
+            <Input name="expectedTime" type="time" />
+          </div>
         </TabsContent>
         
         <TabsContent value="technical" className="space-y-4">
           <div>
-            <Label htmlFor="description">Descrição do Problema</Label>
+            <Label htmlFor="description">Descrição do Problema *</Label>
             <Textarea 
               name="description"
               placeholder="Descreva detalhadamente o problema relatado pelo cliente..."

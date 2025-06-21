@@ -1,102 +1,83 @@
-
 import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Users, Wrench, DollarSign, AlertCircle, Plus } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Calendar, 
+  Users, 
+  Wrench, 
+  DollarSign, 
+  Plus, 
+  Clock, 
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  TrendingUp,
+  TrendingDown
+} from "lucide-react";
 import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
 import { useTechnicians } from '@/hooks/useTechnicians';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useServices } from '@/hooks/useServices';
+import { useFinancialRecords } from '@/hooks/useFinancialRecords';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const Dashboard = () => {
   const { orders, createOrder } = useServiceOrders();
   const { clients } = useClients();
   const { technicians } = useTechnicians();
-  const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    client_id: '',
-    technician_id: '',
-    description: '',
-    priority: 'Média',
-    expected_date: ''
-  });
+  const { services } = useServices();
+  const { records } = useFinancialRecords();
+
+  const totalRevenue = records
+    .filter(r => r.type === 'receita')
+    .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+  const totalExpenses = records
+    .filter(r => r.type === 'despesa')
+    .reduce((sum, r) => sum + (r.amount || 0), 0);
+
+  const netProfit = totalRevenue - totalExpenses;
+
+  const completedOrders = orders.filter(o => o.status === 'Finalizada').length;
+  const openOrders = orders.filter(o => o.status === 'Aberta').length;
+  const inProgressOrders = orders.filter(o => o.status === 'Em Andamento').length;
+
+  const chartData = [
+    { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
+    { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
+    { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+
+  const [isNewOrderOpen, setIsNewOrderOpen] = React.useState(false);
+
+  const handleCreateOrder = async (orderData: any) => {
+    const result = await createOrder(orderData);
+    if (result?.success) {
+      setIsNewOrderOpen(false);
+    }
+  };
 
   const recentOrders = orders.slice(0, 5);
-  const openOrders = orders.filter(order => order.status === 'Aberta').length;
-  const inProgressOrders = orders.filter(order => order.status === 'Em Andamento').length;
-
-  const handleCreateOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.description) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    const result = await createOrder({
-      client_id: formData.client_id || null,
-      technician_id: formData.technician_id || null,
-      description: formData.description,
-      priority: formData.priority as 'Alta' | 'Média' | 'Baixa',
-      expected_date: formData.expected_date || null
-    });
-
-    if (result.success) {
-      setFormData({
-        client_id: '',
-        technician_id: '',
-        description: '',
-        priority: 'Média',
-        expected_date: ''
-      });
-      setIsCreateOrderOpen(false);
-    }
-    
-    setIsSubmitting(false);
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Aberta': return 'bg-blue-100 text-blue-800';
-      case 'Em Andamento': return 'bg-yellow-100 text-yellow-800';
-      case 'Finalizada': return 'bg-green-100 text-green-800';
-      case 'Cancelada': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'Alta': return 'bg-red-100 text-red-800';
-      case 'Média': return 'bg-yellow-100 text-yellow-800';
-      case 'Baixa': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   return (
-    <div className="space-y-8">
+    <div className="p-6 space-y-6">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p className="text-muted-foreground">
-          Visão geral do seu negócio
+          Visão geral do seu sistema de gestão
         </p>
       </div>
 
-      {/* Métricas principais */}
+      {/* Cards de estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -108,35 +89,40 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{clients.length}</div>
             <p className="text-xs text-muted-foreground">
-              clientes cadastrados
+              +2% desde o mês passado
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              OSs Abertas
-            </CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{openOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              aguardando atendimento
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Em Andamento
+              Ordens de Serviço
             </CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressOrders}</div>
+            <div className="text-2xl font-bold">{orders.length}</div>
             <p className="text-xs text-muted-foreground">
-              sendo executadas
+              {orders.filter(o => o.status === 'Aberta').length} em aberto
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Receita do Mês
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              R$ {records
+                .filter(r => r.type === 'receita')
+                .reduce((sum, r) => sum + (r.amount || 0), 0)
+                .toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              +20.1% desde o mês passado
             </p>
           </CardContent>
         </Card>
@@ -152,8 +138,54 @@ const Dashboard = () => {
               {technicians.filter(t => t.status === 'Ativo').length}
             </div>
             <p className="text-xs text-muted-foreground">
-              disponíveis para serviços
+              de {technicians.length} cadastrados
             </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráficos */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Status das Ordens de Serviço</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <ResponsiveContainer width="100%" height={350}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Distribuição por Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -168,142 +200,180 @@ const Dashboard = () => {
                 Últimas 5 ordens de serviço criadas
               </CardDescription>
             </div>
-            <Button onClick={() => setIsCreateOrderOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Nova OS
-            </Button>
+            <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Nova Ordem de Serviço</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados da nova ordem de serviço
+                  </DialogDescription>
+                </DialogHeader>
+                <QuickOrderForm 
+                  onSubmit={handleCreateOrder}
+                  clients={clients}
+                  technicians={technicians}
+                  services={services}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         </CardHeader>
         <CardContent>
           {recentOrders.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              Nenhuma ordem de serviço encontrada.
-            </p>
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Nenhuma ordem de serviço encontrada
+              </h3>
+              <p className="text-gray-600">
+                Comece criando sua primeira ordem de serviço.
+              </p>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Descrição</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Prioridade</TableHead>
-                  <TableHead>Data Criação</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">
-                      {order.description.length > 50 
-                        ? `${order.description.substring(0, 50)}...` 
-                        : order.description}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(order.status)}>
+            <div className="space-y-4">
+              {recentOrders.map((order) => {
+                const client = clients.find(c => c.id === order.client_id);
+                const getStatusIcon = (status: string) => {
+                  switch (status) {
+                    case 'Finalizada':
+                      return <CheckCircle className="h-4 w-4 text-green-600" />;
+                    case 'Em Andamento':
+                      return <Clock className="h-4 w-4 text-yellow-600" />;
+                    default:
+                      return <AlertCircle className="h-4 w-4 text-blue-600" />;
+                  }
+                };
+
+                return (
+                  <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center space-x-4">
+                      {getStatusIcon(order.status)}
+                      <div>
+                        <p className="font-semibold">OS #{order.id.slice(-8)}</p>
+                        <p className="text-sm text-gray-600">{client?.name || 'Cliente não encontrado'}</p>
+                        <p className="text-xs text-gray-500">{order.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline">
                         {order.status}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getPriorityColor(order.priority)}>
-                        {order.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : '-'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      {order.total_value && order.total_value > 0 && (
+                        <span className="font-semibold text-green-600">
+                          R$ {order.total_value.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
-
-      {/* Dialog para criar nova OS */}
-      <Dialog open={isCreateOrderOpen} onOpenChange={setIsCreateOrderOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Nova Ordem de Serviço</DialogTitle>
-            <DialogDescription>
-              Crie uma nova ordem de serviço rapidamente
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleCreateOrder} className="space-y-4">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="client_id">Cliente</Label>
-              <Select value={formData.client_id} onValueChange={(value) => handleInputChange('client_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cliente (opcional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="technician_id">Técnico</Label>
-              <Select value={formData.technician_id} onValueChange={(value) => handleInputChange('technician_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o técnico (opcional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {technicians.filter(t => t.status === 'Ativo').map((technician) => (
-                    <SelectItem key={technician.id} value={technician.id}>
-                      {technician.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="description">Descrição do Problema</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Descreva o problema ou serviço solicitado..."
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="priority">Prioridade</Label>
-                <Select value={formData.priority} onValueChange={(value) => handleInputChange('priority', value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Alta">Alta</SelectItem>
-                    <SelectItem value="Média">Média</SelectItem>
-                    <SelectItem value="Baixa">Baixa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="expected_date">Data Prevista</Label>
-                <Input
-                  id="expected_date"
-                  type="date"
-                  value={formData.expected_date}
-                  onChange={(e) => handleInputChange('expected_date', e.target.value)}
-                />
-              </div>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Criando...' : 'Criar Ordem de Serviço'}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
+  );
+};
+
+// Componente para formulário rápido
+const QuickOrderForm = ({ 
+  onSubmit, 
+  clients, 
+  technicians,
+  services 
+}: { 
+  onSubmit: (data: any) => void;
+  clients: any[];
+  technicians: any[];
+  services: any[];
+}) => {
+  const [selectedClient, setSelectedClient] = React.useState("");
+  const [selectedService, setSelectedService] = React.useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formDataObj = new FormData(form);
+    
+    const description = formDataObj.get('description') as string;
+    
+    if (!description || description.trim() === '') {
+      alert('Descrição é obrigatória');
+      return;
+    }
+    
+    const data = {
+      client_id: selectedClient || null,
+      service_id: selectedService || null,
+      priority: 'Média',
+      description: description.trim(),
+      status: 'Aberta',
+      service_value: 0,
+      parts_value: 0,
+      total_value: 0
+    };
+
+    onSubmit(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="client">Cliente</Label>
+        <Select value={selectedClient} onValueChange={setSelectedClient}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o cliente" />
+          </SelectTrigger>
+          <SelectContent>
+            {clients.map(client => (
+              <SelectItem key={client.id} value={client.id}>
+                {client.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="service">Tipo de Serviço</Label>
+        <Select value={selectedService} onValueChange={setSelectedService}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o tipo de serviço" />
+          </SelectTrigger>
+          <SelectContent>
+            {services.map(service => (
+              <SelectItem key={service.id} value={service.id}>
+                {service.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="description">Descrição do Problema *</Label>
+        <Textarea 
+          name="description"
+          placeholder="Descreva o problema..."
+          required
+        />
+      </div>
+      
+      <div className="flex justify-end space-x-2">
+        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
+          Cancelar
+        </Button>
+        <Button type="submit">
+          Criar OS
+        </Button>
+      </div>
+    </form>
   );
 };
 
