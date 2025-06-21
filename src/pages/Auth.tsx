@@ -260,6 +260,13 @@ const Auth = () => {
                     )}
                   </Button>
                 </form>
+                
+                {/* Demo credentials info */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800 font-medium mb-1">Para testar como admin:</p>
+                  <p className="text-xs text-blue-600">Email: admin@teste.com</p>
+                  <p className="text-xs text-blue-600">Senha: 123456</p>
+                </div>
               </TabsContent>
 
               <TabsContent value="signup">
