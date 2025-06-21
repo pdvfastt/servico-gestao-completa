@@ -27,15 +27,20 @@ import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
 import { useTechnicians } from '@/hooks/useTechnicians';
 import { useServices } from '@/hooks/useServices';
+import OrderView from './OrderView';
+import OrderEdit from './OrderEdit';
 
 const OrdersManager = () => {
-  const { orders, loading, createOrder } = useServiceOrders();
+  const { orders, loading, createOrder, updateOrder, deleteOrder } = useServiceOrders();
   const { clients } = useClients();
   const { technicians } = useTechnicians();
   const { services } = useServices();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -86,6 +91,30 @@ const OrdersManager = () => {
     
     if (result?.success) {
       setIsNewOrderOpen(false);
+    }
+  };
+
+  const handleViewOrder = (order: any) => {
+    setSelectedOrder(order);
+    setIsViewOpen(true);
+  };
+
+  const handleEditOrder = (order: any) => {
+    setSelectedOrder(order);
+    setIsEditOpen(true);
+  };
+
+  const handleSaveOrder = async (orderId: string, data: any) => {
+    const result = await updateOrder(orderId, data);
+    if (result?.success) {
+      setIsEditOpen(false);
+      setSelectedOrder(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
+      await deleteOrder(orderId);
     }
   };
 
@@ -155,6 +184,9 @@ const OrdersManager = () => {
       </div>
     );
   }
+
+  const selectedClient = selectedOrder ? clients.find(c => c.id === selectedOrder.client_id) : null;
+  const selectedTechnician = selectedOrder ? technicians.find(t => t.id === selectedOrder.technician_id) : null;
 
   return (
     <div className="space-y-6">
@@ -288,13 +320,17 @@ const OrdersManager = () => {
                   )}
                   
                   <div className="flex space-x-2 pt-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleViewOrder(order)}>
                       <Eye className="h-4 w-4 mr-1" />
                       Ver
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleEditOrder(order)}>
                       <Edit className="h-4 w-4 mr-1" />
                       Editar
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleDeleteOrder(order.id)}>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Excluir
                     </Button>
                   </div>
                 </CardContent>
@@ -303,11 +339,40 @@ const OrdersManager = () => {
           })}
         </div>
       )}
+
+      {/* Modals */}
+      <OrderView
+        order={selectedOrder}
+        client={selectedClient}
+        technician={selectedTechnician}
+        isOpen={isViewOpen}
+        onClose={() => {
+          setIsViewOpen(false);
+          setSelectedOrder(null);
+        }}
+        onEdit={() => {
+          setIsViewOpen(false);
+          setIsEditOpen(true);
+        }}
+      />
+
+      <OrderEdit
+        order={selectedOrder}
+        clients={clients}
+        technicians={technicians}
+        services={services}
+        isOpen={isEditOpen}
+        onClose={() => {
+          setIsEditOpen(false);
+          setSelectedOrder(null);
+        }}
+        onSave={handleSaveOrder}
+      />
     </div>
   );
 };
 
-// Componente do formulário de nova OS
+// Componente do formulário de nova OS com novos campos
 const NewOrderForm = ({ 
   onSubmit, 
   clients, 
@@ -327,15 +392,18 @@ const NewOrderForm = ({
   const [selectedPriority, setSelectedPriority] = useState("Média");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSerialField, setShowSerialField] = useState(false);
 
   const totalValue = serviceValue + partsValue;
 
-  // Atualizar valor do serviço quando um serviço é selecionado
+  // Verificar se é serviço de Instalação NPD
   const handleServiceChange = (serviceId: string) => {
     setSelectedService(serviceId);
     const service = services.find(s => s.id === serviceId);
     if (service) {
       setServiceValue(service.price || 0);
+      // Mostrar campo Serial Receptor se for Instalação NPD
+      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
     }
   };
 
@@ -348,9 +416,21 @@ const NewOrderForm = ({
     const formDataObj = new FormData(form);
     
     const description = (formDataObj.get('description') as string)?.trim();
+    const invoiceNumber = formDataObj.get('invoiceNumber') as string;
+    const serialReceiver = formDataObj.get('serialReceiver') as string;
     
     if (!description) {
       alert('Descrição é obrigatória');
+      return;
+    }
+
+    if (!invoiceNumber) {
+      alert('Número da Nota Fiscal é obrigatório');
+      return;
+    }
+
+    if (showSerialField && !serialReceiver) {
+      alert('Serial do Receptor é obrigatório para Instalação NPD');
       return;
     }
     
@@ -369,12 +449,20 @@ const NewOrderForm = ({
         }
       }
       
+      let fullDescription = description;
+      if (invoiceNumber) {
+        fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
+      }
+      if (showSerialField && serialReceiver) {
+        fullDescription += `\nSerial Receptor: ${serialReceiver}`;
+      }
+      
       const data = {
         client_id: selectedClient || null,
         technician_id: selectedTechnician || null,
         priority: selectedPriority,
         expected_date,
-        description,
+        description: fullDescription,
         diagnosis: (formDataObj.get('diagnosis') as string) || null,
         observations: (formDataObj.get('observations') as string) || null,
         service_value: serviceValue || 0,
@@ -463,6 +551,29 @@ const NewOrderForm = ({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Campo obrigatório: Número da Nota Fiscal */}
+          <div>
+            <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
+            <Input 
+              name="invoiceNumber"
+              type="number"
+              placeholder="Digite o número da nota fiscal"
+              required
+            />
+          </div>
+
+          {/* Campo condicional: Serial Receptor (apenas para Instalação NPD) */}
+          {showSerialField && (
+            <div>
+              <Label htmlFor="serialReceiver">Serial Receptor *</Label>
+              <Input 
+                name="serialReceiver"
+                placeholder="Digite o serial do receptor"
+                required={showSerialField}
+              />
+            </div>
+          )}
           
           <div className="grid grid-cols-2 gap-4">
             <div>

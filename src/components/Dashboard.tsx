@@ -302,17 +302,27 @@ const QuickOrderForm = ({
     const formDataObj = new FormData(form);
     
     const description = formDataObj.get('description') as string;
+    const invoiceNumber = formDataObj.get('invoiceNumber') as string;
     
     if (!description || description.trim() === '') {
       alert('Descrição é obrigatória');
       return;
     }
+
+    if (!invoiceNumber) {
+      alert('Número da Nota Fiscal é obrigatório');
+      return;
+    }
+    
+    let fullDescription = description.trim();
+    if (invoiceNumber) {
+      fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
+    }
     
     const data = {
       client_id: selectedClient || null,
-      service_id: selectedService || null,
       priority: 'Média',
-      description: description.trim(),
+      description: fullDescription,
       status: 'Aberta',
       service_value: 0,
       parts_value: 0,
@@ -354,6 +364,16 @@ const QuickOrderForm = ({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
+        <Input 
+          name="invoiceNumber"
+          type="number"
+          placeholder="Digite o número da nota fiscal"
+          required
+        />
       </div>
 
       <div>
