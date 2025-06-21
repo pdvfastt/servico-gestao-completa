@@ -16,13 +16,14 @@ export const useFinancialRecords = () => {
 
   const fetchRecords = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - financial records');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando registros financeiros para usuário:', user.id);
+      console.log('🔍 Buscando registros financeiros para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('financial_records')
@@ -31,17 +32,19 @@ export const useFinancialRecords = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar registros financeiros:', error);
+        console.error('❌ Erro Supabase ao buscar registros financeiros:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
-      console.log('Registros financeiros encontrados:', data?.length || 0);
+      console.log('✅ Registros financeiros encontrados:', data?.length || 0);
       setRecords(data || []);
     } catch (error) {
-      console.error('Erro ao buscar registros financeiros:', error);
+      console.error('❌ Erro geral ao buscar registros financeiros:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar registros financeiros.",
+        description: "Erro ao carregar registros financeiros. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {
@@ -181,6 +184,7 @@ export const useFinancialRecords = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 useFinancialRecords: useEffect disparado, user:', user?.id);
     fetchRecords();
   }, [user]);
 

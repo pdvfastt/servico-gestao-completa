@@ -16,13 +16,14 @@ export const useServices = () => {
 
   const fetchServices = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - services');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando serviços para usuário:', user.id);
+      console.log('🔍 Buscando serviços para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('services')
@@ -31,17 +32,19 @@ export const useServices = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar serviços:', error);
+        console.error('❌ Erro Supabase ao buscar serviços:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
-      console.log('Serviços encontrados:', data?.length || 0);
+      console.log('✅ Serviços encontrados:', data?.length || 0);
       setServices(data || []);
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('❌ Erro geral ao buscar serviços:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar serviços.",
+        description: "Erro ao carregar serviços. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {
@@ -181,6 +184,7 @@ export const useServices = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 useServices: useEffect disparado, user:', user?.id);
     fetchServices();
   }, [user]);
 

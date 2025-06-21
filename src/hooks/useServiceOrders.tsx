@@ -16,13 +16,14 @@ export const useServiceOrders = () => {
 
   const fetchOrders = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - service orders');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando ordens de serviço para usuário:', user.id);
+      console.log('🔍 Buscando ordens de serviço para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('service_orders')
@@ -31,17 +32,19 @@ export const useServiceOrders = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar ordens de serviço:', error);
+        console.error('❌ Erro Supabase ao buscar ordens de serviço:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
-      console.log('Ordens de serviço encontradas:', data?.length || 0);
+      console.log('✅ Ordens de serviço encontradas:', data?.length || 0);
       setOrders(data || []);
     } catch (error) {
-      console.error('Erro ao buscar ordens de serviço:', error);
+      console.error('❌ Erro geral ao buscar ordens de serviço:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar ordens de serviço.",
+        description: "Erro ao carregar ordens de serviço. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {
@@ -181,6 +184,7 @@ export const useServiceOrders = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 useServiceOrders: useEffect disparado, user:', user?.id);
     fetchOrders();
   }, [user]);
 

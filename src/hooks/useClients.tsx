@@ -16,13 +16,15 @@ export const useClients = () => {
 
   const fetchClients = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando clientes para usuário:', user.id);
+      console.log('🔍 Buscando clientes para usuário:', user.id);
+      console.log('🔍 User object completo:', user);
       
       const { data, error } = await supabase
         .from('clients')
@@ -31,17 +33,21 @@ export const useClients = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar clientes:', error);
+        console.error('❌ Erro Supabase ao buscar clientes:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem do erro:', error.message);
+        console.error('❌ Detalhes do erro:', error.details);
         throw error;
       }
       
-      console.log('Clientes encontrados:', data?.length || 0);
+      console.log('✅ Clientes encontrados:', data?.length || 0);
+      console.log('✅ Dados dos clientes:', data);
       setClients(data || []);
     } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
+      console.error('❌ Erro geral ao buscar clientes:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar clientes.",
+        description: "Erro ao carregar clientes. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {
@@ -181,6 +187,7 @@ export const useClients = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 useClients: useEffect disparado, user:', user?.id);
     fetchClients();
   }, [user]);
 

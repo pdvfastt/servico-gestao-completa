@@ -16,13 +16,14 @@ export const useTechnicians = () => {
 
   const fetchTechnicians = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - technicians');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando técnicos para usuário:', user.id);
+      console.log('🔍 Buscando técnicos para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('technicians')
@@ -31,17 +32,19 @@ export const useTechnicians = () => {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar técnicos:', error);
+        console.error('❌ Erro Supabase ao buscar técnicos:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
-      console.log('Técnicos encontrados:', data?.length || 0);
+      console.log('✅ Técnicos encontrados:', data?.length || 0);
       setTechnicians(data || []);
     } catch (error) {
-      console.error('Erro ao buscar técnicos:', error);
+      console.error('❌ Erro geral ao buscar técnicos:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar técnicos.",
+        description: "Erro ao carregar técnicos. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {
@@ -181,6 +184,7 @@ export const useTechnicians = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 useTechnicians: useEffect disparado, user:', user?.id);
     fetchTechnicians();
   }, [user]);
 
