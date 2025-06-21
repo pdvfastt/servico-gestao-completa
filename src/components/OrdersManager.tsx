@@ -306,23 +306,46 @@ const NewOrderForm = ({
   technicians: any[];
   services: any[];
 }) => {
-  const [serviceValue, setServiceValue] = useState(0);
-  const [partsValue, setPartsValue] = useState(0);
-  const [selectedClient, setSelectedClient] = useState("");
-  const [selectedTechnician, setSelectedTechnician] = useState("");
-  const [selectedService, setSelectedService] = useState("");
-  const [selectedPriority, setSelectedPriority] = useState("Média");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSerialField, setShowSerialField] = useState(false);
+  // Estados para persistir TODOS os dados do formulário
+  const [formState, setFormState] = React.useState({
+    // Dados Básicos
+    selectedClient: "",
+    selectedTechnician: "",
+    selectedService: "",
+    selectedPriority: "Média",
+    invoiceNumber: "",
+    serialReceiver: "",
+    expectedDate: "",
+    expectedTime: "",
+    
+    // Dados Técnicos
+    description: "",
+    diagnosis: "",
+    observations: "",
+    
+    // Dados Financeiros
+    serviceValue: 0,
+    partsValue: 0,
+    selectedPaymentMethod: ""
+  });
 
-  const totalValue = serviceValue + partsValue;
+  const [showSerialField, setShowSerialField] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const totalValue = formState.serviceValue + formState.partsValue;
+
+  const updateFormState = (field: string, value: any) => {
+    setFormState(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const handleServiceChange = (serviceId: string) => {
-    setSelectedService(serviceId);
+    updateFormState('selectedService', serviceId);
     const service = services.find(s => s.id === serviceId);
     if (service) {
-      setServiceValue(service.price || 0);
+      updateFormState('serviceValue', service.price || 0);
       setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
     }
   };
@@ -332,24 +355,17 @@ const NewOrderForm = ({
     
     if (isSubmitting) return;
     
-    const form = e.target as HTMLFormElement;
-    const formDataObj = new FormData(form);
-    
-    const description = (formDataObj.get('description') as string)?.trim();
-    const invoiceNumber = formDataObj.get('invoiceNumber') as string;
-    const serialReceiver = formDataObj.get('serialReceiver') as string;
-    
-    if (!description) {
+    if (!formState.description || formState.description.trim() === '') {
       alert('Descrição é obrigatória');
       return;
     }
 
-    if (!invoiceNumber) {
+    if (!formState.invoiceNumber) {
       alert('Número da Nota Fiscal é obrigatório');
       return;
     }
 
-    if (showSerialField && !serialReceiver) {
+    if (showSerialField && !formState.serialReceiver) {
       alert('Serial do Receptor é obrigatório para Instalação NPD');
       return;
     }
@@ -357,38 +373,35 @@ const NewOrderForm = ({
     setIsSubmitting(true);
     
     try {
-      const expectedDateStr = formDataObj.get('expectedDate') as string;
-      const expectedTimeStr = formDataObj.get('expectedTime') as string;
-      
       let expected_date = null;
-      if (expectedDateStr) {
-        if (expectedTimeStr) {
-          expected_date = `${expectedDateStr}T${expectedTimeStr}:00`;
+      if (formState.expectedDate) {
+        if (formState.expectedTime) {
+          expected_date = `${formState.expectedDate}T${formState.expectedTime}:00`;
         } else {
-          expected_date = `${expectedDateStr}T09:00:00`;
+          expected_date = `${formState.expectedDate}T09:00:00`;
         }
       }
       
-      let fullDescription = description;
-      if (invoiceNumber) {
-        fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
+      let fullDescription = formState.description.trim();
+      if (formState.invoiceNumber) {
+        fullDescription += `\n\nNº Nota Fiscal: ${formState.invoiceNumber}`;
       }
-      if (showSerialField && serialReceiver) {
-        fullDescription += `\nSerial Receptor: ${serialReceiver}`;
+      if (showSerialField && formState.serialReceiver) {
+        fullDescription += `\nSerial Receptor: ${formState.serialReceiver}`;
       }
       
       const data = {
-        client_id: selectedClient || null,
-        technician_id: selectedTechnician || null,
-        priority: selectedPriority,
+        client_id: formState.selectedClient || null,
+        technician_id: formState.selectedTechnician || null,
+        priority: formState.selectedPriority,
         expected_date,
         description: fullDescription,
-        diagnosis: (formDataObj.get('diagnosis') as string) || null,
-        observations: (formDataObj.get('observations') as string) || null,
-        service_value: serviceValue || 0,
-        parts_value: partsValue || 0,
+        diagnosis: formState.diagnosis || null,
+        observations: formState.observations || null,
+        service_value: formState.serviceValue || 0,
+        parts_value: formState.partsValue || 0,
         total_value: totalValue || 0,
-        payment_method: selectedPaymentMethod || null,
+        payment_method: formState.selectedPaymentMethod || null,
         status: 'Aberta'
       };
 
@@ -413,7 +426,7 @@ const NewOrderForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="client">Cliente</Label>
-              <Select value={selectedClient} onValueChange={setSelectedClient}>
+              <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
@@ -432,7 +445,7 @@ const NewOrderForm = ({
             </div>
             <div>
               <Label htmlFor="technician">Técnico Responsável</Label>
-              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+              <Select value={formState.selectedTechnician} onValueChange={(value) => updateFormState('selectedTechnician', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o técnico" />
                 </SelectTrigger>
@@ -453,7 +466,7 @@ const NewOrderForm = ({
 
           <div>
             <Label htmlFor="service">Tipo de Serviço</Label>
-            <Select value={selectedService} onValueChange={handleServiceChange}>
+            <Select value={formState.selectedService} onValueChange={handleServiceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
               </SelectTrigger>
@@ -474,9 +487,10 @@ const NewOrderForm = ({
           <div>
             <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
             <Input 
-              name="invoiceNumber"
               type="number"
               placeholder="Digite o número da nota fiscal"
+              value={formState.invoiceNumber}
+              onChange={(e) => updateFormState('invoiceNumber', e.target.value)}
               required
             />
           </div>
@@ -485,8 +499,9 @@ const NewOrderForm = ({
             <div>
               <Label htmlFor="serialReceiver">Serial Receptor *</Label>
               <Input 
-                name="serialReceiver"
                 placeholder="Digite o serial do receptor"
+                value={formState.serialReceiver}
+                onChange={(e) => updateFormState('serialReceiver', e.target.value)}
                 required={showSerialField}
               />
             </div>
@@ -495,7 +510,7 @@ const NewOrderForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="priority">Prioridade</Label>
-              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+              <Select value={formState.selectedPriority} onValueChange={(value) => updateFormState('selectedPriority', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
@@ -508,13 +523,21 @@ const NewOrderForm = ({
             </div>
             <div>
               <Label htmlFor="expectedDate">Data Prevista</Label>
-              <Input name="expectedDate" type="date" />
+              <Input 
+                type="date"
+                value={formState.expectedDate}
+                onChange={(e) => updateFormState('expectedDate', e.target.value)}
+              />
             </div>
           </div>
 
           <div>
             <Label htmlFor="expectedTime">Horário Previsto</Label>
-            <Input name="expectedTime" type="time" />
+            <Input 
+              type="time"
+              value={formState.expectedTime}
+              onChange={(e) => updateFormState('expectedTime', e.target.value)}
+            />
           </div>
         </TabsContent>
         
@@ -522,9 +545,10 @@ const NewOrderForm = ({
           <div>
             <Label htmlFor="description">Descrição do Problema *</Label>
             <Textarea 
-              name="description"
               placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
               className="min-h-[100px]"
+              value={formState.description}
+              onChange={(e) => updateFormState('description', e.target.value)}
               required
             />
           </div>
@@ -532,18 +556,20 @@ const NewOrderForm = ({
           <div>
             <Label htmlFor="diagnosis">Diagnóstico</Label>
             <Textarea 
-              name="diagnosis"
               placeholder="Diagnóstico técnico do problema..."
               className="min-h-[100px]"
+              value={formState.diagnosis}
+              onChange={(e) => updateFormState('diagnosis', e.target.value)}
             />
           </div>
           
           <div>
             <Label htmlFor="observations">Observações Internas</Label>
             <Textarea 
-              name="observations"
               placeholder="Observações visíveis apenas para a equipe..."
               className="min-h-[80px]"
+              value={formState.observations}
+              onChange={(e) => updateFormState('observations', e.target.value)}
             />
           </div>
         </TabsContent>
@@ -556,8 +582,8 @@ const NewOrderForm = ({
                 placeholder="0.00" 
                 type="number" 
                 step="0.01"
-                value={serviceValue || ''}
-                onChange={(e) => setServiceValue(parseFloat(e.target.value) || 0)}
+                value={formState.serviceValue || ''}
+                onChange={(e) => updateFormState('serviceValue', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -566,8 +592,8 @@ const NewOrderForm = ({
                 placeholder="0.00" 
                 type="number" 
                 step="0.01"
-                value={partsValue || ''}
-                onChange={(e) => setPartsValue(parseFloat(e.target.value) || 0)}
+                value={formState.partsValue || ''}
+                onChange={(e) => updateFormState('partsValue', parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>
@@ -584,7 +610,7 @@ const NewOrderForm = ({
           
           <div>
             <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+            <Select value={formState.selectedPaymentMethod} onValueChange={(value) => updateFormState('selectedPaymentMethod', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>

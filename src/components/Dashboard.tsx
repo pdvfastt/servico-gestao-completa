@@ -295,60 +295,64 @@ const QuickOrderForm = ({
   technicians: any[];
   services: any[];
 }) => {
-  // Estados para persistir dados entre as abas
-  const [selectedClient, setSelectedClient] = React.useState("");
-  const [selectedTechnician, setSelectedTechnician] = React.useState("");
-  const [selectedService, setSelectedService] = React.useState("");
-  const [selectedPriority, setSelectedPriority] = React.useState("Média");
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState("");
-  const [serviceValue, setServiceValue] = React.useState(0);
-  const [partsValue, setPartsValue] = React.useState(0);
-  const [showSerialField, setShowSerialField] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  
-  // Estados para campos de texto
-  const [formData, setFormData] = React.useState({
-    invoiceNumber: '',
-    serialReceiver: '',
-    expectedDate: '',
-    expectedTime: '',
-    description: '',
-    diagnosis: '',
-    observations: ''
+  // Estados para persistir TODOS os dados do formulário
+  const [formState, setFormState] = React.useState({
+    // Dados Básicos
+    selectedClient: "",
+    selectedTechnician: "",
+    selectedService: "",
+    selectedPriority: "Média",
+    invoiceNumber: "",
+    serialReceiver: "",
+    expectedDate: "",
+    expectedTime: "",
+    
+    // Dados Técnicos
+    description: "",
+    diagnosis: "",
+    observations: "",
+    
+    // Dados Financeiros
+    serviceValue: 0,
+    partsValue: 0,
+    selectedPaymentMethod: ""
   });
 
-  const totalValue = serviceValue + partsValue;
+  const [showSerialField, setShowSerialField] = React.useState(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const handleServiceChange = (serviceId: string) => {
-    setSelectedService(serviceId);
-    const service = services.find(s => s.id === serviceId);
-    if (service) {
-      setServiceValue(service.price || 0);
-      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
-    }
-  };
+  const totalValue = formState.serviceValue + formState.partsValue;
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+  const updateFormState = (field: string, value: any) => {
+    setFormState(prev => ({
       ...prev,
       [field]: value
     }));
   };
 
+  const handleServiceChange = (serviceId: string) => {
+    updateFormState('selectedService', serviceId);
+    const service = services.find(s => s.id === serviceId);
+    if (service) {
+      updateFormState('serviceValue', service.price || 0);
+      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.description || formData.description.trim() === '') {
+    if (!formState.description || formState.description.trim() === '') {
       alert('Descrição é obrigatória');
       return;
     }
 
-    if (!formData.invoiceNumber) {
+    if (!formState.invoiceNumber) {
       alert('Número da Nota Fiscal é obrigatório');
       return;
     }
 
-    if (showSerialField && !formData.serialReceiver) {
+    if (showSerialField && !formState.serialReceiver) {
       alert('Serial do Receptor é obrigatório para Instalação NPD');
       return;
     }
@@ -357,34 +361,34 @@ const QuickOrderForm = ({
     
     try {
       let expected_date = null;
-      if (formData.expectedDate) {
-        if (formData.expectedTime) {
-          expected_date = `${formData.expectedDate}T${formData.expectedTime}:00`;
+      if (formState.expectedDate) {
+        if (formState.expectedTime) {
+          expected_date = `${formState.expectedDate}T${formState.expectedTime}:00`;
         } else {
-          expected_date = `${formData.expectedDate}T09:00:00`;
+          expected_date = `${formState.expectedDate}T09:00:00`;
         }
       }
       
-      let fullDescription = formData.description.trim();
-      if (formData.invoiceNumber) {
-        fullDescription += `\n\nNº Nota Fiscal: ${formData.invoiceNumber}`;
+      let fullDescription = formState.description.trim();
+      if (formState.invoiceNumber) {
+        fullDescription += `\n\nNº Nota Fiscal: ${formState.invoiceNumber}`;
       }
-      if (showSerialField && formData.serialReceiver) {
-        fullDescription += `\nSerial Receptor: ${formData.serialReceiver}`;
+      if (showSerialField && formState.serialReceiver) {
+        fullDescription += `\nSerial Receptor: ${formState.serialReceiver}`;
       }
       
       const data = {
-        client_id: selectedClient || null,
-        technician_id: selectedTechnician || null,
-        priority: selectedPriority,
+        client_id: formState.selectedClient || null,
+        technician_id: formState.selectedTechnician || null,
+        priority: formState.selectedPriority,
         expected_date,
         description: fullDescription,
-        diagnosis: formData.diagnosis || null,
-        observations: formData.observations || null,
-        service_value: serviceValue || 0,
-        parts_value: partsValue || 0,
+        diagnosis: formState.diagnosis || null,
+        observations: formState.observations || null,
+        service_value: formState.serviceValue || 0,
+        parts_value: formState.partsValue || 0,
         total_value: totalValue || 0,
-        payment_method: selectedPaymentMethod || null,
+        payment_method: formState.selectedPaymentMethod || null,
         status: 'Aberta'
       };
 
@@ -409,7 +413,7 @@ const QuickOrderForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="client">Cliente</Label>
-              <Select value={selectedClient} onValueChange={setSelectedClient}>
+              <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
@@ -424,7 +428,7 @@ const QuickOrderForm = ({
             </div>
             <div>
               <Label htmlFor="technician">Técnico Responsável</Label>
-              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
+              <Select value={formState.selectedTechnician} onValueChange={(value) => updateFormState('selectedTechnician', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o técnico" />
                 </SelectTrigger>
@@ -441,7 +445,7 @@ const QuickOrderForm = ({
 
           <div>
             <Label htmlFor="service">Tipo de Serviço</Label>
-            <Select value={selectedService} onValueChange={handleServiceChange}>
+            <Select value={formState.selectedService} onValueChange={handleServiceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
               </SelectTrigger>
@@ -460,8 +464,8 @@ const QuickOrderForm = ({
             <Input 
               type="number"
               placeholder="Digite o número da nota fiscal"
-              value={formData.invoiceNumber}
-              onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
+              value={formState.invoiceNumber}
+              onChange={(e) => updateFormState('invoiceNumber', e.target.value)}
               required
             />
           </div>
@@ -471,8 +475,8 @@ const QuickOrderForm = ({
               <Label htmlFor="serialReceiver">Serial Receptor *</Label>
               <Input 
                 placeholder="Digite o serial do receptor"
-                value={formData.serialReceiver}
-                onChange={(e) => handleInputChange('serialReceiver', e.target.value)}
+                value={formState.serialReceiver}
+                onChange={(e) => updateFormState('serialReceiver', e.target.value)}
                 required={showSerialField}
               />
             </div>
@@ -481,7 +485,7 @@ const QuickOrderForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="priority">Prioridade</Label>
-              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+              <Select value={formState.selectedPriority} onValueChange={(value) => updateFormState('selectedPriority', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
@@ -496,8 +500,8 @@ const QuickOrderForm = ({
               <Label htmlFor="expectedDate">Data Prevista</Label>
               <Input 
                 type="date" 
-                value={formData.expectedDate}
-                onChange={(e) => handleInputChange('expectedDate', e.target.value)}
+                value={formState.expectedDate}
+                onChange={(e) => updateFormState('expectedDate', e.target.value)}
               />
             </div>
           </div>
@@ -506,8 +510,8 @@ const QuickOrderForm = ({
             <Label htmlFor="expectedTime">Horário Previsto</Label>
             <Input 
               type="time" 
-              value={formData.expectedTime}
-              onChange={(e) => handleInputChange('expectedTime', e.target.value)}
+              value={formState.expectedTime}
+              onChange={(e) => updateFormState('expectedTime', e.target.value)}
             />
           </div>
         </TabsContent>
@@ -518,8 +522,8 @@ const QuickOrderForm = ({
             <Textarea 
               placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
               className="min-h-[100px]"
-              value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              value={formState.description}
+              onChange={(e) => updateFormState('description', e.target.value)}
               required
             />
           </div>
@@ -529,8 +533,8 @@ const QuickOrderForm = ({
             <Textarea 
               placeholder="Diagnóstico técnico do problema..."
               className="min-h-[100px]"
-              value={formData.diagnosis}
-              onChange={(e) => handleInputChange('diagnosis', e.target.value)}
+              value={formState.diagnosis}
+              onChange={(e) => updateFormState('diagnosis', e.target.value)}
             />
           </div>
           
@@ -539,8 +543,8 @@ const QuickOrderForm = ({
             <Textarea 
               placeholder="Observações visíveis apenas para a equipe..."
               className="min-h-[80px]"
-              value={formData.observations}
-              onChange={(e) => handleInputChange('observations', e.target.value)}
+              value={formState.observations}
+              onChange={(e) => updateFormState('observations', e.target.value)}
             />
           </div>
         </TabsContent>
@@ -553,8 +557,8 @@ const QuickOrderForm = ({
                 placeholder="0.00" 
                 type="number" 
                 step="0.01"
-                value={serviceValue || ''}
-                onChange={(e) => setServiceValue(parseFloat(e.target.value) || 0)}
+                value={formState.serviceValue || ''}
+                onChange={(e) => updateFormState('serviceValue', parseFloat(e.target.value) || 0)}
               />
             </div>
             <div>
@@ -563,8 +567,8 @@ const QuickOrderForm = ({
                 placeholder="0.00" 
                 type="number" 
                 step="0.01"
-                value={partsValue || ''}
-                onChange={(e) => setPartsValue(parseFloat(e.target.value) || 0)}
+                value={formState.partsValue || ''}
+                onChange={(e) => updateFormState('partsValue', parseFloat(e.target.value) || 0)}
               />
             </div>
           </div>
@@ -581,7 +585,7 @@ const QuickOrderForm = ({
           
           <div>
             <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
+            <Select value={formState.selectedPaymentMethod} onValueChange={(value) => updateFormState('selectedPaymentMethod', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
