@@ -29,50 +29,37 @@ export const useCompanySettings = () => {
       setLoading(true);
       console.log('Buscando configurações da empresa para usuário:', user.id);
       
-      // Usar query SQL direta já que a tabela não está nos tipos ainda
+      // Usar query direta já que a tabela não está nos tipos ainda
       const { data, error } = await supabase
-        .rpc('get_company_settings', { user_uuid: user.id });
+        .from('company_settings' as any)
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      if (error && !error.message.includes('function')) {
-        console.error('Erro ao buscar configurações:', error);
+      if (error) {
+        console.error('Erro Supabase ao buscar configurações:', error);
         throw error;
       }
       
-      // Se a função RPC não existe, tentar query direta
-      if (error && error.message.includes('function')) {
-        const { data: directData, error: directError } = await supabase
-          .from('company_settings' as any)
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (directError) {
-          console.error('Erro Supabase ao buscar configurações:', directError);
-          throw directError;
-        }
-        
-        if (directData) {
-          console.log('Configurações encontradas:', directData);
-          setSettings({
-            id: directData.id,
-            company_name: directData.company_name,
-            company_logo_url: directData.company_logo_url || undefined,
-            primary_color: directData.primary_color,
-            secondary_color: directData.secondary_color,
-            accent_color: directData.accent_color,
-          });
-        } else {
-          // Configurações padrão se não existir
-          const defaultSettings: CompanySettings = {
-            company_name: 'Sistema de Gestão de OS',
-            primary_color: '#2563eb',
-            secondary_color: '#059669',
-            accent_color: '#dc2626',
-          };
-          setSettings(defaultSettings);
-        }
-      } else if (data) {
-        setSettings(data);
+      if (data) {
+        console.log('Configurações encontradas:', data);
+        setSettings({
+          id: data.id,
+          company_name: data.company_name,
+          company_logo_url: data.company_logo_url || undefined,
+          primary_color: data.primary_color,
+          secondary_color: data.secondary_color,
+          accent_color: data.accent_color,
+        });
+      } else {
+        // Configurações padrão se não existir
+        const defaultSettings: CompanySettings = {
+          company_name: 'Sistema de Gestão de OS',
+          primary_color: '#2563eb',
+          secondary_color: '#059669',
+          accent_color: '#dc2626',
+        };
+        setSettings(defaultSettings);
       }
     } catch (error) {
       console.error('Erro ao buscar configurações:', error);
