@@ -50,7 +50,11 @@ export const useServiceOrders = () => {
   };
 
   const createOrder = async (orderData: Omit<ServiceOrderInsert, 'user_id'>) => {
+    console.log('=== INÍCIO CRIAÇÃO ORDEM ===');
+    console.log('Dados recebidos:', orderData);
+    
     if (!user) {
+      console.error('Usuário não autenticado');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -59,21 +63,37 @@ export const useServiceOrders = () => {
       return { success: false, error: 'User not authenticated' };
     }
 
+    // Validação obrigatória da descrição
+    if (!orderData.description || orderData.description.trim() === '') {
+      console.error('Descrição é obrigatória');
+      toast({
+        title: "Erro",
+        description: "Descrição é obrigatória.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'Description is required' };
+    }
+
     try {
-      console.log('Criando ordem de serviço:', orderData);
-      
-      // Garantir que todos os campos obrigatórios estão preenchidos
-      const insertData = {
-        ...orderData,
+      // Preparar dados para inserção
+      const insertData: ServiceOrderInsert = {
         user_id: user.id,
+        client_id: orderData.client_id || null,
+        technician_id: orderData.technician_id || null,
+        service_id: orderData.service_id || null,
+        description: orderData.description.trim(),
+        diagnosis: orderData.diagnosis || null,
+        observations: orderData.observations || null,
         status: orderData.status || 'Aberta',
         priority: orderData.priority || 'Média',
-        service_value: orderData.service_value || 0,
-        parts_value: orderData.parts_value || 0,
-        total_value: orderData.total_value || 0,
+        expected_date: orderData.expected_date || null,
+        service_value: Number(orderData.service_value) || 0,
+        parts_value: Number(orderData.parts_value) || 0,
+        total_value: Number(orderData.total_value) || 0,
+        payment_method: orderData.payment_method || null,
       };
 
-      console.log('Dados para inserção:', insertData);
+      console.log('Dados preparados para inserção:', insertData);
       
       const { data, error } = await supabase
         .from('service_orders')
@@ -82,25 +102,51 @@ export const useServiceOrders = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao criar ordem:', error);
-        throw error;
+        console.error('Erro Supabase detalhado:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        
+        // Tratamento específico de erros
+        if (error.message.includes('violates row-level security policy')) {
+          throw new Error('Erro de permissão. Verifique se você está logado corretamente.');
+        } else if (error.message.includes('null value in column')) {
+          throw new Error('Dados obrigatórios não fornecidos. Verifique todos os campos.');
+        } else if (error.message.includes('foreign key')) {
+          throw new Error('Erro de referência. Verifique se cliente, técnico ou serviço existem.');
+        } else {
+          throw new Error(`Erro do banco de dados: ${error.message}`);
+        }
       }
       
       console.log('Ordem criada com sucesso:', data);
+      
+      // Atualizar lista local
       setOrders(prev => [data, ...prev]);
+      
       toast({
-        title: "Ordem de Serviço Criada",
-        description: "A nova OS foi criada com sucesso!",
+        title: "Sucesso!",
+        description: "Ordem de serviço criada com sucesso!",
       });
+      
+      console.log('=== FIM CRIAÇÃO ORDEM (SUCESSO) ===');
       return { success: true, data };
-    } catch (error) {
-      console.error('Erro ao criar ordem de serviço:', error);
+      
+    } catch (error: any) {
+      console.error('Erro durante criação da ordem:', error);
+      
+      const errorMessage = error.message || 'Erro desconhecido ao criar ordem de serviço';
+      
       toast({
         title: "Erro",
-        description: "Erro ao criar ordem de serviço.",
+        description: errorMessage,
         variant: "destructive",
       });
-      return { success: false, error };
+      
+      console.log('=== FIM CRIAÇÃO ORDEM (ERRO) ===');
+      return { success: false, error: errorMessage };
     }
   };
 
