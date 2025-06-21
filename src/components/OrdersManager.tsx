@@ -242,6 +242,10 @@ const NewOrderForm = ({
 }) => {
   const [serviceValue, setServiceValue] = useState(0);
   const [partsValue, setPartsValue] = useState(0);
+  const [selectedClient, setSelectedClient] = useState("");
+  const [selectedTechnician, setSelectedTechnician] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState("Média");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
 
   const totalValue = serviceValue + partsValue;
 
@@ -251,9 +255,9 @@ const NewOrderForm = ({
     const formDataObj = new FormData(form);
     
     const data = {
-      client_id: formDataObj.get('client') as string || null,
-      technician_id: formDataObj.get('technician') as string || null,
-      priority: formDataObj.get('priority') as string,
+      client_id: selectedClient || null,
+      technician_id: selectedTechnician || null,
+      priority: selectedPriority,
       expected_date: formDataObj.get('expectedDate') as string || null,
       description: formDataObj.get('description') as string,
       diagnosis: formDataObj.get('diagnosis') as string || null,
@@ -261,9 +265,10 @@ const NewOrderForm = ({
       service_value: serviceValue || 0,
       parts_value: partsValue || 0,
       total_value: totalValue || 0,
-      payment_method: formDataObj.get('paymentMethod') as string || null,
+      payment_method: selectedPaymentMethod || null,
     };
 
+    console.log('Dados do formulário:', data);
     onSubmit(data);
   };
 
@@ -280,7 +285,7 @@ const NewOrderForm = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="client">Cliente</Label>
-              <Select name="client">
+              <Select value={selectedClient} onValueChange={setSelectedClient}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o cliente" />
                 </SelectTrigger>
@@ -296,11 +301,10 @@ const NewOrderForm = ({
                   )}
                 </SelectContent>
               </Select>
-              <Input name="client" type="hidden" />
             </div>
             <div>
               <Label htmlFor="technician">Técnico Responsável</Label>
-              <Select name="technician">
+              <Select value={selectedTechnician} onValueChange={setSelectedTechnician}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o técnico" />
                 </SelectTrigger>
@@ -316,14 +320,13 @@ const NewOrderForm = ({
                   )}
                 </SelectContent>
               </Select>
-              <Input name="technician" type="hidden" />
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="priority">Prioridade</Label>
-              <Select name="priority" defaultValue="Média" required>
+              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a prioridade" />
                 </SelectTrigger>
@@ -333,7 +336,6 @@ const NewOrderForm = ({
                   <SelectItem value="Baixa">Baixa</SelectItem>
                 </SelectContent>
               </Select>
-              <Input name="priority" type="hidden" />
             </div>
             <div>
               <Label htmlFor="expectedDate">Data Prevista</Label>
@@ -408,7 +410,7 @@ const NewOrderForm = ({
           
           <div>
             <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select name="paymentMethod">
+            <Select value={selectedPaymentMethod} onValueChange={setSelectedPaymentMethod}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione a forma de pagamento" />
               </SelectTrigger>
@@ -419,13 +421,14 @@ const NewOrderForm = ({
                 <SelectItem value="boleto">Boleto</SelectItem>
               </SelectContent>
             </Select>
-            <Input name="paymentMethod" type="hidden" />
           </div>
         </TabsContent>
       </Tabs>
       
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline">Cancelar</Button>
+        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
+          Cancelar
+        </Button>
         <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
           Criar Ordem de Serviço
         </Button>

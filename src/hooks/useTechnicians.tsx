@@ -15,16 +15,27 @@ export const useTechnicians = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchTechnicians = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
+      setLoading(true);
+      console.log('Buscando técnicos para usuário:', user.id);
+      
       const { data, error } = await supabase
         .from('technicians')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase ao buscar técnicos:', error);
+        throw error;
+      }
+      
+      console.log('Técnicos encontrados:', data?.length || 0);
       setTechnicians(data || []);
     } catch (error) {
       console.error('Erro ao buscar técnicos:', error);
@@ -39,9 +50,18 @@ export const useTechnicians = () => {
   };
 
   const createTechnician = async (technicianData: Omit<TechnicianInsert, 'user_id'>) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
 
     try {
+      console.log('Criando técnico:', technicianData);
+      
       const { data, error } = await supabase
         .from('technicians')
         .insert({
@@ -51,8 +71,12 @@ export const useTechnicians = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase ao criar técnico:', error);
+        throw error;
+      }
       
+      console.log('Técnico criado com sucesso:', data);
       setTechnicians(prev => [data, ...prev]);
       toast({
         title: "Técnico Cadastrado",

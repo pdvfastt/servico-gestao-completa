@@ -15,16 +15,27 @@ export const useServiceOrders = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
+      setLoading(true);
+      console.log('Buscando ordens de serviço para usuário:', user.id);
+      
       const { data, error } = await supabase
         .from('service_orders')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase ao buscar ordens:', error);
+        throw error;
+      }
+      
+      console.log('Ordens encontradas:', data?.length || 0);
       setOrders(data || []);
     } catch (error) {
       console.error('Erro ao buscar ordens de serviço:', error);
@@ -39,9 +50,18 @@ export const useServiceOrders = () => {
   };
 
   const createOrder = async (orderData: Omit<ServiceOrderInsert, 'user_id'>) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
 
     try {
+      console.log('Criando ordem de serviço:', orderData);
+      
       const { data, error } = await supabase
         .from('service_orders')
         .insert({
@@ -51,8 +71,12 @@ export const useServiceOrders = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase ao criar ordem:', error);
+        throw error;
+      }
       
+      console.log('Ordem criada com sucesso:', data);
       setOrders(prev => [data, ...prev]);
       toast({
         title: "Ordem de Serviço Criada",

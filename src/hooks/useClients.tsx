@@ -15,16 +15,27 @@ export const useClients = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchClients = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     
     try {
+      setLoading(true);
+      console.log('Buscando clientes para usuário:', user.id);
+      
       const { data, error } = await supabase
         .from('clients')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase ao buscar clientes:', error);
+        throw error;
+      }
+      
+      console.log('Clientes encontrados:', data?.length || 0);
       setClients(data || []);
     } catch (error) {
       console.error('Erro ao buscar clientes:', error);
@@ -39,9 +50,18 @@ export const useClients = () => {
   };
 
   const createClient = async (clientData: Omit<ClientInsert, 'user_id'>) => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
 
     try {
+      console.log('Criando cliente:', clientData);
+      
       const { data, error } = await supabase
         .from('clients')
         .insert({
@@ -51,8 +71,12 @@ export const useClients = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro Supabase ao criar cliente:', error);
+        throw error;
+      }
       
+      console.log('Cliente criado com sucesso:', data);
       setClients(prev => [data, ...prev]);
       toast({
         title: "Cliente Cadastrado",
