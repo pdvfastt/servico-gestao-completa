@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ import TechnicianOrdersPage from "@/components/TechnicianOrdersPage";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserManagement();
+  const { isAdmin, userRole } = useUserManagement();
   const { settings } = useCompanySettings();
   const isMobile = useIsMobile();
 
@@ -66,6 +67,11 @@ const Index = () => {
     checkIfTechnician();
   }, [user]);
 
+  // Função para verificar se deve mostrar a aba Configurações
+  const shouldShowSettings = () => {
+    return isAdmin || userRole === 'admin';
+  };
+
   const tabsConfig = [
     { value: "dashboard", icon: BarChart3, label: "Dashboard", shortLabel: "Home" },
     { value: "orders", icon: FileText, label: "Ordens de Serviço", shortLabel: "OS" },
@@ -75,7 +81,7 @@ const Index = () => {
     { value: "services", icon: Wrench, label: "Serviços", shortLabel: "Serviços" },
     { value: "financial", icon: DollarSign, label: "Financeiro", shortLabel: "$$" },
     { value: "reports", icon: BarChart3, label: "Relatórios", shortLabel: "Reports" },
-    ...(isAdmin ? [{ value: "settings", icon: Cog, label: "Configurações", shortLabel: "Config" }] : [])
+    ...(shouldShowSettings() ? [{ value: "settings", icon: Cog, label: "Configurações", shortLabel: "Config" }] : [])
   ];
 
   return (
@@ -189,7 +195,7 @@ const Index = () => {
                   <ReportsManager />
                 </TabsContent>
 
-                {isAdmin && (
+                {shouldShowSettings() && (
                   <TabsContent value="settings" className="mt-0">
                     <SettingsManager />
                   </TabsContent>
