@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -344,6 +343,7 @@ const NewOrderForm = ({
     selectedPriority: "Média",
     invoiceNumber: "",
     serialReceiver: "",
+    serialTvBox: "",
     expectedDate: "",
     expectedTime: "",
     
@@ -358,7 +358,8 @@ const NewOrderForm = ({
     selectedPaymentMethod: ""
   });
 
-  const [showSerialField, setShowSerialField] = React.useState(false);
+  const [showSerialReceiverField, setShowSerialReceiverField] = React.useState(false);
+  const [showSerialTvBoxField, setShowSerialTvBoxField] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const totalValue = formState.serviceValue + formState.partsValue;
@@ -375,7 +376,18 @@ const NewOrderForm = ({
     const service = services.find(s => s.id === serviceId);
     if (service) {
       updateFormState('serviceValue', service.price || 0);
-      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
+      
+      // Verificar se deve mostrar campo Serial Receptor
+      const showReceiver = service.name?.toLowerCase().includes('cad serial elsys');
+      setShowSerialReceiverField(showReceiver);
+      
+      // Verificar se deve mostrar campo Serial TvBox
+      const showTvBox = service.name?.toLowerCase().includes('cad serial tvbox');
+      setShowSerialTvBoxField(showTvBox);
+      
+      // Limpar campos quando não são necessários
+      if (!showReceiver) updateFormState('serialReceiver', '');
+      if (!showTvBox) updateFormState('serialTvBox', '');
     }
   };
 
@@ -394,8 +406,13 @@ const NewOrderForm = ({
       return;
     }
 
-    if (showSerialField && !formState.serialReceiver) {
-      alert('Serial do Receptor é obrigatório para Instalação NPD');
+    if (showSerialReceiverField && !formState.serialReceiver) {
+      alert('Serial do Receptor é obrigatório para este tipo de serviço');
+      return;
+    }
+
+    if (showSerialTvBoxField && !formState.serialTvBox) {
+      alert('Serial TvBox é obrigatório para este tipo de serviço');
       return;
     }
     
@@ -415,8 +432,11 @@ const NewOrderForm = ({
       if (formState.invoiceNumber) {
         fullDescription += `\n\nNº Nota Fiscal: ${formState.invoiceNumber}`;
       }
-      if (showSerialField && formState.serialReceiver) {
+      if (showSerialReceiverField && formState.serialReceiver) {
         fullDescription += `\nSerial Receptor: ${formState.serialReceiver}`;
+      }
+      if (showSerialTvBoxField && formState.serialTvBox) {
+        fullDescription += `\nSerial TvBox: ${formState.serialTvBox}`;
       }
       
       const data = {
@@ -524,14 +544,26 @@ const NewOrderForm = ({
             />
           </div>
 
-          {showSerialField && (
+          {showSerialReceiverField && (
             <div>
               <Label htmlFor="serialReceiver">Serial Receptor *</Label>
               <Input 
                 placeholder="Digite o serial do receptor"
                 value={formState.serialReceiver}
                 onChange={(e) => updateFormState('serialReceiver', e.target.value)}
-                required={showSerialField}
+                required={showSerialReceiverField}
+              />
+            </div>
+          )}
+
+          {showSerialTvBoxField && (
+            <div>
+              <Label htmlFor="serialTvBox">Serial TvBox *</Label>
+              <Input 
+                placeholder="Digite o serial do TvBox"
+                value={formState.serialTvBox}
+                onChange={(e) => updateFormState('serialTvBox', e.target.value)}
+                required={showSerialTvBoxField}
               />
             </div>
           )}
