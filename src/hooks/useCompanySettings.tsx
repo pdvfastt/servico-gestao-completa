@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,7 +28,6 @@ export const useCompanySettings = () => {
       setLoading(true);
       console.log('Buscando configurações da empresa para usuário:', user.id);
       
-      // Usar query direta já que a tabela não está nos tipos ainda
       const { data, error } = await supabase
         .from('company_settings' as any)
         .select('*')
@@ -46,18 +44,19 @@ export const useCompanySettings = () => {
         setSettings({
           id: data.id,
           company_name: data.company_name,
-          company_logo_url: data.company_logo_url || undefined,
+          company_logo_url: data.company_logo_url || 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
           primary_color: data.primary_color,
           secondary_color: data.secondary_color,
           accent_color: data.accent_color,
         });
       } else {
-        // Configurações padrão se não existir
+        // Configurações padrão baseadas na logomarca
         const defaultSettings: CompanySettings = {
           company_name: 'Sistema de Gestão de OS',
-          primary_color: '#2563eb',
-          secondary_color: '#059669',
-          accent_color: '#dc2626',
+          company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
+          primary_color: '#FF4500',
+          secondary_color: '#00BFFF',
+          accent_color: '#32CD32',
         };
         setSettings(defaultSettings);
       }
@@ -66,9 +65,10 @@ export const useCompanySettings = () => {
       // Definir configurações padrão em caso de erro
       const defaultSettings: CompanySettings = {
         company_name: 'Sistema de Gestão de OS',
-        primary_color: '#2563eb',
-        secondary_color: '#059669',
-        accent_color: '#dc2626',
+        company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
+        primary_color: '#FF4500',
+        secondary_color: '#00BFFF',
+        accent_color: '#32CD32',
       };
       setSettings(defaultSettings);
       
@@ -98,7 +98,6 @@ export const useCompanySettings = () => {
       const updatedSettings = { ...settings, ...newSettings };
       
       if (settings?.id) {
-        // Atualizar configurações existentes usando query direta
         const { data, error } = await supabase
           .from('company_settings' as any)
           .update({
@@ -124,7 +123,6 @@ export const useCompanySettings = () => {
           accent_color: data.accent_color,
         });
       } else {
-        // Criar novas configurações usando query direta
         const { data, error } = await supabase
           .from('company_settings' as any)
           .insert({

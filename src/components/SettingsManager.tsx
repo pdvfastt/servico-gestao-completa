@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +65,51 @@ const SettingsManager = () => {
     });
   };
 
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione um arquivo de imagem válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar tamanho (máximo 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Erro",
+        description: "A imagem deve ter no máximo 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Converter para base64 para demonstração (em um sistema real, você usaria um serviço de upload)
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target?.result as string;
+        await handleSettingsUpdate('company_logo_url', base64);
+        toast({
+          title: "Sucesso",
+          description: "Logo atualizado com sucesso!",
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao fazer upload da imagem",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await createUser(newUser.email, newUser.password, newUser.fullName, newUser.role);
@@ -88,7 +132,6 @@ const SettingsManager = () => {
     if (!editingUser) return;
     
     try {
-      // Atualizar o role se mudou
       if (editedUser.role !== editingUser.role) {
         await updateUserRole(editingUser.id, editedUser.role);
       }
@@ -121,7 +164,7 @@ const SettingsManager = () => {
   const getRoleBadge = (role: string) => {
     const styles = {
       admin: "bg-red-100 text-red-800 border-red-200",
-      technician: "bg-blue-100 text-blue-800 border-blue-200",
+      technician: "bg-cyan-100 text-cyan-800 border-cyan-200",
       attendant: "bg-green-100 text-green-800 border-green-200"
     };
     
@@ -140,7 +183,7 @@ const SettingsManager = () => {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 p-6">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-6">
         <Card className="max-w-md mx-auto mt-20 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
           <CardContent className="text-center p-8">
             <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
@@ -153,11 +196,11 @@ const SettingsManager = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-            <Settings className="h-8 w-8 text-blue-600" />
+            <Settings className="h-8 w-8 text-orange-600" />
             Configurações do Sistema
           </h1>
           <p className="text-gray-600">
@@ -187,12 +230,12 @@ const SettingsManager = () => {
 
           <TabsContent value="company">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
+              <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-5 w-5" />
                   Dados da Empresa
                 </CardTitle>
-                <CardDescription className="text-blue-100">
+                <CardDescription className="text-orange-100">
                   Configure as informações da sua empresa
                 </CardDescription>
               </CardHeader>
@@ -210,27 +253,48 @@ const SettingsManager = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="company_logo">Logomarca (URL)</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input
-                        id="company_logo"
-                        value={settings?.company_logo_url || ''}
-                        onChange={(e) => handleSettingsUpdate('company_logo_url', e.target.value)}
-                        placeholder="https://exemplo.com/logo.png"
-                      />
-                      <Button variant="outline" size="icon">
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {settings?.company_logo_url && (
-                      <div className="mt-2">
-                        <img 
-                          src={settings.company_logo_url} 
-                          alt="Logo da empresa" 
-                          className="h-16 w-auto object-contain border rounded"
+                    <Label htmlFor="company_logo">Logomarca</Label>
+                    <div className="space-y-3 mt-1">
+                      <div className="flex gap-2">
+                        <Input
+                          id="company_logo"
+                          value={settings?.company_logo_url || ''}
+                          onChange={(e) => handleSettingsUpdate('company_logo_url', e.target.value)}
+                          placeholder="https://exemplo.com/logo.png ou cole uma URL"
+                        />
+                        <Label htmlFor="logo_upload" className="cursor-pointer">
+                          <Button type="button" variant="outline" size="icon" asChild>
+                            <span>
+                              <Upload className="h-4 w-4" />
+                            </span>
+                          </Button>
+                        </Label>
+                        <Input
+                          id="logo_upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
                         />
                       </div>
-                    )}
+                      {settings?.company_logo_url && (
+                        <div className="mt-2">
+                          <img 
+                            src={settings.company_logo_url} 
+                            alt="Logo da empresa" 
+                            className="h-20 w-auto object-contain border rounded bg-white p-2"
+                            onError={(e) => {
+                              console.error('Erro ao carregar imagem:', e);
+                              toast({
+                                title: "Erro",
+                                description: "Não foi possível carregar a imagem",
+                                variant: "destructive",
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -239,12 +303,12 @@ const SettingsManager = () => {
 
           <TabsContent value="appearance">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-t-lg">
+              <CardHeader className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="h-5 w-5" />
                   Personalização de Cores
                 </CardTitle>
-                <CardDescription className="text-purple-100">
+                <CardDescription className="text-cyan-100">
                   Customize as cores do sistema
                 </CardDescription>
               </CardHeader>
@@ -256,14 +320,14 @@ const SettingsManager = () => {
                       <Input
                         id="primary_color"
                         type="color"
-                        value={settings?.primary_color || '#2563eb'}
+                        value={settings?.primary_color || '#FF4500'}
                         onChange={(e) => handleSettingsUpdate('primary_color', e.target.value)}
                         className="w-16"
                       />
                       <Input
-                        value={settings?.primary_color || '#2563eb'}
+                        value={settings?.primary_color || '#FF4500'}
                         onChange={(e) => handleSettingsUpdate('primary_color', e.target.value)}
-                        placeholder="#2563eb"
+                        placeholder="#FF4500"
                         className="flex-1"
                       />
                     </div>
@@ -275,14 +339,14 @@ const SettingsManager = () => {
                       <Input
                         id="secondary_color"
                         type="color"
-                        value={settings?.secondary_color || '#059669'}
+                        value={settings?.secondary_color || '#00BFFF'}
                         onChange={(e) => handleSettingsUpdate('secondary_color', e.target.value)}
                         className="w-16"
                       />
                       <Input
-                        value={settings?.secondary_color || '#059669'}
+                        value={settings?.secondary_color || '#00BFFF'}
                         onChange={(e) => handleSettingsUpdate('secondary_color', e.target.value)}
-                        placeholder="#059669"
+                        placeholder="#00BFFF"
                         className="flex-1"
                       />
                     </div>
@@ -294,14 +358,14 @@ const SettingsManager = () => {
                       <Input
                         id="accent_color"
                         type="color"
-                        value={settings?.accent_color || '#dc2626'}
+                        value={settings?.accent_color || '#32CD32'}
                         onChange={(e) => handleSettingsUpdate('accent_color', e.target.value)}
                         className="w-16"
                       />
                       <Input
-                        value={settings?.accent_color || '#dc2626'}
+                        value={settings?.accent_color || '#32CD32'}
                         onChange={(e) => handleSettingsUpdate('accent_color', e.target.value)}
-                        placeholder="#dc2626"
+                        placeholder="#32CD32"
                         className="flex-1"
                       />
                     </div>
@@ -313,17 +377,17 @@ const SettingsManager = () => {
                   <div className="flex gap-3">
                     <div 
                       className="w-16 h-16 rounded-lg shadow-sm border"
-                      style={{ backgroundColor: settings?.primary_color || '#2563eb' }}
+                      style={{ backgroundColor: settings?.primary_color || '#FF4500' }}
                       title="Cor Primária"
                     ></div>
                     <div 
                       className="w-16 h-16 rounded-lg shadow-sm border"
-                      style={{ backgroundColor: settings?.secondary_color || '#059669' }}
+                      style={{ backgroundColor: settings?.secondary_color || '#00BFFF' }}
                       title="Cor Secundária"
                     ></div>
                     <div 
                       className="w-16 h-16 rounded-lg shadow-sm border"
-                      style={{ backgroundColor: settings?.accent_color || '#dc2626' }}
+                      style={{ backgroundColor: settings?.accent_color || '#32CD32' }}
                       title="Cor de Destaque"
                     ></div>
                   </div>
@@ -417,14 +481,14 @@ const SettingsManager = () => {
               <CardContent className="p-6">
                 {usersLoading ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {users.map((user) => (
                       <div key={user.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold">
+                          <div className="h-10 w-10 bg-gradient-to-br from-orange-500 to-cyan-500 rounded-full flex items-center justify-center text-white font-semibold">
                             {user.full_name.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -515,12 +579,12 @@ const SettingsManager = () => {
 
           <TabsContent value="system">
             <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-t-lg">
+              <CardHeader className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="h-5 w-5" />
                   Configurações do Sistema
                 </CardTitle>
-                <CardDescription className="text-orange-100">
+                <CardDescription className="text-purple-100">
                   Configure o comportamento geral do sistema
                 </CardDescription>
               </CardHeader>

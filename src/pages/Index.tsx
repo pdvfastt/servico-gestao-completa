@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import { useUserManagement } from '@/hooks/useUserManagement';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 import Dashboard from "@/components/Dashboard";
 import ClientsManager from "@/components/ClientsManager";
 import TechniciansManager from "@/components/TechniciansManager";
@@ -30,25 +30,35 @@ import FinancialManager from "@/components/FinancialManager";
 import ReportsManager from "@/components/ReportsManager";
 import OrdersManager from "@/components/OrdersManager";
 import SettingsManager from "@/components/SettingsManager";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
   const { isAdmin } = useUserManagement();
+  const { settings } = useCompanySettings();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
       <div className="container mx-auto p-6">
         {/* Modern Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
             <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-br from-blue-500 to-green-500 p-3 rounded-xl shadow-md">
-                <Settings className="h-8 w-8 text-white" />
+              <div className="bg-gradient-to-br from-orange-500 to-cyan-500 p-3 rounded-xl shadow-md">
+                {settings?.company_logo_url ? (
+                  <img 
+                    src={settings.company_logo_url} 
+                    alt="Logo" 
+                    className="h-8 w-8 object-contain"
+                  />
+                ) : (
+                  <Settings className="h-8 w-8 text-white" />
+                )}
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent mb-2">
-                  Sistema de Gestão de OS
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-cyan-600 bg-clip-text text-transparent mb-2">
+                  {settings?.company_name || 'Sistema de Gestão de OS'}
                 </h1>
                 <p className="text-gray-600 text-lg">
                   Controle completo de ordens de serviço e gestão empresarial
@@ -56,6 +66,7 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <PWAInstallPrompt />
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-3 py-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
                 Sistema Online
