@@ -138,6 +138,48 @@ export const useFinancialRecords = () => {
     }
   };
 
+  const deleteRecord = async (id: string) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Removendo registro financeiro:', id);
+      
+      const { error } = await supabase
+        .from('financial_records')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro Supabase ao remover registro financeiro:', error);
+        throw error;
+      }
+      
+      console.log('Registro financeiro removido com sucesso');
+      setRecords(prev => prev.filter(record => record.id !== id));
+      toast({
+        title: "Registro Removido",
+        description: "O registro financeiro foi removido com sucesso!",
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao remover registro financeiro:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover registro financeiro.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   useEffect(() => {
     fetchRecords();
   }, [user]);
@@ -147,6 +189,7 @@ export const useFinancialRecords = () => {
     loading,
     createRecord,
     updateRecord,
+    deleteRecord,
     refetch: fetchRecords,
   };
 };

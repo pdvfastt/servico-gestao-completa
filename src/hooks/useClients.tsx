@@ -94,6 +94,92 @@ export const useClients = () => {
     }
   };
 
+  const updateClient = async (id: string, clientData: Partial<ClientInsert>) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Atualizando cliente:', id, clientData);
+      
+      const { data, error } = await supabase
+        .from('clients')
+        .update(clientData)
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase ao atualizar cliente:', error);
+        throw error;
+      }
+      
+      console.log('Cliente atualizado com sucesso:', data);
+      setClients(prev => prev.map(client => client.id === id ? data : client));
+      toast({
+        title: "Cliente Atualizado",
+        description: "O cliente foi atualizado com sucesso!",
+      });
+      return { success: true, data };
+    } catch (error) {
+      console.error('Erro ao atualizar cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar cliente.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
+  const deleteClient = async (id: string) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Removendo cliente:', id);
+      
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Erro Supabase ao remover cliente:', error);
+        throw error;
+      }
+      
+      console.log('Cliente removido com sucesso');
+      setClients(prev => prev.filter(client => client.id !== id));
+      toast({
+        title: "Cliente Removido",
+        description: "O cliente foi removido com sucesso!",
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao remover cliente:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover cliente.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   useEffect(() => {
     fetchClients();
   }, [user]);
@@ -102,6 +188,8 @@ export const useClients = () => {
     clients,
     loading,
     createClient,
+    updateClient,
+    deleteClient,
     refetch: fetchClients,
   };
 };

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Settings, 
@@ -17,14 +18,15 @@ import {
   Upload,
   Shield,
   UserCheck,
-  UserX
+  UserX,
+  Trash2
 } from "lucide-react";
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useUserManagement } from '@/hooks/useUserManagement';
 
 const SettingsManager = () => {
   const { settings, loading: settingsLoading, updateSettings } = useCompanySettings();
-  const { users, loading: usersLoading, isAdmin, createUser, updateUserRole } = useUserManagement();
+  const { users, loading: usersLoading, isAdmin, createUser, updateUserRole, deleteUser } = useUserManagement();
   
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [newUser, setNewUser] = useState({
@@ -47,6 +49,13 @@ const SettingsManager = () => {
     }
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    const result = await deleteUser(userId);
+    if (result.success) {
+      console.log(`Usuário ${userName} excluído com sucesso`);
+    }
+  };
+
   const getRoleBadge = (role: string) => {
     const styles = {
       admin: "bg-red-100 text-red-800 border-red-200",
@@ -56,7 +65,7 @@ const SettingsManager = () => {
     
     const labels = {
       admin: "Administrador",
-      technician: "Técnico",
+      technician: "Técnico", 
       attendant: "Atendente"
     };
 
@@ -372,6 +381,30 @@ const SettingsManager = () => {
                               <SelectItem value="admin">Administrador</SelectItem>
                             </SelectContent>
                           </Select>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="icon" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Tem certeza que deseja excluir o usuário "{user.full_name}"? Esta ação não pode ser desfeita.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => handleDeleteUser(user.id, user.full_name)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Excluir
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     ))}

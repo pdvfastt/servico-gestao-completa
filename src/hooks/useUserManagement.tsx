@@ -79,19 +79,67 @@ export const useUserManagement = () => {
     }
 
     try {
-      // For now, simulate user creation since we don't have admin.createUser
-      toast({
-        title: "Funcionalidade em Desenvolvimento",
-        description: "A criação de usuários será implementada após a configuração do admin no Supabase.",
-        variant: "default",
+      console.log('Criando usuário:', { email, fullName, role });
+      
+      // Criar usuário através do auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+        },
       });
+
+      if (authError) {
+        console.error('Erro ao criar usuário:', authError);
+        
+        if (authError.message.includes('already registered')) {
+          toast({
+            title: "Erro",
+            description: "Este email já está cadastrado no sistema.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro",
+            description: authError.message || "Erro ao criar usuário.",
+            variant: "destructive",
+          });
+        }
+        return { success: false, error: authError };
+      }
+
+      if (authData.user) {
+        // Atualizar o perfil com o role correto
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ role })
+          .eq('id', authData.user.id);
+
+        if (profileError) {
+          console.error('Erro ao atualizar perfil:', profileError);
+        }
+
+        // Recarregar lista de usuários
+        await fetchUsers();
+        
+        toast({
+          title: "Usuário Criado",
+          description: `Usuário ${fullName} foi criado com sucesso!`,
+        });
+        
+        return { success: true, user: authData.user };
+      }
 
       return { success: false };
     } catch (error) {
-      console.error('Erro ao criar usuário:', error);
+      console.error('Erro inesperado ao criar usuário:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar usuário.",
+        description: "Erro inesperado ao criar usuário.",
         variant: "destructive",
       });
       return { success: false, error };
@@ -136,6 +184,45 @@ export const useUserManagement = () => {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    if (!isAdmin) {
+      toast({
+        title: "Erro",
+        description: "Apenas administradores podem excluir usuários.",
+        variant: "destructive",
+      });
+      return { success: false };
+    }
+
+    try {
+      // Primeiro, excluir o perfil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+      // Remover da lista local
+      setUsers(prev => prev.filter(user => user.id !== userId));
+
+      toast({
+        title: "Usuário Excluído",
+        description: "Usuário foi excluído com sucesso!",
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir usuário.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, [user]);
@@ -146,6 +233,7 @@ export const useUserManagement = () => {
     isAdmin,
     createUser,
     updateUserRole,
+    deleteUser,
     refetch: fetchUsers,
   };
 };
