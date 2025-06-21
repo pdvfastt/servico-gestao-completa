@@ -431,6 +431,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_technician_id_by_user: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _user_id: string

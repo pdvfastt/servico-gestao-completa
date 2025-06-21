@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +24,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 import Dashboard from "@/components/Dashboard";
 import ClientsManager from "@/components/ClientsManager";
 import TechniciansManager from "@/components/TechniciansManager";
@@ -34,6 +34,7 @@ import ReportsManager from "@/components/ReportsManager";
 import OrdersManager from "@/components/OrdersManager";
 import SettingsManager from "@/components/SettingsManager";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import TechnicianOrdersPage from "@/components/TechnicianOrdersPage";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -42,9 +43,33 @@ const Index = () => {
   const { settings } = useCompanySettings();
   const isMobile = useIsMobile();
 
+  // Verificar se o usuário é um técnico
+  const [isTechnician, setIsTechnician] = useState(false);
+
+  useEffect(() => {
+    const checkIfTechnician = async () => {
+      if (!user) return;
+      
+      try {
+        const { data } = await supabase
+          .from('technicians')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
+        setIsTechnician(!!data);
+      } catch (error) {
+        setIsTechnician(false);
+      }
+    };
+
+    checkIfTechnician();
+  }, [user]);
+
   const tabsConfig = [
     { value: "dashboard", icon: BarChart3, label: "Dashboard", shortLabel: "Home" },
     { value: "orders", icon: FileText, label: "Ordens de Serviço", shortLabel: "OS" },
+    ...(isTechnician ? [{ value: "technician-orders", icon: Wrench, label: "Minhas OS", shortLabel: "Minhas OS" }] : []),
     { value: "clients", icon: Users, label: "Clientes", shortLabel: "Clientes" },
     { value: "technicians", icon: User, label: "Técnicos", shortLabel: "Técnicos" },
     { value: "services", icon: Wrench, label: "Serviços", shortLabel: "Serviços" },
@@ -137,6 +162,12 @@ const Index = () => {
                 <TabsContent value="orders" className="mt-0">
                   <OrdersManager />
                 </TabsContent>
+
+                {isTechnician && (
+                  <TabsContent value="technician-orders" className="mt-0">
+                    <TechnicianOrdersPage />
+                  </TabsContent>
+                )}
 
                 <TabsContent value="clients" className="mt-0">
                   <ClientsManager />
