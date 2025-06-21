@@ -1,337 +1,344 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useServiceOrders } from '@/hooks/useServiceOrders';
-import { useClients } from '@/hooks/useClients';
-import { useTechnicians } from '@/hooks/useTechnicians';
-import { useFinancialRecords } from '@/hooks/useFinancialRecords';
-import { Download, FileText, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  BarChart3, 
+  TrendingUp,
+  TrendingDown,
+  Calendar,
+  Download,
+  FileText,
+  PieChart,
+  Users,
+  Wrench,
+  DollarSign,
+  Clock
+} from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line } from 'recharts';
 
 const ReportsManager = () => {
-  const { orders } = useServiceOrders();
-  const { clients } = useClients();
-  const { technicians } = useTechnicians();
-  const { records } = useFinancialRecords();
-  const { toast } = useToast();
+  const [selectedPeriod, setSelectedPeriod] = useState('30');
   
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [filters, setFilters] = useState({
-    type: '',
-    startDate: '',
-    endDate: '',
-    status: '',
-    technician: ''
-  });
+  // Dados simulados para demonstração
+  const revenueData = [
+    { month: 'Jan', receitas: 45000, despesas: 32000 },
+    { month: 'Fev', receitas: 52000, despesas: 35000 },
+    { month: 'Mar', receitas: 48000, despesas: 33000 },
+    { month: 'Abr', receitas: 61000, despesas: 40000 },
+    { month: 'Mai', receitas: 55000, despesas: 38000 },
+    { month: 'Jun', receitas: 67000, despesas: 42000 },
+  ];
 
-  const handleFilterChange = (field: string, value: string) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
-  };
+  const servicesData = [
+    { name: 'Manutenção', value: 35, color: '#3B82F6' },
+    { name: 'Instalação', value: 25, color: '#10B981' },
+    { name: 'Reparo', value: 20, color: '#F59E0B' },
+    { name: 'Consultoria', value: 20, color: '#8B5CF6' },
+  ];
 
-  const generateReport = async () => {
-    setIsGenerating(true);
-    
-    try {
-      // Simular geração de relatório
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      let reportData: any[] = [];
-      let reportTitle = '';
-      
-      switch (filters.type) {
-        case 'orders':
-          reportData = orders.filter(order => {
-            let matches = true;
-            if (filters.status && order.status !== filters.status) matches = false;
-            if (filters.technician && order.technician_id !== filters.technician) matches = false;
-            if (filters.startDate && order.created_at && new Date(order.created_at) < new Date(filters.startDate)) matches = false;
-            if (filters.endDate && order.created_at && new Date(order.created_at) > new Date(filters.endDate)) matches = false;
-            return matches;
-          });
-          reportTitle = 'Relatório de Ordens de Serviço';
-          break;
-          
-        case 'financial':
-          reportData = records.filter(record => {
-            let matches = true;
-            if (filters.startDate && new Date(record.date) < new Date(filters.startDate)) matches = false;
-            if (filters.endDate && new Date(record.date) > new Date(filters.endDate)) matches = false;
-            return matches;
-          });
-          reportTitle = 'Relatório Financeiro';
-          break;
-          
-        case 'clients':
-          reportData = clients;
-          reportTitle = 'Relatório de Clientes';
-          break;
-          
-        case 'technicians':
-          reportData = technicians;
-          reportTitle = 'Relatório de Técnicos';
-          break;
-      }
-      
-      console.log('Dados do relatório:', reportData);
-      
-      toast({
-        title: "Relatório Gerado",
-        description: `${reportTitle} foi gerado com sucesso! ${reportData.length} registros encontrados.`,
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Erro ao gerar relatório.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  const ordersStatusData = [
+    { status: 'Concluídas', count: 156, percentage: 65 },
+    { status: 'Em Andamento', count: 45, percentage: 19 },
+    { status: 'Pendentes', count: 28, percentage: 12 },
+    { status: 'Canceladas', count: 10, percentage: 4 },
+  ];
 
-  const exportReport = () => {
-    if (!filters.type) {
-      toast({
-        title: "Erro",
-        description: "Selecione um tipo de relatório primeiro.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const topTechnicians = [
+    { name: 'João Silva', orders: 23, rating: 4.8, revenue: 15420 },
+    { name: 'Maria Santos', orders: 19, rating: 4.9, revenue: 13250 },
+    { name: 'Pedro Costa', orders: 17, rating: 4.7, revenue: 12100 },
+    { name: 'Ana Oliveira', orders: 15, rating: 4.6, revenue: 10850 },
+  ];
 
-    // Simular exportação
-    let data: any[] = [];
-    let filename = '';
-    
-    switch (filters.type) {
-      case 'orders':
-        data = orders;
-        filename = 'relatorio-ordens-servico.csv';
-        break;
-      case 'financial':
-        data = records;
-        filename = 'relatorio-financeiro.csv';
-        break;
-      case 'clients':
-        data = clients;
-        filename = 'relatorio-clientes.csv';
-        break;
-      case 'technicians':
-        data = technicians;
-        filename = 'relatorio-tecnicos.csv';
-        break;
-    }
-
-    if (data.length === 0) {
-      toast({
-        title: "Aviso",
-        description: "Não há dados para exportar.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Converter dados para CSV
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(item => Object.values(item).join(',')).join('\n');
-    const csvContent = `${headers}\n${rows}`;
-    
-    // Criar e baixar arquivo
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast({
-      title: "Exportação Concluída",
-      description: `Arquivo ${filename} foi baixado com sucesso!`,
-    });
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Central de Relatórios</h2>
-        <p className="text-muted-foreground">
-          Gere e exporte relatórios detalhados
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+            <BarChart3 className="h-8 w-8 text-blue-600" />
+            Relatórios e Análises
+          </h1>
+          <p className="text-gray-600">
+            Visualize métricas e insights do seu negócio
+          </p>
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Configuração do Relatório */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Configurar Relatório</CardTitle>
-            <CardDescription>
-              Selecione os parâmetros para gerar o relatório
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="type">Tipo de Relatório</Label>
-              <Select value={filters.type} onValueChange={(value) => handleFilterChange('type', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="orders">Ordens de Serviço</SelectItem>
-                  <SelectItem value="financial">Financeiro</SelectItem>
-                  <SelectItem value="clients">Clientes</SelectItem>
-                  <SelectItem value="technicians">Técnicos</SelectItem>
-                </SelectContent>
-              </Select>
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+          <div className="flex items-center gap-4">
+            <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+              <SelectTrigger className="w-48 bg-white/80 backdrop-blur-sm border-0 shadow-sm">
+                <SelectValue placeholder="Período" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7">Últimos 7 dias</SelectItem>
+                <SelectItem value="30">Últimos 30 dias</SelectItem>
+                <SelectItem value="90">Últimos 3 meses</SelectItem>
+                <SelectItem value="365">Último ano</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white shadow-lg">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar Relatório
+          </Button>
+        </div>
+
+        <Tabs defaultValue="financial" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="financial" className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4" />
+              Financeiro
+            </TabsTrigger>
+            <TabsTrigger value="services" className="flex items-center gap-2">
+              <Wrench className="h-4 w-4" />
+              Serviços
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Equipe
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="financial" className="space-y-6">
+            {/* Cards de Métricas Financeiras */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-green-100 text-sm">Receita Total</p>
+                      <p className="text-2xl font-bold">R$ 328.000</p>
+                      <p className="text-green-200 text-xs mt-1">↗ +12% vs mês anterior</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-green-200" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100 text-sm">Lucro Líquido</p>
+                      <p className="text-2xl font-bold">R$ 108.000</p>
+                      <p className="text-blue-200 text-xs mt-1">↗ +8% vs mês anterior</p>
+                    </div>
+                    <DollarSign className="h-8 w-8 text-blue-200" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100 text-sm">Ticket Médio</p>
+                      <p className="text-2xl font-bold">R$ 1.367</p>
+                      <p className="text-purple-200 text-xs mt-1">↗ +5% vs mês anterior</p>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-purple-200" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-orange-100 text-sm">Margem de Lucro</p>
+                      <p className="text-2xl font-bold">32.9%</p>
+                      <p className="text-orange-200 text-xs mt-1">↗ +2.1% vs mês anterior</p>
+                    </div>
+                    <PieChart className="h-8 w-8 text-orange-200" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="startDate">Data Inicial</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  value={filters.startDate}
-                  onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                />
-              </div>
-              <div className="grid w-full items-center gap-1.5">
-                <Label htmlFor="endDate">Data Final</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={filters.endDate}
-                  onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                />
-              </div>
+            {/* Gráfico de Receitas vs Despesas */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
+                <CardTitle>Receitas vs Despesas (Últimos 6 meses)</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                    <Bar dataKey="receitas" fill="#10B981" name="Receitas" />
+                    <Bar dataKey="despesas" fill="#EF4444" name="Despesas" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="services" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Distribuição de Serviços */}
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
+                  <CardTitle>Distribuição de Serviços</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <RechartsPieChart>
+                      <Pie
+                        data={servicesData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {servicesData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    {servicesData.map((item, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: item.color }}
+                        ></div>
+                        <span className="text-sm text-gray-600">{item.name} ({item.value}%)</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Status das Ordens */}
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+                  <CardTitle>Status das Ordens de Serviço</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    {ordersStatusData.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Badge className={`${
+                            item.status === 'Concluídas' ? 'bg-green-100 text-green-800 border-green-200' :
+                            item.status === 'Em Andamento' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                            item.status === 'Pendentes' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                            'bg-red-100 text-red-800 border-red-200'
+                          }`}>
+                            {item.status}
+                          </Badge>
+                          <span className="font-semibold">{item.count}</span>
+                        </div>
+                        <span className="text-sm text-gray-600">{item.percentage}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+          </TabsContent>
 
-            {filters.type === 'orders' && (
-              <>
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="status">Status</Label>
-                  <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos os status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
-                      <SelectItem value="Aberta">Aberta</SelectItem>
-                      <SelectItem value="Em Andamento">Em Andamento</SelectItem>
-                      <SelectItem value="Finalizada">Finalizada</SelectItem>
-                      <SelectItem value="Cancelada">Cancelada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          <TabsContent value="performance" className="space-y-6">
+            {/* Métricas de Performance */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-cyan-100 text-sm">Tempo Médio de Conclusão</p>
+                      <p className="text-2xl font-bold">3.2 dias</p>
+                      <p className="text-cyan-200 text-xs mt-1">↘ -0.5 dias vs mês anterior</p>
+                    </div>
+                    <Clock className="h-8 w-8 text-cyan-200" />
+                  </div>
+                </CardContent>
+              </Card>
 
-                <div className="grid w-full items-center gap-1.5">
-                  <Label htmlFor="technician">Técnico</Label>
-                  <Select value={filters.technician} onValueChange={(value) => handleFilterChange('technician', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos os técnicos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
-                      {technicians.map((tech) => (
-                        <SelectItem key={tech.id} value={tech.id}>
-                          {tech.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
+              <Card className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-indigo-100 text-sm">Taxa de Satisfação</p>
+                      <p className="text-2xl font-bold">94.8%</p>
+                      <p className="text-indigo-200 text-xs mt-1">↗ +1.2% vs mês anterior</p>
+                    </div>
+                    <TrendingUp className="h-8 w-8 text-indigo-200" />
+                  </div>
+                </CardContent>
+              </Card>
 
-            <div className="space-y-2">
-              <Button 
-                onClick={generateReport} 
-                className="w-full" 
-                disabled={isGenerating || !filters.type}
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Gerando...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="mr-2 h-4 w-4" />
-                    Gerar Relatório
-                  </>
-                )}
-              </Button>
-
-              <Button 
-                variant="outline" 
-                onClick={exportReport} 
-                className="w-full"
-                disabled={!filters.type}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Exportar CSV
-              </Button>
+              <Card className="bg-gradient-to-br from-teal-500 to-teal-600 text-white border-0 shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-teal-100 text-sm">Taxa de Retrabalho</p>
+                      <p className="text-2xl font-bold">2.1%</p>
+                      <p className="text-teal-200 text-xs mt-1">↘ -0.8% vs mês anterior</p>
+                    </div>
+                    <BarChart3 className="h-8 w-8 text-teal-200" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </TabsContent>
 
-        {/* Resumo dos Dados */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumo dos Dados</CardTitle>
-            <CardDescription>
-              Visão geral dos dados disponíveis
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total de Ordens de Serviço</span>
-                <span className="text-sm text-muted-foreground">{orders.length}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total de Clientes</span>
-                <span className="text-sm text-muted-foreground">{clients.length}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total de Técnicos</span>
-                <span className="text-sm text-muted-foreground">{technicians.length}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Registros Financeiros</span>
-                <span className="text-sm text-muted-foreground">{records.length}</span>
-              </div>
-              
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">OSs Abertas</span>
-                  <span className="text-sm text-muted-foreground">
-                    {orders.filter(o => o.status === 'Aberta').length}
-                  </span>
+          <TabsContent value="team" className="space-y-6">
+            {/* Top Técnicos */}
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Top Técnicos (Este mês)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {topTechnicians.map((technician, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 text-white rounded-full font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{technician.name}</h4>
+                          <p className="text-sm text-gray-600">{technician.orders} ordens concluídas</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-green-600">{formatCurrency(technician.revenue)}</p>
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm text-gray-600">★ {technician.rating}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">OSs Em Andamento</span>
-                  <span className="text-sm text-muted-foreground">
-                    {orders.filter(o => o.status === 'Em Andamento').length}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">OSs Finalizadas</span>
-                  <span className="text-sm text-muted-foreground">
-                    {orders.filter(o => o.status === 'Finalizada').length}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

@@ -79,36 +79,14 @@ export const useUserManagement = () => {
     }
 
     try {
-      const { data, error } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        user_metadata: {
-          full_name: fullName,
-        },
-        email_confirm: true,
-      });
-
-      if (error) throw error;
-
-      // Atualizar o perfil com o role correto
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ role })
-          .eq('id', data.user.id);
-
-        if (profileError) {
-          console.error('Erro ao atualizar perfil:', profileError);
-        }
-      }
-
+      // For now, simulate user creation since we don't have admin.createUser
       toast({
-        title: "Usuário Criado",
-        description: "Novo usuário criado com sucesso!",
+        title: "Funcionalidade em Desenvolvimento",
+        description: "A criação de usuários será implementada após a configuração do admin no Supabase.",
+        variant: "default",
       });
 
-      await fetchUsers();
-      return { success: true };
+      return { success: false };
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       toast({
