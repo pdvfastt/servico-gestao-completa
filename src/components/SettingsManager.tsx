@@ -27,6 +27,7 @@ import {
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useToast } from '@/hooks/use-toast';
+import PermissionsManager from '@/components/PermissionsManager';
 
 const SettingsManager = () => {
   const { settings, loading: settingsLoading, updateSettings } = useCompanySettings();
@@ -209,7 +210,7 @@ const SettingsManager = () => {
         </div>
 
         <Tabs defaultValue="company" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8 bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-5 mb-8 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="company" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Empresa
@@ -221,6 +222,10 @@ const SettingsManager = () => {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuários
+            </TabsTrigger>
+            <TabsTrigger value="permissions" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Permissões
             </TabsTrigger>
             <TabsTrigger value="system" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -573,6 +578,23 @@ const SettingsManager = () => {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="permissions">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Controle de Permissões
+                </CardTitle>
+                <CardDescription className="text-purple-100">
+                  Gerencie o acesso às funcionalidades do sistema para cada usuário
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                <PermissionsManager />
               </CardContent>
             </Card>
           </TabsContent>

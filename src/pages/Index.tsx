@@ -24,6 +24,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import Dashboard from "@/components/Dashboard";
@@ -42,6 +43,7 @@ const Index = () => {
   const { user, signOut } = useAuth();
   const { isAdmin } = useUserManagement();
   const { settings } = useCompanySettings();
+  const { permissions, hasPermission } = usePermissions();
   const isMobile = useIsMobile();
 
   // Verificar se o usuário é um técnico
@@ -67,22 +69,79 @@ const Index = () => {
     checkIfTechnician();
   }, [user]);
 
-  // Função para verificar se deve mostrar a aba Configurações
-  const shouldShowSettings = () => {
-    return isAdmin;
-  };
-
+  // Criar configuração das abas baseada nas permissões
   const tabsConfig = [
-    { value: "dashboard", icon: BarChart3, label: "Dashboard", shortLabel: "Home" },
-    { value: "orders", icon: FileText, label: "Ordens de Serviço", shortLabel: "OS" },
-    ...(isTechnician ? [{ value: "technician-orders", icon: Wrench, label: "Minhas OS", shortLabel: "Minhas OS" }] : []),
-    { value: "clients", icon: Users, label: "Clientes", shortLabel: "Clientes" },
-    { value: "technicians", icon: User, label: "Técnicos", shortLabel: "Técnicos" },
-    { value: "services", icon: Wrench, label: "Serviços", shortLabel: "Serviços" },
-    { value: "financial", icon: DollarSign, label: "Financeiro", shortLabel: "$$" },
-    { value: "reports", icon: BarChart3, label: "Relatórios", shortLabel: "Reports" },
-    ...(shouldShowSettings() ? [{ value: "settings", icon: Cog, label: "Configurações", shortLabel: "Config" }] : [])
-  ];
+    { 
+      value: "dashboard", 
+      icon: BarChart3, 
+      label: "Dashboard", 
+      shortLabel: "Home",
+      permission: "dashboard" as const
+    },
+    { 
+      value: "orders", 
+      icon: FileText, 
+      label: "Ordens de Serviço", 
+      shortLabel: "OS",
+      permission: "orders" as const
+    },
+    ...(isTechnician && hasPermission("technician_orders") ? [{
+      value: "technician-orders", 
+      icon: Wrench, 
+      label: "Minhas OS", 
+      shortLabel: "Minhas OS",
+      permission: "technician_orders" as const
+    }] : []),
+    { 
+      value: "clients", 
+      icon: Users, 
+      label: "Clientes", 
+      shortLabel: "Clientes",
+      permission: "clients" as const
+    },
+    { 
+      value: "technicians", 
+      icon: User, 
+      label: "Técnicos", 
+      shortLabel: "Técnicos",
+      permission: "technicians" as const
+    },
+    { 
+      value: "services", 
+      icon: Wrench, 
+      label: "Serviços", 
+      shortLabel: "Serviços",
+      permission: "services" as const
+    },
+    { 
+      value: "financial", 
+      icon: DollarSign, 
+      label: "Financeiro", 
+      shortLabel: "$$",
+      permission: "financial" as const
+    },
+    { 
+      value: "reports", 
+      icon: BarChart3, 
+      label: "Relatórios", 
+      shortLabel: "Reports",
+      permission: "reports" as const
+    },
+    ...(hasPermission("settings") ? [{
+      value: "settings", 
+      icon: Cog, 
+      label: "Configurações", 
+      shortLabel: "Config",
+      permission: "settings" as const
+    }] : [])
+  ].filter(tab => hasPermission(tab.permission));
+
+  // Garantir que o usuário sempre tenha acesso ao dashboard
+  useEffect(() => {
+    if (tabsConfig.length > 0 && !tabsConfig.find(tab => tab.value === activeTab)) {
+      setActiveTab(tabsConfig[0].value);
+    }
+  }, [tabsConfig, activeTab]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
@@ -161,44 +220,70 @@ const Index = () => {
               </div>
 
               <div className="p-3 md:p-6">
-                <TabsContent value="dashboard" className="mt-0">
-                  <Dashboard />
-                </TabsContent>
+                {hasPermission("dashboard") && (
+                  <TabsContent value="dashboard" className="mt-0">
+                    <Dashboard />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="orders" className="mt-0">
-                  <OrdersManager />
-                </TabsContent>
+                {hasPermission("orders") && (
+                  <TabsContent value="orders" className="mt-0">
+                    <OrdersManager />
+                  </TabsContent>
+                )}
 
-                {isTechnician && (
+                {isTechnician && hasPermission("technician_orders") && (
                   <TabsContent value="technician-orders" className="mt-0">
                     <TechnicianOrdersPage />
                   </TabsContent>
                 )}
 
-                <TabsContent value="clients" className="mt-0">
-                  <ClientsManager />
-                </TabsContent>
+                {hasPermission("clients") && (
+                  <TabsContent value="clients" className="mt-0">
+                    <ClientsManager />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="technicians" className="mt-0">
-                  <TechniciansManager />
-                </TabsContent>
+                {hasPermission("technicians") && (
+                  <TabsContent value="technicians" className="mt-0">
+                    <TechniciansManager />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="services" className="mt-0">
-                  <ServicesManager />
-                </TabsContent>
+                {hasPermission("services") && (
+                  <TabsContent value="services" className="mt-0">
+                    <ServicesManager />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="financial" className="mt-0">
-                  <FinancialManager />
-                </TabsContent>
+                {hasPermission("financial") && (
+                  <TabsContent value="financial" className="mt-0">
+                    <FinancialManager />
+                  </TabsContent>
+                )}
 
-                <TabsContent value="reports" className="mt-0">
-                  <ReportsManager />
-                </TabsContent>
+                {hasPermission("reports") && (
+                  <TabsContent value="reports" className="mt-0">
+                    <ReportsManager />
+                  </TabsContent>
+                )}
 
-                {shouldShowSettings() && (
+                {hasPermission("settings") && (
                   <TabsContent value="settings" className="mt-0">
                     <SettingsManager />
                   </TabsContent>
+                )}
+
+                {/* Mostrar mensagem se o usuário não tiver acesso a nenhuma funcionalidade */}
+                {tabsConfig.length === 0 && (
+                  <div className="text-center py-12">
+                    <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                    <h2 className="text-xl font-semibold text-gray-600 mb-2">Acesso Restrito</h2>
+                    <p className="text-gray-500">
+                      Você não tem permissão para acessar nenhuma funcionalidade do sistema. 
+                      Entre em contato com o administrador.
+                    </p>
+                  </div>
                 )}
               </div>
             </Tabs>

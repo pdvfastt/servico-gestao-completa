@@ -422,6 +422,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions: {
+        Row: {
+          created_at: string | null
+          granted: boolean
+          granted_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["permission_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          granted?: boolean
+          granted_by?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["permission_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          granted?: boolean
+          granted_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["permission_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -444,6 +474,16 @@ export type Database = {
       }
     }
     Enums: {
+      permission_type:
+        | "dashboard"
+        | "orders"
+        | "clients"
+        | "technicians"
+        | "services"
+        | "financial"
+        | "reports"
+        | "settings"
+        | "technician_orders"
       user_role: "admin" | "technician" | "attendant"
     }
     CompositeTypes: {
@@ -560,6 +600,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      permission_type: [
+        "dashboard",
+        "orders",
+        "clients",
+        "technicians",
+        "services",
+        "financial",
+        "reports",
+        "settings",
+        "technician_orders",
+      ],
       user_role: ["admin", "technician", "attendant"],
     },
   },
