@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 const Auth = () => {
   const { user, signIn, signUp, resetPassword } = useAuth();
   const { signInAsTechnician, loading: technicianLoading } = useTechnicianAuth();
+  const { settings } = useCompanySettings();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
@@ -32,6 +34,82 @@ const Auth = () => {
       window.location.href = '/';
     }
   }, [user]);
+
+  const renderLogo = () => {
+    const logoUrl = settings?.company_logo_url;
+    const companyName = settings?.company_name || 'Sistema de Gestão OS';
+    
+    if (logoUrl) {
+      return (
+        <div className="flex justify-center mb-6">
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
+            <img 
+              src={logoUrl} 
+              alt={companyName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to default icon if image fails to load
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement!.innerHTML = `
+                  <div class="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
+                    <svg class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                `;
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Default logo
+    return (
+      <div className="flex justify-center mb-6">
+        <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
+          <Shield className="h-10 w-10 text-white" />
+        </div>
+      </div>
+    );
+  };
+
+  const renderPasswordResetLogo = () => {
+    const logoUrl = settings?.company_logo_url;
+    const companyName = settings?.company_name || 'Sistema de Gestão OS';
+    
+    if (logoUrl) {
+      return (
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
+            <img 
+              src={logoUrl} 
+              alt={companyName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement!.innerHTML = `
+                  <div class="w-16 h-16 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center">
+                    <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                `;
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex justify-center mb-4">
+        <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center">
+          <Shield className="h-8 w-8 text-white" />
+        </div>
+      </div>
+    );
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,12 +229,7 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
         <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <CardHeader className="text-center">
-            {/* Logo */}
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center">
-                <Shield className="h-8 w-8 text-white" />
-              </div>
-            </div>
+            {renderPasswordResetLogo()}
             <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
               Recuperar Senha
             </CardTitle>
@@ -228,14 +301,9 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
       <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
         <CardHeader className="text-center">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
-              <Shield className="h-10 w-10 text-white" />
-            </div>
-          </div>
+          {renderLogo()}
           <CardTitle className="text-2xl font-bold text-gray-900">
-            Sistema de Gestão OS
+            {settings?.company_name || 'Sistema de Gestão OS'}
           </CardTitle>
           <CardDescription>
             Entre em sua conta ou crie uma nova
