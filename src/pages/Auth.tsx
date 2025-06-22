@@ -7,10 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from '@/hooks/useAuth';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, resetPassword } = useAuth();
+  const { settings } = useCompanySettings();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -91,8 +93,12 @@ const Auth = () => {
     <div className="min-h-screen bg-gradient-to-br from-red-500 via-gray-500 to-red-500 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Tecmax</h1>
-          <p className="text-red-100">Sistema de Gestão de Ordens de Serviço</p>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            {settings?.company_name || 'Tecmax'}
+          </h1>
+          <p className="text-red-100">
+            {settings?.company_description || 'Sistema de Gestão de Ordens de Serviço'}
+          </p>
         </div>
         
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
@@ -252,12 +258,24 @@ const Auth = () => {
         
         <footer className="bg-black text-white mt-8 p-4 rounded-lg text-center">
           <div className="flex items-center justify-center space-x-4">
-            <img 
-              src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
-              alt="Tecmax Logo" 
-              className="h-8 w-auto"
-            />
-            <p className="text-sm">&copy; 2024 Tecmax. Todos os direitos reservados.</p>
+            {settings?.company_logo_url ? (
+              <img 
+                src={settings.company_logo_url} 
+                alt="Logo da Empresa" 
+                className="h-8 w-auto"
+                onError={(e) => {
+                  // Fallback para logo padrão em caso de erro
+                  e.currentTarget.src = "https://i.postimg.cc/CLbCMsnH/logotecm.png";
+                }}
+              />
+            ) : (
+              <img 
+                src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
+                alt="Tecmax Logo" 
+                className="h-8 w-auto"
+              />
+            )}
+            <p className="text-sm">&copy; 2024 {settings?.company_name || 'Tecmax'}. Todos os direitos reservados.</p>
           </div>
         </footer>
       </div>
