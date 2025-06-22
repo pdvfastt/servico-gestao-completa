@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +18,7 @@ interface RecentOrdersProps {
   clients: any[];
   technicians: any[];
   services: any[];
-  onCreateOrder: (data: any) => void;
+  onCreateOrder: (data: any) => Promise<{ success: boolean; data?: any; error?: any }> | { success: boolean; data?: any; error?: any };
   onDeleteOrder: (orderId: string) => void;
 }
 
@@ -34,9 +33,13 @@ const RecentOrders = ({
   const [isNewOrderOpen, setIsNewOrderOpen] = React.useState(false);
 
   const handleCreateOrder = async (orderData: any) => {
-    const result = await onCreateOrder(orderData);
-    if (result?.success) {
-      setIsNewOrderOpen(false);
+    try {
+      const result = await onCreateOrder(orderData);
+      if (result?.success) {
+        setIsNewOrderOpen(false);
+      }
+    } catch (error) {
+      console.error('Error creating order:', error);
     }
   };
 
