@@ -1,7 +1,13 @@
+
 import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
+
+// Defensive check for React context
+if (!React || !React.useContext) {
+  console.error('React context is not available in tabs component');
+}
 
 const Tabs = TabsPrimitive.Root
 

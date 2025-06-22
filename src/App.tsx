@@ -8,11 +8,18 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
+// Ensure React is properly available globally
+if (typeof window !== 'undefined') {
+  (window as any).React = React;
+}
+
 const queryClient = new QueryClient();
 
 const App = () => {
   console.log('App rendering, React version:', React.version);
   console.log('React object:', React);
+  console.log('React.useContext:', React.useContext);
+  console.log('React.useState:', React.useState);
   
   return (
     <QueryClientProvider client={queryClient}>
