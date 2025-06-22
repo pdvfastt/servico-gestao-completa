@@ -1,9 +1,7 @@
 
 import * as React from "react"
 
-// Completely remove any dependency on @radix-ui/react-tooltip
-// Create fully functional simplified tooltip components
-
+// Simplified tooltip components that don't depend on Radix UI
 const TooltipProvider = ({ 
   children, 
   delayDuration,
@@ -18,7 +16,7 @@ const TooltipProvider = ({
   [key: string]: any;
 }) => {
   console.log('Using simplified TooltipProvider');
-  return <div {...props}>{children}</div>;
+  return <>{children}</>;
 };
 
 const Tooltip = ({ 
@@ -35,23 +33,29 @@ const Tooltip = ({
   [key: string]: any;
 }) => {
   console.log('Using simplified Tooltip');
-  return <div {...props}>{children}</div>;
+  return <>{children}</>;
 };
 
 const TooltipTrigger = React.forwardRef<
-  HTMLSpanElement,
-  React.HTMLAttributes<HTMLSpanElement> & {
+  HTMLElement,
+  React.HTMLAttributes<HTMLElement> & {
     asChild?: boolean;
     children: React.ReactNode;
   }
 >(({ children, asChild, ...props }, ref) => {
   console.log('Using simplified TooltipTrigger');
-  if (asChild) {
-    return React.isValidElement(children) 
-      ? React.cloneElement(children, { ref, ...props })
-      : <span ref={ref} {...props}>{children}</span>;
+  if (asChild && React.isValidElement(children)) {
+    // Clone the child element and pass through props
+    return React.cloneElement(children as React.ReactElement<any>, {
+      ...props,
+      ref
+    });
   }
-  return <span ref={ref} {...props}>{children}</span>;
+  return (
+    <span ref={ref as React.Ref<HTMLSpanElement>} {...props}>
+      {children}
+    </span>
+  );
 });
 TooltipTrigger.displayName = "TooltipTrigger";
 
