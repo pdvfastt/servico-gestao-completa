@@ -1,5 +1,4 @@
-
-import * as React from "react"
+import React from "react"
 import { cn } from "@/lib/utils"
 
 // Create a simple native tabs implementation to avoid Radix UI issues
