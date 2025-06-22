@@ -4,21 +4,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { useAuth } from '@/hooks/useAuth';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, resetPassword } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     fullName: ''
   });
 
+  const simulateProgress = () => {
+    setLoadingProgress(0);
+    const interval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+    return interval;
+  };
+
   const handleSubmit = async (type: 'signin' | 'signup') => {
     setIsLoading(true);
+    const progressInterval = simulateProgress();
+    
     try {
       if (type === 'signin') {
         const result = await signIn(formData.email, formData.password);
@@ -35,7 +53,12 @@ const Auth = () => {
       console.error('Erro:', error);
       alert('Erro inesperado. Tente novamente.');
     } finally {
-      setIsLoading(false);
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingProgress(0);
+      }, 500);
     }
   };
 
@@ -71,6 +94,17 @@ const Auth = () => {
         
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
           <CardContent className="p-6">
+            {/* Loading Progress Bar */}
+            {isLoading && (
+              <div className="mb-6 space-y-2">
+                <div className="flex items-center justify-center space-x-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                  <span className="text-sm text-gray-600">Autenticando...</span>
+                </div>
+                <Progress value={loadingProgress} className="w-full h-2" />
+              </div>
+            )}
+
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="signin">Entrar</TabsTrigger>
@@ -122,7 +156,14 @@ const Auth = () => {
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Entrando...' : 'Entrar'}
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Entrando...</span>
+                      </div>
+                    ) : (
+                      'Entrar'
+                    )}
                   </Button>
                   <Button 
                     variant="link" 
@@ -191,7 +232,14 @@ const Auth = () => {
                     className="w-full bg-red-600 hover:bg-red-700 text-white"
                     disabled={isLoading}
                   >
-                    {isLoading ? 'Criando...' : 'Criar Conta'}
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Criando...</span>
+                      </div>
+                    ) : (
+                      'Criar Conta'
+                    )}
                   </Button>
                 </div>
               </TabsContent>
