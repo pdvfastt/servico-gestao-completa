@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +42,8 @@ const NewOrderForm = ({
     observations: "",
     serviceValue: 0,
     partsValue: 0,
-    selectedPaymentMethod: ""
+    selectedPaymentMethod: "",
+    selectedStatus: "Aberta"
   });
 
   const [showSerialReceiverField, setShowSerialReceiverField] = React.useState(false);
@@ -65,11 +67,12 @@ const NewOrderForm = ({
     if (service) {
       updateFormState('serviceValue', service.price || 0);
       
-      const showReceiver = service.name?.toLowerCase().includes('cad serial elsys') ||
-                          service.name?.toLowerCase().includes('cad serial rec - elsys');
+      const serviceName = service.name?.toLowerCase() || '';
+      const showReceiver = serviceName.includes('cad serial elsys') ||
+                          serviceName.includes('cad serial rec - elsys');
       setShowSerialReceiverField(showReceiver);
       
-      const showTvBox = service.name?.toLowerCase().includes('cad serial tvbox');
+      const showTvBox = serviceName.includes('cad serial tvbox');
       setShowSerialTvBoxField(showTvBox);
       
       if (!showReceiver) updateFormState('serialReceiver', '');
@@ -147,7 +150,7 @@ const NewOrderForm = ({
         parts_value: formState.partsValue || 0,
         total_value: totalValue || 0,
         payment_method: formState.selectedPaymentMethod || null,
-        status: 'Aberta'
+        status: formState.selectedStatus
       };
 
       await onSubmit(data);
@@ -303,6 +306,24 @@ const NewOrderForm = ({
                 </Select>
               </div>
               <div>
+                <Label htmlFor="status">Status</Label>
+                <Select value={formState.selectedStatus} onValueChange={(value) => updateFormState('selectedStatus', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Aberta">Aberta</SelectItem>
+                    <SelectItem value="Pendente">Pendente</SelectItem>
+                    <SelectItem value="Em Andamento">Em Andamento</SelectItem>
+                    <SelectItem value="Pausada">Pausada</SelectItem>
+                    <SelectItem value="Finalizada">Finalizada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <Label htmlFor="expectedDate">Data Prevista</Label>
                 <Input 
                   type="date"
@@ -310,15 +331,14 @@ const NewOrderForm = ({
                   onChange={(e) => updateFormState('expectedDate', e.target.value)}
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="expectedTime">Horário Previsto</Label>
-              <Input 
-                type="time"
-                value={formState.expectedTime}
-                onChange={(e) => updateFormState('expectedTime', e.target.value)}
-              />
+              <div>
+                <Label htmlFor="expectedTime">Horário Previsto</Label>
+                <Input 
+                  type="time"
+                  value={formState.expectedTime}
+                  onChange={(e) => updateFormState('expectedTime', e.target.value)}
+                />
+              </div>
             </div>
           </TabsContent>
           
