@@ -33,18 +33,7 @@ TooltipTrigger.displayName = "TooltipTrigger";
 
 const TooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    side?: "top" | "right" | "bottom" | "left";
-    sideOffset?: number;
-    align?: "start" | "center" | "end";
-    alignOffset?: number;
-    avoidCollisions?: boolean;
-    collisionBoundary?: Element | null | Array<Element | null>;
-    collisionPadding?: number | Partial<Record<"top" | "right" | "bottom" | "left", number>>;
-    arrowPadding?: number;
-    sticky?: "partial" | "always";
-    hideWhenDetached?: boolean;
-  }
+  React.HTMLAttributes<HTMLDivElement>
 >(({ children, className, ...props }, ref) => {
   return (
     <div 
