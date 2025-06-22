@@ -2,10 +2,13 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+console.log('Loading custom tooltip component - should not see any Radix UI tooltip');
+
 // Simple tooltip implementation without external dependencies
-const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => (
-  <div>{children}</div>
-);
+const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
+  console.log('Rendering custom TooltipProvider');
+  return <div>{children}</div>;
+};
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState(false);
