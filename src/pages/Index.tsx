@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -289,25 +290,6 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
-      
-      {/* Footer */}
-      <footer className="mt-auto py-4 text-center footer-black">
-        <div className="flex items-center justify-center space-x-2 text-sm">
-          <span>Copyright 2025 - OS+ Desenvolvido por</span>
-          <a 
-            href="https://tecmax.net" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
-          >
-            <img 
-              src="https://i.postimg.cc/CLbCMsnH/logotecm.png"
-              alt="Tecmax"
-              className="h-4 w-auto"
-            />
-          </a>
-        </div>
-      </footer>
     </div>
   );
 };
