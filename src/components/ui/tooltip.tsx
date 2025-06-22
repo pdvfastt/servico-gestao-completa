@@ -2,12 +2,12 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading clean custom tooltip implementation');
+console.log('Loading clean custom tooltip implementation - no Radix dependencies');
 
 // Completely custom tooltip implementation - no external dependencies
 const CustomTooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
   console.log('CustomTooltipProvider rendering');
-  return <div className="tooltip-provider-wrapper">{children}</div>;
+  return <React.Fragment>{children}</React.Fragment>;
 };
 
 const CustomTooltip = ({ children }: { children: React.ReactNode }) => {
