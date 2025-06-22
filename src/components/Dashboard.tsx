@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,8 @@ import {
   TrendingUp,
   TrendingDown,
   BarChart3,
-  Activity
+  Activity,
+  Camera
 } from "lucide-react";
 import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
@@ -30,6 +30,7 @@ import { useTechnicians } from '@/hooks/useTechnicians';
 import { useServices } from '@/hooks/useServices';
 import { useFinancialRecords } from '@/hooks/useFinancialRecords';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import BarcodeScanner from '@/components/BarcodeScanner';
 
 const Dashboard = () => {
   const { orders, createOrder } = useServiceOrders();
@@ -417,6 +418,10 @@ const QuickOrderForm = ({
   const [showSerialTvBoxField, setShowSerialTvBoxField] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // Estados para controlar os scanners
+  const [isReceiverScannerOpen, setIsReceiverScannerOpen] = React.useState(false);
+  const [isTvBoxScannerOpen, setIsTvBoxScannerOpen] = React.useState(false);
+
   const totalValue = formState.serviceValue + formState.partsValue;
 
   const updateFormState = (field: string, value: any) => {
@@ -445,6 +450,16 @@ const QuickOrderForm = ({
       if (!showReceiver) updateFormState('serialReceiver', '');
       if (!showTvBox) updateFormState('serialTvBox', '');
     }
+  };
+
+  const handleReceiverScan = (code: string) => {
+    updateFormState('serialReceiver', code);
+    setIsReceiverScannerOpen(false);
+  };
+
+  const handleTvBoxScan = (code: string) => {
+    updateFormState('serialTvBox', code);
+    setIsTvBoxScannerOpen(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -517,236 +532,275 @@ const QuickOrderForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-blue-100 to-green-100">
-          <TabsTrigger value="basic" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Básicos</TabsTrigger>
-          <TabsTrigger value="technical" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Técnicos</TabsTrigger>
-          <TabsTrigger value="financial" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Financeiros</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="basic" className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+    <>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="basic" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-blue-100 to-green-100">
+            <TabsTrigger value="basic" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Básicos</TabsTrigger>
+            <TabsTrigger value="technical" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Técnicos</TabsTrigger>
+            <TabsTrigger value="financial" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Financeiros</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="basic" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="client">Cliente</Label>
+                <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map(client => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="technician">Técnico Responsável</Label>
+                <Select value={formState.selectedTechnician} onValueChange={(value) => updateFormState('selectedTechnician', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o técnico" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {technicians.map(technician => (
+                      <SelectItem key={technician.id} value={technician.id}>
+                        {technician.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <div>
-              <Label htmlFor="client">Cliente</Label>
-              <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
+              <Label htmlFor="service">Tipo de Serviço</Label>
+              <Select value={formState.selectedService} onValueChange={handleServiceChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cliente" />
+                  <SelectValue placeholder="Selecione o tipo de serviço" />
                 </SelectTrigger>
                 <SelectContent>
-                  {clients.map(client => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
+                  {services.map(service => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - R$ {service.price?.toFixed(2)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div>
-              <Label htmlFor="technician">Técnico Responsável</Label>
-              <Select value={formState.selectedTechnician} onValueChange={(value) => updateFormState('selectedTechnician', value)}>
+              <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
+              <Input 
+                type="number"
+                placeholder="Digite o número da nota fiscal"
+                value={formState.invoiceNumber}
+                onChange={(e) => updateFormState('invoiceNumber', e.target.value)}
+                required
+              />
+            </div>
+
+            {showSerialReceiverField && (
+              <div>
+                <Label htmlFor="serialReceiver">Serial Receptor *</Label>
+                <div className="flex space-x-2">
+                  <Input 
+                    placeholder="Digite o serial do receptor"
+                    value={formState.serialReceiver}
+                    onChange={(e) => updateFormState('serialReceiver', e.target.value)}
+                    required={showSerialReceiverField}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsReceiverScannerOpen(true)}
+                    className="px-3"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {showSerialTvBoxField && (
+              <div>
+                <Label htmlFor="serialTvBox">Serial TvBox *</Label>
+                <div className="flex space-x-2">
+                  <Input 
+                    placeholder="Digite o serial do TvBox"
+                    value={formState.serialTvBox}
+                    onChange={(e) => updateFormState('serialTvBox', e.target.value)}
+                    required={showSerialTvBoxField}
+                    className="flex-1"
+                  />
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsTvBoxScannerOpen(true)}
+                    className="px-3"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="priority">Prioridade</Label>
+                <Select value={formState.selectedPriority} onValueChange={(value) => updateFormState('selectedPriority', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a prioridade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Alta">Alta</SelectItem>
+                    <SelectItem value="Média">Média</SelectItem>
+                    <SelectItem value="Baixa">Baixa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="expectedDate">Data Prevista</Label>
+                <Input 
+                  type="date" 
+                  value={formState.expectedDate}
+                  onChange={(e) => updateFormState('expectedDate', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="expectedTime">Horário Previsto</Label>
+              <Input 
+                type="time" 
+                value={formState.expectedTime}
+                onChange={(e) => updateFormState('expectedTime', e.target.value)}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="technical" className="space-y-4">
+            <div>
+              <Label htmlFor="description">Descrição do Problema *</Label>
+              <Textarea 
+                placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
+                className="min-h-[100px]"
+                value={formState.description}
+                onChange={(e) => updateFormState('description', e.target.value)}
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="diagnosis">Diagnóstico</Label>
+              <Textarea 
+                placeholder="Diagnóstico técnico do problema..."
+                className="min-h-[100px]"
+                value={formState.diagnosis}
+                onChange={(e) => updateFormState('diagnosis', e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="observations">Observações Internas</Label>
+              <Textarea 
+                placeholder="Observações visíveis apenas para a equipe..."
+                className="min-h-[80px]"
+                value={formState.observations}
+                onChange={(e) => updateFormState('observations', e.target.value)}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="financial" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="serviceValue">Valor dos Serviços</Label>
+                <Input 
+                  placeholder="0.00" 
+                  type="number" 
+                  step="0.01"
+                  value={formState.serviceValue || ''}
+                  onChange={(e) => updateFormState('serviceValue', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="partsValue">Valor das Peças</Label>
+                <Input 
+                  placeholder="0.00" 
+                  type="number" 
+                  step="0.01"
+                  value={formState.partsValue || ''}
+                  onChange={(e) => updateFormState('partsValue', parseFloat(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+            
+            <div>
+              <Label htmlFor="totalValue">Valor Total</Label>
+              <Input 
+                placeholder="R$ 0,00" 
+                value={`R$ ${totalValue.toFixed(2)}`}
+                readOnly
+                className="bg-gray-50"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
+              <Select value={formState.selectedPaymentMethod} onValueChange={(value) => updateFormState('selectedPaymentMethod', value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o técnico" />
+                  <SelectValue placeholder="Selecione a forma de pagamento" />
                 </SelectTrigger>
                 <SelectContent>
-                  {technicians.map(technician => (
-                    <SelectItem key={technician.id} value={technician.id}>
-                      {technician.name}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                  <SelectItem value="cartao">Cartão</SelectItem>
+                  <SelectItem value="pix">PIX</SelectItem>
+                  <SelectItem value="boleto">Boleto</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          <div>
-            <Label htmlFor="service">Tipo de Serviço</Label>
-            <Select value={formState.selectedService} onValueChange={handleServiceChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de serviço" />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map(service => (
-                  <SelectItem key={service.id} value={service.id}>
-                    {service.name} - R$ {service.price?.toFixed(2)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
-            <Input 
-              type="number"
-              placeholder="Digite o número da nota fiscal"
-              value={formState.invoiceNumber}
-              onChange={(e) => updateFormState('invoiceNumber', e.target.value)}
-              required
-            />
-          </div>
-
-          {showSerialReceiverField && (
-            <div>
-              <Label htmlFor="serialReceiver">Serial Receptor *</Label>
-              <Input 
-                placeholder="Digite o serial do receptor"
-                value={formState.serialReceiver}
-                onChange={(e) => updateFormState('serialReceiver', e.target.value)}
-                required={showSerialReceiverField}
-              />
-            </div>
-          )}
-
-          {showSerialTvBoxField && (
-            <div>
-              <Label htmlFor="serialTvBox">Serial TvBox *</Label>
-              <Input 
-                placeholder="Digite o serial do TvBox"
-                value={formState.serialTvBox}
-                onChange={(e) => updateFormState('serialTvBox', e.target.value)}
-                required={showSerialTvBoxField}
-              />
-            </div>
-          )}
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="priority">Prioridade</Label>
-              <Select value={formState.selectedPriority} onValueChange={(value) => updateFormState('selectedPriority', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a prioridade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Alta">Alta</SelectItem>
-                  <SelectItem value="Média">Média</SelectItem>
-                  <SelectItem value="Baixa">Baixa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="expectedDate">Data Prevista</Label>
-              <Input 
-                type="date" 
-                value={formState.expectedDate}
-                onChange={(e) => updateFormState('expectedDate', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="expectedTime">Horário Previsto</Label>
-            <Input 
-              type="time" 
-              value={formState.expectedTime}
-              onChange={(e) => updateFormState('expectedTime', e.target.value)}
-            />
-          </div>
-        </TabsContent>
+          </TabsContent>
+        </Tabs>
         
-        <TabsContent value="technical" className="space-y-4">
-          <div>
-            <Label htmlFor="description">Descrição do Problema *</Label>
-            <Textarea 
-              placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
-              className="min-h-[100px]"
-              value={formState.description}
-              onChange={(e) => updateFormState('description', e.target.value)}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="diagnosis">Diagnóstico</Label>
-            <Textarea 
-              placeholder="Diagnóstico técnico do problema..."
-              className="min-h-[100px]"
-              value={formState.diagnosis}
-              onChange={(e) => updateFormState('diagnosis', e.target.value)}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="observations">Observações Internas</Label>
-            <Textarea 
-              placeholder="Observações visíveis apenas para a equipe..."
-              className="min-h-[80px]"
-              value={formState.observations}
-              onChange={(e) => updateFormState('observations', e.target.value)}
-            />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="financial" className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="serviceValue">Valor dos Serviços</Label>
-              <Input 
-                placeholder="0.00" 
-                type="number" 
-                step="0.01"
-                value={formState.serviceValue || ''}
-                onChange={(e) => updateFormState('serviceValue', parseFloat(e.target.value) || 0)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="partsValue">Valor das Peças</Label>
-              <Input 
-                placeholder="0.00" 
-                type="number" 
-                step="0.01"
-                value={formState.partsValue || ''}
-                onChange={(e) => updateFormState('partsValue', parseFloat(e.target.value) || 0)}
-              />
-            </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="totalValue">Valor Total</Label>
-            <Input 
-              placeholder="R$ 0,00" 
-              value={`R$ ${totalValue.toFixed(2)}`}
-              readOnly
-              className="bg-gray-50"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select value={formState.selectedPaymentMethod} onValueChange={(value) => updateFormState('selectedPaymentMethod', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a forma de pagamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                <SelectItem value="cartao">Cartão</SelectItem>
-                <SelectItem value="pix">PIX</SelectItem>
-                <SelectItem value="boleto">Boleto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </TabsContent>
-      </Tabs>
-      
-      <div className="flex justify-end space-x-2">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => window.location.reload()}
-          disabled={isSubmitting}
-          className="border-gray-300 hover:bg-gray-50"
-        >
-          Cancelar
-        </Button>
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-          className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 shadow-lg"
-        >
-          {isSubmitting ? 'Criando...' : 'Criar OS'}
-        </Button>
-      </div>
-    </form>
+        <div className="flex justify-end space-x-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => window.location.reload()}
+            disabled={isSubmitting}
+            className="border-gray-300 hover:bg-gray-50"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting}
+            className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white border-0 shadow-lg"
+          >
+            {isSubmitting ? 'Criando...' : 'Criar OS'}
+          </Button>
+        </div>
+      </form>
+
+      {/* Scanners */}
+      <BarcodeScanner
+        isOpen={isReceiverScannerOpen}
+        onClose={() => setIsReceiverScannerOpen(false)}
+        onScan={handleReceiverScan}
+        title="Escanear Serial do Receptor"
+      />
+
+      <BarcodeScanner
+        isOpen={isTvBoxScannerOpen}
+        onClose={() => setIsTvBoxScannerOpen(false)}
+        onScan={handleTvBoxScan}
+        title="Escanear Serial do TvBox"
+      />
+    </>
   );
 };
 
