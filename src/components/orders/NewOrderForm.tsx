@@ -69,13 +69,20 @@ const NewOrderForm = ({
       updateFormState('serviceValue', service.price || 0);
       
       const serviceName = service.name?.toLowerCase() || '';
+      
+      // Verificar se deve mostrar o campo Serial Receptor
       const showReceiver = serviceName.includes('cad serial elsys') ||
                           serviceName.includes('cad serial rec - elsys');
       setShowSerialReceiverField(showReceiver);
       
-      const showTvBox = serviceName.includes('cad serial tvbox');
+      // Verificar se deve mostrar o campo Serial TvBox
+      const showTvBox = serviceName.includes('cad serial tvbox') ||
+                        serviceName.includes('atualização smartbox') ||
+                        serviceName.includes('cad serial rec elsys') ||
+                        serviceName.includes('instalação npd');
       setShowSerialTvBoxField(showTvBox);
       
+      // Limpar campos se não devem ser mostrados
       if (!showReceiver) updateFormState('serialReceiver', '');
       if (!showTvBox) updateFormState('serialTvBox', '');
     }
