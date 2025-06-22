@@ -2,64 +2,73 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading minimal custom tooltip implementation');
+console.log('Loading completely standalone tooltip implementation');
 
-// Minimal tooltip implementation that doesn't use React hooks
+// Standalone tooltip implementation - no external dependencies
 const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
-  console.log('Minimal TooltipProvider rendering');
-  return <>{children}</>;
+  console.log('Standalone TooltipProvider rendering');
+  return <div data-tooltip-provider="custom">{children}</div>;
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('Minimal Tooltip rendering');
-  return <div className="relative inline-block group">{children}</div>;
+  console.log('Standalone Tooltip rendering');
+  return <div className="relative inline-block group" data-tooltip="custom">{children}</div>;
 };
 
-const TooltipTrigger = React.forwardRef<
-  HTMLElement,
-  React.HTMLAttributes<HTMLElement> & { asChild?: boolean; children: React.ReactNode }
->(({ children, asChild, ...props }, ref) => {
-  console.log('Minimal TooltipTrigger rendering');
+const TooltipTrigger = ({ children, asChild, ...props }: { 
+  children: React.ReactNode; 
+  asChild?: boolean; 
+  [key: string]: any;
+}) => {
+  console.log('Standalone TooltipTrigger rendering');
   
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, { ...props, ref });
+    return React.cloneElement(children as React.ReactElement<any>, { 
+      ...props,
+      'data-tooltip-trigger': 'custom'
+    });
   }
   return (
-    <span ref={ref as React.Ref<HTMLSpanElement>} {...props}>
+    <span {...props} data-tooltip-trigger="custom">
       {children}
     </span>
   );
-});
-TooltipTrigger.displayName = "TooltipTrigger";
+};
 
-const TooltipContent = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { 
-    sideOffset?: number;
-    side?: "top" | "right" | "bottom" | "left";
-    align?: "start" | "center" | "end";
-  }
->(({ children, className, sideOffset = 4, side = "top", align = "center", ...props }, ref) => {
-  console.log('Minimal TooltipContent rendering');
+const TooltipContent = ({ 
+  children, 
+  className, 
+  sideOffset = 4, 
+  side = "top", 
+  align = "center", 
+  ...props 
+}: { 
+  children: React.ReactNode;
+  className?: string;
+  sideOffset?: number;
+  side?: "top" | "right" | "bottom" | "left";
+  align?: "start" | "center" | "end";
+  [key: string]: any;
+}) => {
+  console.log('Standalone TooltipContent rendering');
   
   return (
     <div 
-      ref={ref} 
       className={cn(
         "absolute z-50 bg-black text-white text-xs rounded px-2 py-1 pointer-events-none opacity-0 invisible",
-        "group-hover:opacity-100 group-hover:visible transition-opacity",
+        "group-hover:opacity-100 group-hover:visible transition-opacity duration-200",
         side === "top" && "bottom-full left-1/2 transform -translate-x-1/2 mb-1",
         side === "bottom" && "top-full left-1/2 transform -translate-x-1/2 mt-1",
         side === "left" && "right-full top-1/2 transform -translate-y-1/2 mr-1",
         side === "right" && "left-full top-1/2 transform -translate-y-1/2 ml-1",
         className
       )}
+      data-tooltip-content="custom"
       {...props}
     >
       {children}
     </div>
   );
-});
-TooltipContent.displayName = "TooltipContent";
+};
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
