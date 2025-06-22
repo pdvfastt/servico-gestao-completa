@@ -1,7 +1,10 @@
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+
+console.log('useAuth - React available:', !!React);
+console.log('useAuth - React hooks available:', !!(React && React.useState));
 
 interface AuthContextType {
   user: User | null;
@@ -31,6 +34,8 @@ const cleanupAuthState = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log('AuthProvider - React context available:', !!React);
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
