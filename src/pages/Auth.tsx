@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, LogIn, UserPlus, AlertCircle, Wrench, Shield } from "lucide-react";
-import { useToast } from '@/hooks/use-toast';
 
 console.log('Auth.tsx - Starting to load Auth component');
 
@@ -19,7 +18,6 @@ const Auth = () => {
   const { user, signIn, signUp, resetPassword } = useAuth();
   const { signInAsTechnician, loading: technicianLoading } = useTechnicianAuth();
   const { settings, loading: settingsLoading } = useCompanySettings();
-  const { toast } = useToast();
   
   console.log('Auth component - All hooks loaded successfully');
   
@@ -65,7 +63,6 @@ const Auth = () => {
               className="w-full h-full object-cover"
               onError={(e) => {
                 console.log('Erro ao carregar logo da URL:', logoUrl);
-                // Remover a imagem com erro e mostrar fallback
                 const target = e.target as HTMLImageElement;
                 target.style.display = 'none';
                 const parent = target.parentElement;
@@ -88,7 +85,6 @@ const Auth = () => {
       );
     }
 
-    // Default logo fallback
     return (
       <div className="flex justify-center mb-6">
         <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
