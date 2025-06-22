@@ -1,14 +1,12 @@
 
-import React, { useState, useEffect } from "react"
+import { useState, useEffect } from "react"
 
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
 
-console.log('use-toast.ts - React and hooks imported');
-console.log('use-toast.ts - React available:', !!React);
-console.log('use-toast.ts - useState available:', !!useState);
+console.log('use-toast.ts - Simplified version loaded');
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -95,8 +93,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -174,17 +170,11 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  console.log('useToast hook called - React available:', !!React);
-  console.log('useToast hook called - useState available:', !!useState);
-  console.log('useToast hook called - useEffect available:', !!useEffect);
+  console.log('useToast hook called - simplified version');
   
-  // Use React.useState as a fallback to ensure we're using the correct React instance
-  const reactUseState = React.useState || useState;
-  const reactUseEffect = React.useEffect || useEffect;
-  
-  const [state, setState] = reactUseState<State>(memoryState)
+  const [state, setState] = useState<State>(memoryState)
 
-  reactUseEffect(() => {
+  useEffect(() => {
     listeners.push(setState)
     return () => {
       const index = listeners.indexOf(setState)

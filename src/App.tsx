@@ -3,13 +3,13 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { Toaster } from "@/components/ui/toaster";
+// import { Toaster } from "@/components/ui/toaster";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('App.tsx - Starting fresh without any tooltip dependencies');
+console.log('App.tsx - Starting without toaster to isolate React hook issue');
 console.log('App.tsx - React version:', React.version);
 
 const queryClient = new QueryClient({
@@ -22,7 +22,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  console.log('App component rendering - clean app structure');
+  console.log('App component rendering - without toaster');
   
   return (
     <QueryClientProvider client={queryClient}>
@@ -38,7 +38,7 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
-        <Toaster />
+        {/* <Toaster /> */}
       </AuthProvider>
     </QueryClientProvider>
   );
