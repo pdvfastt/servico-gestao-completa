@@ -22,6 +22,7 @@ import {
   CheckCircle,
   AlertCircle,
   Camera,
+  Trash2,
 } from "lucide-react";
 import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
@@ -110,6 +111,12 @@ const OrdersManager = () => {
     }
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
+      await deleteOrder(orderId);
+    }
+  };
+
   const handleShareWhatsApp = (order: any) => {
     const client = clients.find(c => c.id === order.client_id);
     const technician = technicians.find(t => t.id === order.technician_id);
@@ -183,6 +190,8 @@ Sistema de Gestão de OS
                   clients={clients}
                   technicians={technicians}
                   services={services}
+                  orders={orders}
+                  onDelete={handleDeleteOrder}
                 />
               </DialogContent>
             </Dialog>
@@ -267,6 +276,14 @@ Sistema de Gestão de OS
                           <Button variant="outline" size="sm" onClick={() => handleEditOrder(order)}>
                             <Edit className="h-4 w-4" />
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteOrder(order.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                           <Button 
                             variant="outline" 
                             size="sm" 
@@ -329,12 +346,16 @@ const NewOrderForm = ({
   onSubmit, 
   clients, 
   technicians,
-  services 
+  services,
+  orders,
+  onDelete 
 }: { 
   onSubmit: (data: any) => void;
   clients: any[];
   technicians: any[];
   services: any[];
+  orders: any[];
+  onDelete: (orderId: string) => void;
 }) => {
   // Estados para persistir TODOS os dados do formulário
   const [formState, setFormState] = React.useState({
@@ -383,8 +404,9 @@ const NewOrderForm = ({
     if (service) {
       updateFormState('serviceValue', service.price || 0);
       
-      // Verificar se deve mostrar campo Serial Receptor
-      const showReceiver = service.name?.toLowerCase().includes('cad serial elsys');
+      // Verificar se deve mostrar campo Serial Receptor - incluindo "Cad Serial Rec - Elsys"
+      const showReceiver = service.name?.toLowerCase().includes('cad serial elsys') ||
+                          service.name?.toLowerCase().includes('cad serial rec - elsys');
       setShowSerialReceiverField(showReceiver);
       
       // Verificar se deve mostrar campo Serial TvBox
@@ -482,10 +504,11 @@ const NewOrderForm = ({
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
             <TabsTrigger value="technical">Dados Técnicos</TabsTrigger>
             <TabsTrigger value="financial">Dados Financeiros</TabsTrigger>
+            <TabsTrigger value="manage">Gerenciar OS</TabsTrigger>
           </TabsList>
           
           <TabsContent value="basic" className="space-y-4">
@@ -721,6 +744,45 @@ const NewOrderForm = ({
                   <SelectItem value="boleto">Boleto</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Gerenciar Ordens de Serviço</h3>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {orders.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Nenhuma ordem de serviço encontrada
+                  </div>
+                ) : (
+                  orders.map((order) => {
+                    const client = clients.find(c => c.id === order.client_id);
+                    return (
+                      <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                        <div className="flex-1">
+                          <p className="font-medium">OS #{order.id.slice(-8)}</p>
+                          <p className="text-sm text-gray-600">{client?.name || 'Cliente não encontrado'}</p>
+                          <p className="text-xs text-gray-500 truncate">{order.description}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-xs">
+                            {order.status}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onDelete(order.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </TabsContent>
         </Tabs>

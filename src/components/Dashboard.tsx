@@ -22,7 +22,8 @@ import {
   TrendingDown,
   BarChart3,
   Activity,
-  Camera
+  Camera,
+  Trash2
 } from "lucide-react";
 import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
@@ -33,7 +34,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import BarcodeScanner from '@/components/BarcodeScanner';
 
 const Dashboard = () => {
-  const { orders, createOrder } = useServiceOrders();
+  const { orders, createOrder, deleteOrder } = useServiceOrders();
   const { clients } = useClients();
   const { technicians } = useTechnicians();
   const { services } = useServices();
@@ -61,6 +62,12 @@ const Dashboard = () => {
     const result = await createOrder(orderData);
     if (result?.success) {
       setIsNewOrderOpen(false);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
+      await deleteOrder(orderId);
     }
   };
 
@@ -284,6 +291,8 @@ const Dashboard = () => {
                     clients={clients}
                     technicians={technicians}
                     services={services}
+                    orders={orders}
+                    onDelete={handleDeleteOrder}
                   />
                 </DialogContent>
               </Dialog>
@@ -365,6 +374,14 @@ const Dashboard = () => {
                             </span>
                           </div>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteOrder(order.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   );
@@ -383,12 +400,16 @@ const QuickOrderForm = ({
   onSubmit, 
   clients, 
   technicians,
-  services 
+  services,
+  orders,
+  onDelete
 }: { 
   onSubmit: (data: any) => void;
   clients: any[];
   technicians: any[];
   services: any[];
+  orders: any[];
+  onDelete: (orderId: string) => void;
 }) => {
   // Estados para persistir TODOS os dados do formulário
   const [formState, setFormState] = React.useState({
@@ -439,7 +460,8 @@ const QuickOrderForm = ({
       
       // Verificar se deve mostrar campo Serial Receptor
       const showReceiver = service.name?.toLowerCase().includes('cad serial elsys') || 
-                          service.name?.toLowerCase().includes('instalação npd');
+                          service.name?.toLowerCase().includes('instalação npd') ||
+                          service.name?.toLowerCase().includes('cad serial rec - elsys');
       setShowSerialReceiverField(showReceiver);
       
       // Verificar se deve mostrar campo Serial TvBox
@@ -535,10 +557,11 @@ const QuickOrderForm = ({
     <>
       <form onSubmit={handleSubmit} className="space-y-6">
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-blue-100 to-green-100">
+          <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-blue-100 to-green-100">
             <TabsTrigger value="basic" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Básicos</TabsTrigger>
             <TabsTrigger value="technical" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Técnicos</TabsTrigger>
             <TabsTrigger value="financial" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Dados Financeiros</TabsTrigger>
+            <TabsTrigger value="manage" className="data-[state=active]:bg-white data-[state=active]:shadow-md">Gerenciar OS</TabsTrigger>
           </TabsList>
           
           <TabsContent value="basic" className="space-y-4">
@@ -762,6 +785,45 @@ const QuickOrderForm = ({
                   <SelectItem value="boleto">Boleto</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Gerenciar Ordens de Serviço</h3>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {orders.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Nenhuma ordem de serviço encontrada
+                  </div>
+                ) : (
+                  orders.map((order) => {
+                    const client = clients.find(c => c.id === order.client_id);
+                    return (
+                      <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                        <div className="flex-1">
+                          <p className="font-medium">OS #{order.id.slice(-8)}</p>
+                          <p className="text-sm text-gray-600">{client?.name || 'Cliente não encontrado'}</p>
+                          <p className="text-xs text-gray-500 truncate">{order.description}</p>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-xs">
+                            {order.status}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onDelete(order.id)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </TabsContent>
         </Tabs>
