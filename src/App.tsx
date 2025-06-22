@@ -14,6 +14,9 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
+  console.log('App rendering, React version:', React.version);
+  console.log('React object:', React);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
