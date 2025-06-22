@@ -84,17 +84,17 @@ const Dashboard = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-black text-white mt-8 p-4 rounded-lg text-center">
-        <div className="flex items-center justify-center space-x-6">
-          <img 
-            src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
-            alt="Tecmax Logo" 
-            className="h-10 w-auto"
-          />
-          <div className="flex flex-col items-start space-y-1">
+      <footer className="bg-black text-white mt-8 p-4 rounded-lg">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <img 
+              src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
+              alt="Tecmax Logo" 
+              className="h-10 w-auto"
+            />
             <p className="text-sm">&copy; 2024 Tecmax. Todos os direitos reservados.</p>
-            <p className="text-xs text-gray-400">Versão 1.0.1</p>
           </div>
+          <p className="text-xs text-gray-400">Versão 1.0.1</p>
         </div>
       </footer>
     </div>
