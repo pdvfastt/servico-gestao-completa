@@ -1,8 +1,15 @@
 
 import React from "react"
 
-// Simplified toaster that doesn't use hooks to avoid React dispatcher issues
+// Completely safe toaster that doesn't use any React hooks
 export function Toaster() {
-  console.log('Rendering simplified Toaster without hooks');
-  return null; // Temporarily return null to avoid hook issues
+  console.log('Rendering completely safe Toaster without any hooks');
+  return (
+    <div 
+      aria-live="polite" 
+      aria-label="Notifications" 
+      className="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+      style={{ pointerEvents: 'none' }}
+    />
+  );
 }
