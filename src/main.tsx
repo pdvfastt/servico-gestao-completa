@@ -12,6 +12,9 @@ if (typeof window !== 'undefined') {
   (window as any).React = React;
 }
 
+// Ensure proper React context initialization
+React.version && console.log('React hooks available:', typeof React.useState === 'function');
+
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(
   <React.StrictMode>
