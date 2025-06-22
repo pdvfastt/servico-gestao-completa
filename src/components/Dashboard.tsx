@@ -91,7 +91,10 @@ const Dashboard = () => {
             alt="Tecmax Logo" 
             className="h-8 w-auto"
           />
-          <p className="text-sm">&copy; 2024 Tecmax. Todos os direitos reservados.</p>
+          <div className="flex flex-col items-center space-y-1">
+            <p className="text-sm">&copy; 2024 Tecmax. Todos os direitos reservados.</p>
+            <p className="text-xs text-gray-400">Versão 1.0.1</p>
+          </div>
         </div>
       </footer>
     </div>
