@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,8 +143,8 @@ const Index = () => {
   }, [tabsConfig, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
-      <div className="container mx-auto p-3 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 flex flex-col">
+      <div className="container mx-auto p-3 md:p-6 flex-1">
         {/* Modern Header */}
         <div className="mb-4 md:mb-8">
           <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-white/20">
@@ -290,6 +289,25 @@ const Index = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Footer */}
+      <footer className="mt-auto py-4 text-center">
+        <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+          <span>Copyright 2025 - OS+ Desenvolvido por</span>
+          <a 
+            href="https://tecmax.net" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            <img 
+              src="https://tecmax.net/wp-content/uploads/2024/01/Logo-Tecmax-Horizontal-Vetor-1.png"
+              alt="Tecmax"
+              className="h-4 w-auto"
+            />
+          </a>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -60,21 +60,16 @@ const Auth = () => {
             <img 
               src={logoUrl} 
               alt={companyName}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain p-1"
               onError={(e) => {
                 console.log('Erro ao carregar logo da URL:', logoUrl);
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  parent.innerHTML = `
-                    <div class="w-full h-full bg-gradient-to-r from-orange-600 to-cyan-600 flex items-center justify-center">
-                      <svg class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                  `;
-                }
+                // Tentar recarregar a imagem após um pequeno delay
+                setTimeout(() => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.src !== logoUrl) {
+                    img.src = logoUrl;
+                  }
+                }, 1000);
               }}
               onLoad={() => {
                 console.log('Logo carregada com sucesso da URL:', logoUrl);
@@ -105,21 +100,15 @@ const Auth = () => {
             <img 
               src={logoUrl} 
               alt={companyName}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain p-1"
               onError={(e) => {
                 console.log('Erro ao carregar logo de reset de senha');
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
-                const parent = target.parentElement;
-                if (parent) {
-                  parent.innerHTML = `
-                    <div class="w-full h-full bg-gradient-to-r from-orange-600 to-cyan-600 flex items-center justify-center">
-                      <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                    </div>
-                  `;
-                }
+                setTimeout(() => {
+                  const img = e.target as HTMLImageElement;
+                  if (img.src !== logoUrl) {
+                    img.src = logoUrl;
+                  }
+                }, 1000);
               }}
             />
           </div>
@@ -251,125 +240,37 @@ const Auth = () => {
 
   if (showResetPassword) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
-        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-          <CardHeader className="text-center">
-            {renderPasswordResetLogo()}
-            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
-              Recuperar Senha
-            </CardTitle>
-            <CardDescription>
-              Digite seu email para receber um link de recuperação
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              
-              {success && (
-                <Alert className="border-green-200 bg-green-50 text-green-800">
-                  <AlertDescription>{success}</AlertDescription>
-                </Alert>
-              )}
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="text-center">
+              {renderPasswordResetLogo()}
+              <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+                Recuperar Senha
+              </CardTitle>
+              <CardDescription>
+                Digite seu email para receber um link de recuperação
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+                
+                {success && (
+                  <Alert className="border-green-200 bg-green-50 text-green-800">
+                    <AlertDescription>{success}</AlertDescription>
+                  </Alert>
+                )}
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    'Enviar Email de Recuperação'
-                  )}
-                </Button>
-
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => setShowResetPassword(false)}
-                  disabled={loading}
-                >
-                  Voltar ao Login
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
-      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
-        <CardHeader className="text-center">
-          {renderLogo()}
-          <CardTitle className="text-2xl font-bold text-gray-900">
-            {settings?.company_name || 'Sistema de Gestão OS'}
-          </CardTitle>
-          <CardDescription>
-            Entre em sua conta ou crie uma nova
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="signin" className="flex items-center gap-1">
-                <LogIn className="h-4 w-4" />
-                Login
-              </TabsTrigger>
-              <TabsTrigger value="signup" className="flex items-center gap-1">
-                <UserPlus className="h-4 w-4" />
-                Cadastro
-              </TabsTrigger>
-              <TabsTrigger value="technician" className="flex items-center gap-1">
-                <Wrench className="h-4 w-4" />
-                Técnico
-              </TabsTrigger>
-            </TabsList>
-
-            {error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {success && (
-              <Alert className="mt-4 border-green-200 bg-green-50 text-green-800">
-                <AlertDescription>{success}</AlertDescription>
-              </Alert>
-            )}
-
-            <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="signin-email"
+                    id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -377,17 +278,7 @@ const Auth = () => {
                     disabled={loading}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password">Senha</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
+
                 <div className="space-y-3">
                   <Button 
                     type="submit" 
@@ -397,142 +288,282 @@ const Auth = () => {
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Entrando...
+                        Enviando...
                       </>
                     ) : (
-                      'Entrar'
+                      'Enviar Email de Recuperação'
                     )}
                   </Button>
+
                   <Button 
                     type="button" 
-                    variant="link" 
-                    className="w-full text-sm"
-                    onClick={() => setShowResetPassword(true)}
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowResetPassword(false)}
                     disabled={loading}
                   >
-                    Esqueci minha senha
+                    Voltar ao Login
                   </Button>
                 </div>
               </form>
-            </TabsContent>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Footer */}
+        <footer className="mt-auto py-4 text-center">
+          <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+            <span>Copyright 2025 - OS+ Desenvolvido por</span>
+            <a 
+              href="https://tecmax.net" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
+            >
+              <img 
+                src="https://tecmax.net/wp-content/uploads/2024/01/Logo-Tecmax-Horizontal-Vetor-1.png"
+                alt="Tecmax"
+                className="h-4 w-auto"
+              />
+            </a>
+          </div>
+        </footer>
+      </div>
+    );
+  }
 
-            <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nome Completo</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={loading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    minLength={6}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirmar Senha</Label>
-                  <Input
-                    id="signup-confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    disabled={loading}
-                    minLength={6}
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Criando conta...
-                    </>
-                  ) : (
-                    'Criar Conta'
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <CardHeader className="text-center">
+            {renderLogo()}
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              {settings?.company_name || 'Sistema de Gestão OS'}
+            </CardTitle>
+            <CardDescription>
+              Entre em sua conta ou crie uma nova
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="signin" className="flex items-center gap-1">
+                  <LogIn className="h-4 w-4" />
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="flex items-center gap-1">
+                  <UserPlus className="h-4 w-4" />
+                  Cadastro
+                </TabsTrigger>
+                <TabsTrigger value="technician" className="flex items-center gap-1">
+                  <Wrench className="h-4 w-4" />
+                  Técnico
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="technician">
-              <form onSubmit={handleTechnicianSignIn} className="space-y-4">
-                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 mb-4">
-                  <p className="text-sm text-cyan-700 flex items-center gap-2">
-                    <Wrench className="h-4 w-4" />
-                    Área exclusiva para técnicos
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tech-email">Email</Label>
-                  <Input
-                    id="tech-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+              {error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {success && (
+                <Alert className="mt-4 border-green-200 bg-green-50 text-green-800">
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
+
+              <TabsContent value="signin">
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-email">Email</Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signin-password">Senha</Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Entrando...
+                        </>
+                      ) : (
+                        'Entrar'
+                      )}
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="link" 
+                      className="w-full text-sm"
+                      onClick={() => setShowResetPassword(true)}
+                      disabled={loading}
+                    >
+                      Esqueci minha senha
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="signup">
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Nome Completo</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Senha</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-confirm-password">Confirmar Senha</Label>
+                    <Input
+                      id="signup-confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      disabled={loading}
+                      minLength={6}
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Criando conta...
+                      </>
+                    ) : (
+                      'Criar Conta'
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="technician">
+                <form onSubmit={handleTechnicianSignIn} className="space-y-4">
+                  <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-cyan-700 flex items-center gap-2">
+                      <Wrench className="h-4 w-4" />
+                      Área exclusiva para técnicos
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tech-email">Email</Label>
+                    <Input
+                      id="tech-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={technicianLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tech-password">Senha</Label>
+                    <Input
+                      id="tech-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={technicianLoading}
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-cyan-600 to-orange-600 hover:from-cyan-700 hover:to-orange-700"
                     disabled={technicianLoading}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tech-password">Senha</Label>
-                  <Input
-                    id="tech-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={technicianLoading}
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-gradient-to-r from-cyan-600 to-orange-600 hover:from-cyan-700 hover:to-orange-700"
-                  disabled={technicianLoading}
-                >
-                  {technicianLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Verificando...
-                    </>
-                  ) : (
-                    <>
-                      <Wrench className="mr-2 h-4 w-4" />
-                      Entrar como Técnico
-                    </>
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                  >
+                    {technicianLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Verificando...
+                      </>
+                    ) : (
+                      <>
+                        <Wrench className="mr-2 h-4 w-4" />
+                        Entrar como Técnico
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Footer */}
+      <footer className="mt-auto py-4 text-center">
+        <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+          <span>Copyright 2025 - OS+ Desenvolvido por</span>
+          <a 
+            href="https://tecmax.net" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            <img 
+              src="https://tecmax.net/wp-content/uploads/2024/01/Logo-Tecmax-Horizontal-Vetor-1.png"
+              alt="Tecmax"
+              className="h-4 w-auto"
+            />
+          </a>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 
 export interface CompanySettings {
   id?: string;
@@ -15,7 +14,6 @@ export interface CompanySettings {
 
 export const useCompanySettings = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [settings, setSettings] = useState<CompanySettings | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +23,6 @@ export const useCompanySettings = () => {
       console.log('Buscando configurações da empresa para usuário:', user?.id);
       
       if (!user) {
-        // Definir configurações padrão quando não há usuário
         const defaultSettings: CompanySettings = {
           company_name: 'Sistema de Gestão de OS',
           company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
@@ -62,7 +59,6 @@ export const useCompanySettings = () => {
         console.log('Configurações processadas:', loadedSettings);
         setSettings(loadedSettings);
       } else {
-        // Configurações padrão quando não há dados no banco
         const defaultSettings: CompanySettings = {
           company_name: 'Sistema de Gestão de OS',
           company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
@@ -75,7 +71,6 @@ export const useCompanySettings = () => {
       }
     } catch (error) {
       console.error('Erro ao buscar configurações:', error);
-      // Definir configurações padrão em caso de erro
       const defaultSettings: CompanySettings = {
         company_name: 'Sistema de Gestão de OS',
         company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
@@ -84,12 +79,6 @@ export const useCompanySettings = () => {
         accent_color: '#32CD32',
       };
       setSettings(defaultSettings);
-      
-      toast({
-        title: "Aviso",
-        description: "Usando configurações padrão.",
-        variant: "default",
-      });
     } finally {
       setLoading(false);
     }
@@ -97,11 +86,6 @@ export const useCompanySettings = () => {
 
   const updateSettings = async (newSettings: Partial<CompanySettings>) => {
     if (!user) {
-      toast({
-        title: "Erro",
-        description: "Usuário não autenticado.",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -164,18 +148,8 @@ export const useCompanySettings = () => {
         console.log('Configurações criadas:', newSettingsData);
         setSettings(newSettingsData);
       }
-      
-      toast({
-        title: "Sucesso",
-        description: "Configurações atualizadas com sucesso!",
-      });
     } catch (error) {
       console.error('Erro ao atualizar configurações:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar configurações.",
-        variant: "destructive",
-      });
     }
   };
 
