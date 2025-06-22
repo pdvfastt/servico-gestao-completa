@@ -2,40 +2,33 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading pure CSS tooltip - no React hooks');
+console.log('Loading simple tooltip - avoiding all Radix conflicts');
 
-// Pure CSS-based tooltip implementation - no React hooks needed
-const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
-  console.log('Pure TooltipProvider rendering');
-  return <div data-tooltip-provider="pure">{children}</div>;
+// Simple tooltip implementation with different names to avoid conflicts
+const SimpleTooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
+  console.log('SimpleTooltipProvider rendering');
+  return <>{children}</>;
 };
 
-const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('Pure Tooltip rendering');
-  return <div className="relative inline-block group" data-tooltip="pure">{children}</div>;
+const SimpleTooltip = ({ children }: { children: React.ReactNode }) => {
+  console.log('SimpleTooltip rendering');
+  return <div className="relative inline-block group">{children}</div>;
 };
 
-const TooltipTrigger = ({ children, asChild, ...props }: { 
+const SimpleTooltipTrigger = ({ children, asChild, ...props }: { 
   children: React.ReactNode; 
   asChild?: boolean; 
   [key: string]: any;
 }) => {
-  console.log('Pure TooltipTrigger rendering');
+  console.log('SimpleTooltipTrigger rendering');
   
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, { 
-      ...props,
-      'data-tooltip-trigger': 'pure'
-    });
+    return React.cloneElement(children as React.ReactElement<any>, props);
   }
-  return (
-    <span {...props} data-tooltip-trigger="pure">
-      {children}
-    </span>
-  );
+  return <span {...props}>{children}</span>;
 };
 
-const TooltipContent = ({ 
+const SimpleTooltipContent = ({ 
   children, 
   className, 
   sideOffset = 4, 
@@ -50,7 +43,7 @@ const TooltipContent = ({
   align?: "start" | "center" | "end";
   [key: string]: any;
 }) => {
-  console.log('Pure TooltipContent rendering');
+  console.log('SimpleTooltipContent rendering');
   
   return (
     <div 
@@ -63,7 +56,6 @@ const TooltipContent = ({
         side === "right" && "left-full top-1/2 transform -translate-y-1/2 ml-1",
         className
       )}
-      data-tooltip-content="pure"
       {...props}
     >
       {children}
@@ -71,4 +63,10 @@ const TooltipContent = ({
   );
 };
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };
+// Export with original names for compatibility
+export { 
+  SimpleTooltipProvider as TooltipProvider,
+  SimpleTooltip as Tooltip, 
+  SimpleTooltipTrigger as TooltipTrigger, 
+  SimpleTooltipContent as TooltipContent 
+};
