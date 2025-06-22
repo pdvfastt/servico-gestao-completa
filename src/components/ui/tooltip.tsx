@@ -1,38 +1,12 @@
 
 import * as React from "react"
 
-// Simplified tooltip components that don't depend on Radix UI
-const TooltipProvider = ({ 
-  children, 
-  delayDuration,
-  skipDelayDuration,
-  disableHoverableContent,
-  ...props 
-}: { 
-  children: React.ReactNode;
-  delayDuration?: number;
-  skipDelayDuration?: number; 
-  disableHoverableContent?: boolean;
-  [key: string]: any;
-}) => {
-  console.log('Using simplified TooltipProvider');
+// Completely standalone tooltip implementation without any Radix UI dependencies
+const TooltipProvider = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const Tooltip = ({ 
-  children,
-  open,
-  defaultOpen,
-  onOpenChange,
-  ...props 
-}: { 
-  children: React.ReactNode;
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  [key: string]: any;
-}) => {
-  console.log('Using simplified Tooltip');
+const Tooltip = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
@@ -43,9 +17,7 @@ const TooltipTrigger = React.forwardRef<
     children: React.ReactNode;
   }
 >(({ children, asChild, ...props }, ref) => {
-  console.log('Using simplified TooltipTrigger');
   if (asChild && React.isValidElement(children)) {
-    // Clone the child element and pass through props
     return React.cloneElement(children as React.ReactElement<any>, {
       ...props,
       ref
@@ -73,8 +45,7 @@ const TooltipContent = React.forwardRef<
     sticky?: "partial" | "always";
     hideWhenDetached?: boolean;
   }
->(({ children, side, sideOffset, align, className, ...props }, ref) => {
-  console.log('Using simplified TooltipContent');
+>(({ children, className, ...props }, ref) => {
   return (
     <div 
       ref={ref} 
