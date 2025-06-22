@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +12,21 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with safety check
+let AuthContext: React.Context<AuthContextType | undefined>;
+
+try {
+  AuthContext = createContext<AuthContextType | undefined>(undefined);
+} catch (error) {
+  console.error('Error creating AuthContext:', error);
+  // Fallback: try to get React from global scope
+  const GlobalReact = (window as any).React || (globalThis as any).React;
+  if (GlobalReact && GlobalReact.createContext) {
+    AuthContext = GlobalReact.createContext<AuthContextType | undefined>(undefined);
+  } else {
+    throw new Error('React context creation failed');
+  }
+}
 
 // Função para limpar estado de auth
 const cleanupAuthState = () => {
@@ -35,6 +48,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   console.log('AuthProvider rendering with React:', !!React);
   console.log('useState available:', !!useState);
   console.log('useEffect available:', !!useEffect);
+  
+  // Safety check for React hooks
+  if (!useState || !useEffect) {
+    console.error('React hooks not available in AuthProvider');
+    return <div>Carregando...</div>;
+  }
   
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);

@@ -13,13 +13,27 @@ if (typeof window !== 'undefined') {
   (window as any).React = React;
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => {
   console.log('App rendering, React version:', React.version);
   console.log('React object:', React);
   console.log('React.useContext:', React.useContext);
   console.log('React.useState:', React.useState);
+  
+  // Add a safety check for React hooks
+  if (!React.useContext || !React.useState || !React.useEffect) {
+    console.error('React hooks not available, forcing reload...');
+    window.location.reload();
+    return null;
+  }
   
   return (
     <QueryClientProvider client={queryClient}>
