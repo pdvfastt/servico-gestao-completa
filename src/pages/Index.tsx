@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -144,13 +143,13 @@ const Index = () => {
   }, [tabsConfig, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 flex flex-col">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       <div className="container mx-auto p-3 md:p-6 flex-1">
         {/* Modern Header */}
         <div className="mb-4 md:mb-8">
-          <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-white/20">
+          <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-1">
-              <div className="bg-gradient-to-br from-orange-500 to-cyan-500 p-2 md:p-3 rounded-lg md:rounded-xl shadow-md flex-shrink-0">
+              <div className="bg-red-600 p-2 md:p-3 rounded-lg md:rounded-xl shadow-md flex-shrink-0">
                 {settings?.company_logo_url ? (
                   <img 
                     src={settings.company_logo_url} 
@@ -162,7 +161,7 @@ const Index = () => {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl md:text-4xl font-bold bg-gradient-to-r from-orange-600 to-cyan-600 bg-clip-text text-transparent mb-1 md:mb-2 truncate">
+                <h1 className="text-xl md:text-4xl font-bold text-red-600 mb-1 md:mb-2 truncate">
                   {isMobile ? 'Gestão OS' : (settings?.company_name || 'Sistema de Gestão de OS')}
                 </h1>
                 <p className="text-gray-600 text-xs md:text-lg hidden sm:block">
@@ -197,10 +196,10 @@ const Index = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
+        <Card className="shadow-xl border border-gray-200 bg-white">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
+              <div className="border-b border-gray-100 bg-gray-50 rounded-t-lg">
                 <div className="tabs-responsive">
                   <TabsList className={`tabs-list-responsive w-full grid bg-transparent h-auto p-1 md:p-2 gap-0.5 md:gap-1`} style={{ gridTemplateColumns: `repeat(${tabsConfig.length}, minmax(0, 1fr))` }}>
                     {tabsConfig.map(({ value, icon: Icon, label, shortLabel }) => (

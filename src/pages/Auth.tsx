@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
@@ -241,9 +240,9 @@ const Auth = () => {
 
   if (showResetPassword) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
+      <div className="min-h-screen flex flex-col bg-gray-50">
         <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <Card className="w-full max-w-md bg-white border border-gray-200 shadow-xl">
             <CardHeader className="text-center">
               {renderPasswordResetLogo()}
               <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
@@ -283,7 +282,7 @@ const Auth = () => {
                 <div className="space-y-3">
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
                     disabled={loading}
                   >
                     {loading ? (
@@ -334,9 +333,9 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <Card className="w-full max-w-md bg-white border border-gray-200 shadow-xl">
           <CardHeader className="text-center">
             {renderLogo()}
             <CardTitle className="text-2xl font-bold text-gray-900">
@@ -403,7 +402,7 @@ const Auth = () => {
                   <div className="space-y-3">
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                      className="w-full bg-red-600 hover:bg-red-700 text-white"
                       disabled={loading}
                     >
                       {loading ? (
@@ -478,7 +477,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                    className="w-full bg-red-600 hover:bg-red-700 text-white"
                     disabled={loading}
                   >
                     {loading ? (
@@ -495,8 +494,8 @@ const Auth = () => {
 
               <TabsContent value="technician">
                 <form onSubmit={handleTechnicianSignIn} className="space-y-4">
-                  <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 mb-4">
-                    <p className="text-sm text-cyan-700 flex items-center gap-2">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
+                    <p className="text-sm text-gray-700 flex items-center gap-2">
                       <Wrench className="h-4 w-4" />
                       Área exclusiva para técnicos
                     </p>
@@ -525,7 +524,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-cyan-600 to-orange-600 hover:from-cyan-700 hover:to-orange-700"
+                    className="w-full bg-gray-600 hover:bg-gray-700 text-white"
                     disabled={technicianLoading}
                   >
                     {technicianLoading ? (
@@ -557,15 +556,15 @@ const Auth = () => {
             rel="noopener noreferrer"
             className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
           >
-            <img 
-              src="https://i.postimg.cc/CLbCMsnH/logotecm.png"
-              alt="Tecmax"
-              className="h-4 w-auto"
-            />
-          </a>
-        </div>
-      </footer>
-    </div>
+              <img 
+                src="https://i.postimg.cc/CLbCMsnH/logotecm.png"
+                alt="Tecmax"
+                className="h-4 w-auto"
+              />
+            </a>
+          </div>
+        </footer>
+      </div>
   );
 };
 
