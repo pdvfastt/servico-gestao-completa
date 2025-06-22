@@ -51,6 +51,7 @@ export const useClients = () => {
 
   const createClient = async (clientData: Omit<ClientInsert, 'user_id'>) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para criar cliente');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -60,7 +61,24 @@ export const useClients = () => {
     }
 
     try {
-      console.log('Criando cliente:', clientData);
+      console.log('📝 Criando cliente:', clientData);
+      
+      // Validar dados obrigatórios
+      if (!clientData.name || clientData.name.trim() === '') {
+        throw new Error('Nome é obrigatório');
+      }
+      if (!clientData.email || clientData.email.trim() === '') {
+        throw new Error('Email é obrigatório');
+      }
+      if (!clientData.phone || clientData.phone.trim() === '') {
+        throw new Error('Telefone é obrigatório');
+      }
+      if (!clientData.document || clientData.document.trim() === '') {
+        throw new Error('Documento é obrigatório');
+      }
+      if (!clientData.type || clientData.type.trim() === '') {
+        throw new Error('Tipo é obrigatório');
+      }
       
       const { data, error } = await supabase
         .from('clients')
@@ -72,22 +90,23 @@ export const useClients = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao criar cliente:', error);
+        console.error('❌ Erro Supabase ao criar cliente:', error);
         throw error;
       }
       
-      console.log('Cliente criado com sucesso:', data);
-      setClients(prev => [data, ...prev]);
+      console.log('✅ Cliente criado com sucesso:', data);
+      await fetchClients(); // Recarregar lista
       toast({
-        title: "Cliente Cadastrado",
-        description: "O novo cliente foi cadastrado com sucesso!",
+        title: "Sucesso!",
+        description: "Cliente cadastrado com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('Erro ao criar cliente:', error);
+      console.error('❌ Erro ao criar cliente:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao cadastrar cliente';
       toast({
         title: "Erro",
-        description: "Erro ao cadastrar cliente.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
@@ -96,6 +115,7 @@ export const useClients = () => {
 
   const updateClient = async (id: string, clientData: Partial<ClientInsert>) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para atualizar cliente');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -105,7 +125,7 @@ export const useClients = () => {
     }
 
     try {
-      console.log('Atualizando cliente:', id, clientData);
+      console.log('📝 Atualizando cliente:', id, clientData);
       
       const { data, error } = await supabase
         .from('clients')
@@ -115,22 +135,23 @@ export const useClients = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao atualizar cliente:', error);
+        console.error('❌ Erro Supabase ao atualizar cliente:', error);
         throw error;
       }
       
-      console.log('Cliente atualizado com sucesso:', data);
-      setClients(prev => prev.map(client => client.id === id ? data : client));
+      console.log('✅ Cliente atualizado com sucesso:', data);
+      await fetchClients(); // Recarregar lista
       toast({
-        title: "Cliente Atualizado",
-        description: "O cliente foi atualizado com sucesso!",
+        title: "Sucesso!",
+        description: "Cliente atualizado com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('Erro ao atualizar cliente:', error);
+      console.error('❌ Erro ao atualizar cliente:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar cliente';
       toast({
         title: "Erro",
-        description: "Erro ao atualizar cliente.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
@@ -139,6 +160,7 @@ export const useClients = () => {
 
   const deleteClient = async (id: string) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para deletar cliente');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -148,7 +170,7 @@ export const useClients = () => {
     }
 
     try {
-      console.log('Removendo cliente:', id);
+      console.log('🗑️ Removendo cliente:', id);
       
       const { error } = await supabase
         .from('clients')
@@ -156,22 +178,23 @@ export const useClients = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('Erro Supabase ao remover cliente:', error);
+        console.error('❌ Erro Supabase ao remover cliente:', error);
         throw error;
       }
       
-      console.log('Cliente removido com sucesso');
-      setClients(prev => prev.filter(client => client.id !== id));
+      console.log('✅ Cliente removido com sucesso');
+      await fetchClients(); // Recarregar lista
       toast({
-        title: "Cliente Removido",
-        description: "O cliente foi removido com sucesso!",
+        title: "Sucesso!",
+        description: "Cliente removido com sucesso!",
       });
       return { success: true };
     } catch (error) {
-      console.error('Erro ao remover cliente:', error);
+      console.error('❌ Erro ao remover cliente:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao remover cliente';
       toast({
         title: "Erro",
-        description: "Erro ao remover cliente.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };

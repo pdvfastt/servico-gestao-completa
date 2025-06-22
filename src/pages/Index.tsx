@@ -143,7 +143,7 @@ const Index = () => {
   }, [tabsConfig, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <div className="container mx-auto p-3 md:p-6 flex-1">
         {/* Modern Header */}
         <div className="mb-4 md:mb-8">
@@ -291,8 +291,8 @@ const Index = () => {
       </div>
       
       {/* Footer */}
-      <footer className="mt-auto py-4 text-center">
-        <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+      <footer className="mt-auto py-4 text-center footer-black">
+        <div className="flex items-center justify-center space-x-2 text-sm">
           <span>Copyright 2025 - OS+ Desenvolvido por</span>
           <a 
             href="https://tecmax.net" 

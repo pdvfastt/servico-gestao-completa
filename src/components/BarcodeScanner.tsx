@@ -3,7 +3,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Camera, X } from "lucide-react";
+import { Camera, X, ScanBarcode } from "lucide-react";
 
 interface BarcodeScannerProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
 
   useEffect(() => {
+    console.log('🔍 BarcodeScanner - Modal state changed:', isOpen);
     if (isOpen) {
       startScanning();
     } else {
@@ -32,6 +33,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
 
   const startScanning = async () => {
     try {
+      console.log('📷 Iniciando scanner de código de barras');
       setError(null);
       setIsScanning(true);
       
@@ -40,6 +42,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
       }
 
       const videoInputDevices = await readerRef.current.listVideoInputDevices();
+      console.log('📱 Dispositivos de câmera encontrados:', videoInputDevices.length);
       
       if (videoInputDevices.length === 0) {
         throw new Error('Nenhuma câmera encontrada');
@@ -51,28 +54,31 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
         device.label.toLowerCase().includes('traseira')
       )?.deviceId || videoInputDevices[0].deviceId;
 
+      console.log('📷 Usando câmera:', selectedDeviceId);
+
       if (videoRef.current) {
         await readerRef.current.decodeFromVideoDevice(selectedDeviceId, videoRef.current, (result, error) => {
           if (result) {
             const scannedCode = result.getText();
-            console.log('Código escaneado:', scannedCode);
+            console.log('✅ Código escaneado:', scannedCode);
             onScan(scannedCode);
             stopScanning();
             onClose();
           }
           if (error && !(error.name === 'NotFoundException')) {
-            console.error('Erro no scanner:', error);
+            console.error('❌ Erro no scanner:', error);
           }
         });
       }
     } catch (err) {
-      console.error('Erro ao iniciar scanner:', err);
+      console.error('❌ Erro ao iniciar scanner:', err);
       setError(err instanceof Error ? err.message : 'Erro ao acessar a câmera');
       setIsScanning(false);
     }
   };
 
   const stopScanning = () => {
+    console.log('🛑 Parando scanner');
     if (readerRef.current) {
       readerRef.current.reset();
     }
@@ -89,11 +95,11 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
-            <Camera className="h-5 w-5" />
+            <ScanBarcode className="h-5 w-5 text-red-600" />
             <span>{title}</span>
           </DialogTitle>
           <DialogDescription>
-            Posicione o código de barras dentro da área de visualização
+            Posicione o código de barras dentro da área de visualização da câmera
           </DialogDescription>
         </DialogHeader>
         
@@ -107,6 +113,7 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
                 onClick={startScanning}
                 className="mt-2"
               >
+                <Camera className="h-4 w-4 mr-2" />
                 Tentar novamente
               </Button>
             </div>
@@ -120,9 +127,15 @@ const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ isOpen, onClose, onScan
                 muted
               />
               {isScanning && (
-                <div className="absolute inset-0 border-2 border-blue-500 rounded-lg">
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                    <div className="w-48 h-2 bg-red-500 opacity-75 animate-pulse"></div>
+                <div className="absolute inset-0 border-2 border-red-500 rounded-lg flex items-center justify-center">
+                  <div className="w-48 h-2 bg-red-500 opacity-75 animate-pulse"></div>
+                </div>
+              )}
+              {!isScanning && !error && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
+                  <div className="text-center text-white">
+                    <Camera className="h-8 w-8 mx-auto mb-2" />
+                    <p className="text-sm">Preparando câmera...</p>
                   </div>
                 </div>
               )}

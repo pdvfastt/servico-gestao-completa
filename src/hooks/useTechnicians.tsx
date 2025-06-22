@@ -51,6 +51,7 @@ export const useTechnicians = () => {
 
   const createTechnician = async (technicianData: Omit<TechnicianInsert, 'user_id'>) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para criar técnico');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -60,7 +61,24 @@ export const useTechnicians = () => {
     }
 
     try {
-      console.log('Criando técnico:', technicianData);
+      console.log('📝 Criando técnico:', technicianData);
+      
+      // Validar dados obrigatórios
+      if (!technicianData.name || technicianData.name.trim() === '') {
+        throw new Error('Nome é obrigatório');
+      }
+      if (!technicianData.email || technicianData.email.trim() === '') {
+        throw new Error('Email é obrigatório');
+      }
+      if (!technicianData.phone || technicianData.phone.trim() === '') {
+        throw new Error('Telefone é obrigatório');
+      }
+      if (!technicianData.cpf || technicianData.cpf.trim() === '') {
+        throw new Error('CPF é obrigatório');
+      }
+      if (!technicianData.level || technicianData.level.trim() === '') {
+        throw new Error('Nível é obrigatório');
+      }
       
       // Validar o nível antes de enviar
       const validLevels = ['Júnior', 'Pleno', 'Sênior', 'Especialista'];
@@ -78,22 +96,23 @@ export const useTechnicians = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao criar técnico:', error);
+        console.error('❌ Erro Supabase ao criar técnico:', error);
         throw error;
       }
       
-      console.log('Técnico criado com sucesso:', data);
-      setTechnicians(prev => [data, ...prev]);
+      console.log('✅ Técnico criado com sucesso:', data);
+      await fetchTechnicians(); // Recarregar lista
       toast({
-        title: "Técnico Cadastrado",
-        description: "O novo técnico foi cadastrado com sucesso!",
+        title: "Sucesso!",
+        description: "Técnico cadastrado com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('Erro ao criar técnico:', error);
+      console.error('❌ Erro ao criar técnico:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao cadastrar técnico';
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Erro ao cadastrar técnico.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
@@ -102,6 +121,7 @@ export const useTechnicians = () => {
 
   const updateTechnician = async (id: string, technicianData: Partial<TechnicianInsert>) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para atualizar técnico');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -111,7 +131,7 @@ export const useTechnicians = () => {
     }
 
     try {
-      console.log('Atualizando técnico:', id, technicianData);
+      console.log('📝 Atualizando técnico:', id, technicianData);
       
       // Validar o nível se estiver sendo atualizado
       if (technicianData.level) {
@@ -129,22 +149,23 @@ export const useTechnicians = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao atualizar técnico:', error);
+        console.error('❌ Erro Supabase ao atualizar técnico:', error);
         throw error;
       }
       
-      console.log('Técnico atualizado com sucesso:', data);
-      setTechnicians(prev => prev.map(technician => technician.id === id ? data : technician));
+      console.log('✅ Técnico atualizado com sucesso:', data);
+      await fetchTechnicians(); // Recarregar lista
       toast({
-        title: "Técnico Atualizado",
-        description: "O técnico foi atualizado com sucesso!",
+        title: "Sucesso!",
+        description: "Técnico atualizado com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('Erro ao atualizar técnico:', error);
+      console.error('❌ Erro ao atualizar técnico:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar técnico';
       toast({
         title: "Erro",
-        description: error instanceof Error ? error.message : "Erro ao atualizar técnico.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
@@ -153,6 +174,7 @@ export const useTechnicians = () => {
 
   const deleteTechnician = async (id: string) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para deletar técnico');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -162,7 +184,7 @@ export const useTechnicians = () => {
     }
 
     try {
-      console.log('Removendo técnico:', id);
+      console.log('🗑️ Removendo técnico:', id);
       
       const { error } = await supabase
         .from('technicians')
@@ -170,22 +192,23 @@ export const useTechnicians = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('Erro Supabase ao remover técnico:', error);
+        console.error('❌ Erro Supabase ao remover técnico:', error);
         throw error;
       }
       
-      console.log('Técnico removido com sucesso');
-      setTechnicians(prev => prev.filter(technician => technician.id !== id));
+      console.log('✅ Técnico removido com sucesso');
+      await fetchTechnicians(); // Recarregar lista
       toast({
-        title: "Técnico Removido",
-        description: "O técnico foi removido com sucesso!",
+        title: "Sucesso!",
+        description: "Técnico removido com sucesso!",
       });
       return { success: true };
     } catch (error) {
-      console.error('Erro ao remover técnico:', error);
+      console.error('❌ Erro ao remover técnico:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao remover técnico';
       toast({
         title: "Erro",
-        description: "Erro ao remover técnico.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };

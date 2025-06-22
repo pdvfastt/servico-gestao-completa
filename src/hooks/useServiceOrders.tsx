@@ -51,6 +51,7 @@ export const useServiceOrders = () => {
 
   const createOrder = async (orderData: Omit<ServiceOrderInsert, 'user_id'>) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para criar ordem');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -60,8 +61,13 @@ export const useServiceOrders = () => {
     }
 
     try {
-      console.log('Criando ordem de serviço:', orderData);
+      console.log('📝 Criando ordem de serviço:', orderData);
       
+      // Validar dados obrigatórios
+      if (!orderData.description || orderData.description.trim() === '') {
+        throw new Error('Descrição é obrigatória');
+      }
+
       const { data, error } = await supabase
         .from('service_orders')
         .insert({
@@ -72,22 +78,23 @@ export const useServiceOrders = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao criar ordem de serviço:', error);
+        console.error('❌ Erro Supabase ao criar ordem de serviço:', error);
         throw error;
       }
       
-      console.log('Ordem de serviço criada com sucesso:', data);
-      setOrders(prev => [data, ...prev]);
+      console.log('✅ Ordem de serviço criada com sucesso:', data);
+      await fetchOrders(); // Recarregar lista
       toast({
-        title: "OS Criada",
-        description: "A nova ordem de serviço foi criada com sucesso!",
+        title: "Sucesso!",
+        description: "Ordem de serviço criada com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('Erro ao criar ordem de serviço:', error);
+      console.error('❌ Erro ao criar ordem de serviço:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao criar ordem de serviço';
       toast({
         title: "Erro",
-        description: "Erro ao criar ordem de serviço.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
@@ -96,6 +103,7 @@ export const useServiceOrders = () => {
 
   const updateOrder = async (id: string, orderData: Partial<ServiceOrderInsert>) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para atualizar ordem');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -105,7 +113,7 @@ export const useServiceOrders = () => {
     }
 
     try {
-      console.log('Atualizando ordem de serviço:', id, orderData);
+      console.log('📝 Atualizando ordem de serviço:', id, orderData);
       
       const { data, error } = await supabase
         .from('service_orders')
@@ -115,22 +123,23 @@ export const useServiceOrders = () => {
         .single();
 
       if (error) {
-        console.error('Erro Supabase ao atualizar ordem de serviço:', error);
+        console.error('❌ Erro Supabase ao atualizar ordem de serviço:', error);
         throw error;
       }
       
-      console.log('Ordem de serviço atualizada com sucesso:', data);
-      setOrders(prev => prev.map(order => order.id === id ? data : order));
+      console.log('✅ Ordem de serviço atualizada com sucesso:', data);
+      await fetchOrders(); // Recarregar lista
       toast({
-        title: "OS Atualizada",
-        description: "A ordem de serviço foi atualizada com sucesso!",
+        title: "Sucesso!",
+        description: "Ordem de serviço atualizada com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('Erro ao atualizar ordem de serviço:', error);
+      console.error('❌ Erro ao atualizar ordem de serviço:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar ordem de serviço';
       toast({
         title: "Erro",
-        description: "Erro ao atualizar ordem de serviço.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
@@ -139,6 +148,7 @@ export const useServiceOrders = () => {
 
   const deleteOrder = async (id: string) => {
     if (!user) {
+      console.error('❌ Usuário não autenticado para deletar ordem');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -148,7 +158,7 @@ export const useServiceOrders = () => {
     }
 
     try {
-      console.log('Removendo ordem de serviço:', id);
+      console.log('🗑️ Removendo ordem de serviço:', id);
       
       const { error } = await supabase
         .from('service_orders')
@@ -156,22 +166,23 @@ export const useServiceOrders = () => {
         .eq('id', id);
 
       if (error) {
-        console.error('Erro Supabase ao remover ordem de serviço:', error);
+        console.error('❌ Erro Supabase ao remover ordem de serviço:', error);
         throw error;
       }
       
-      console.log('Ordem de serviço removida com sucesso');
-      setOrders(prev => prev.filter(order => order.id !== id));
+      console.log('✅ Ordem de serviço removida com sucesso');
+      await fetchOrders(); // Recarregar lista
       toast({
-        title: "OS Removida",
-        description: "A ordem de serviço foi removida com sucesso!",
+        title: "Sucesso!",
+        description: "Ordem de serviço removida com sucesso!",
       });
       return { success: true };
     } catch (error) {
-      console.error('Erro ao remover ordem de serviço:', error);
+      console.error('❌ Erro ao remover ordem de serviço:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao remover ordem de serviço';
       toast({
         title: "Erro",
-        description: "Erro ao remover ordem de serviço.",
+        description: errorMessage,
         variant: "destructive",
       });
       return { success: false, error };
