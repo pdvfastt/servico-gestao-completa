@@ -2,16 +2,18 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading custom tooltip component - should not see any Radix UI tooltip');
+console.log('Loading ONLY custom tooltip - NO Radix UI');
 
-// Simple tooltip implementation without external dependencies
-const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
-  console.log('Rendering custom TooltipProvider');
-  return <div>{children}</div>;
+// Completely custom tooltip implementation - no external dependencies
+const TooltipProvider = ({ children, delayDuration }: { children: React.ReactNode; delayDuration?: number }) => {
+  console.log('Custom TooltipProvider rendering - should see this');
+  return <>{children}</>;
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState(false);
+  
+  console.log('Custom Tooltip component rendering');
   
   return (
     <div 
@@ -33,6 +35,8 @@ const TooltipTrigger = React.forwardRef<
   HTMLElement,
   React.HTMLAttributes<HTMLElement> & { asChild?: boolean; children: React.ReactNode }
 >(({ children, asChild, ...props }, ref) => {
+  console.log('Custom TooltipTrigger rendering');
+  
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, { ...props, ref });
   }
@@ -53,10 +57,12 @@ const TooltipContent = React.forwardRef<
     isOpen?: boolean;
   }
 >(({ children, className, sideOffset = 4, side = "top", align = "center", isOpen = false, ...props }, ref) => {
+  console.log('Custom TooltipContent rendering, isOpen:', isOpen);
+  
   if (!isOpen) return null;
   
   const getPositionClasses = () => {
-    const baseClasses = "absolute z-50 bg-popover border rounded-md px-3 py-1.5 text-sm text-popover-foreground shadow-md";
+    const baseClasses = "absolute z-50 bg-popover border rounded-md px-3 py-1.5 text-sm text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95";
     
     switch (side) {
       case "top":
@@ -84,4 +90,5 @@ const TooltipContent = React.forwardRef<
 });
 TooltipContent.displayName = "TooltipContent";
 
+// Export our custom components
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

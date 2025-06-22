@@ -9,7 +9,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('App.tsx loading - using custom tooltip provider');
+console.log('App.tsx - Using ONLY custom tooltip, NO Radix UI');
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,11 +21,11 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  console.log('Rendering App component');
+  console.log('App component rendering with custom tooltip only');
   
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={400}>
         <AuthProvider>
           <BrowserRouter>
             <Routes>
