@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react"
+
+import React, { useState, useEffect } from "react"
 
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
 
-console.log('use-toast.ts - hooks imported directly');
+console.log('use-toast.ts - React and hooks imported');
+console.log('use-toast.ts - React available:', !!React);
+console.log('use-toast.ts - useState available:', !!useState);
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -171,11 +174,17 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  console.log('useToast hook called - using direct imports');
+  console.log('useToast hook called - React available:', !!React);
+  console.log('useToast hook called - useState available:', !!useState);
+  console.log('useToast hook called - useEffect available:', !!useEffect);
   
-  const [state, setState] = useState<State>(memoryState)
+  // Use React.useState as a fallback to ensure we're using the correct React instance
+  const reactUseState = React.useState || useState;
+  const reactUseEffect = React.useEffect || useEffect;
+  
+  const [state, setState] = reactUseState<State>(memoryState)
 
-  useEffect(() => {
+  reactUseEffect(() => {
     listeners.push(setState)
     return () => {
       const index = listeners.indexOf(setState)
