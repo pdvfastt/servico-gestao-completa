@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Camera, Trash2 } from "lucide-react";
+import { Camera, Trash2, Plus } from "lucide-react";
 import BarcodeScanner from '@/components/BarcodeScanner';
+import ClientCreateModal from './ClientCreateModal';
 
 interface NewOrderFormProps {
   onSubmit: (data: any) => void;
@@ -51,6 +51,7 @@ const NewOrderForm = ({
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isReceiverScannerOpen, setIsReceiverScannerOpen] = React.useState(false);
   const [isTvBoxScannerOpen, setIsTvBoxScannerOpen] = React.useState(false);
+  const [isClientCreateModalOpen, setIsClientCreateModalOpen] = React.useState(false);
 
   const totalValue = formState.serviceValue + formState.partsValue;
 
@@ -78,6 +79,10 @@ const NewOrderForm = ({
       if (!showReceiver) updateFormState('serialReceiver', '');
       if (!showTvBox) updateFormState('serialTvBox', '');
     }
+  };
+
+  const handleClientCreated = (clientId: string) => {
+    updateFormState('selectedClient', clientId);
   };
 
   const handleReceiverScan = (code: string) => {
@@ -176,22 +181,33 @@ const NewOrderForm = ({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="client">Cliente</Label>
-                <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o cliente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.length === 0 ? (
-                      <SelectItem value="" disabled>Nenhum cliente cadastrado</SelectItem>
-                    ) : (
-                      clients.map(client => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <div className="flex space-x-2">
+                  <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Selecione o cliente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.length === 0 ? (
+                        <SelectItem value="" disabled>Nenhum cliente cadastrado</SelectItem>
+                      ) : (
+                        clients.map(client => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsClientCreateModalOpen(true)}
+                    title="Criar novo cliente"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div>
                 <Label htmlFor="technician">Técnico Responsável</Label>
@@ -483,6 +499,12 @@ const NewOrderForm = ({
           </Button>
         </div>
       </form>
+
+      <ClientCreateModal
+        isOpen={isClientCreateModalOpen}
+        onClose={() => setIsClientCreateModalOpen(false)}
+        onClientCreated={handleClientCreated}
+      />
 
       <BarcodeScanner
         isOpen={isReceiverScannerOpen}
