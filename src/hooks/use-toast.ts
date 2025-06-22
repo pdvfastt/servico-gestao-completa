@@ -174,6 +174,7 @@ function toast({ ...props }: Toast) {
 
 function useToast() {
   console.log('useToast hook called - React available:', !!React);
+  console.log('useToast hook called - useState available:', !!React.useState);
   
   const [state, setState] = React.useState<State>(memoryState)
 
