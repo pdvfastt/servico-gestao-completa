@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,19 @@ const CompanySettingsForm = () => {
   const { settings, loading, updateSettings } = useCompanySettings();
   const [saving, setSaving] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState(settings?.primary_color || '#FF4500');
+  const [secondaryColor, setSecondaryColor] = useState(settings?.secondary_color || '#00BFFF');
+  const [accentColor, setAccentColor] = useState(settings?.accent_color || '#32CD32');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Update color states when settings change
+  React.useEffect(() => {
+    if (settings) {
+      setPrimaryColor(settings.primary_color || '#FF4500');
+      setSecondaryColor(settings.secondary_color || '#00BFFF');
+      setAccentColor(settings.accent_color || '#32CD32');
+    }
+  }, [settings]);
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -41,6 +54,7 @@ const CompanySettingsForm = () => {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setLogoPreview(result);
+        console.log('Logo preview definido:', result); // Debug
       };
       reader.readAsDataURL(file);
     }
@@ -51,12 +65,14 @@ const CompanySettingsForm = () => {
     setSaving(true);
 
     const formData = new FormData(e.currentTarget);
+    const logoUrl = logoPreview || formData.get('company_logo_url') as string;
+    
     const newSettings = {
       company_name: formData.get('company_name') as string,
-      company_logo_url: logoPreview || formData.get('company_logo_url') as string,
-      primary_color: formData.get('primary_color') as string,
-      secondary_color: formData.get('secondary_color') as string,
-      accent_color: formData.get('accent_color') as string,
+      company_logo_url: logoUrl,
+      primary_color: primaryColor,
+      secondary_color: secondaryColor,
+      accent_color: accentColor,
     };
 
     console.log('Salvando configurações da empresa:', newSettings);
@@ -127,14 +143,18 @@ const CompanySettingsForm = () => {
                         alt="Logo preview"
                         className="w-full h-full object-cover"
                         onError={(e) => {
+                          console.log('Erro ao carregar preview da logo');
                           e.currentTarget.style.display = 'none';
-                          e.currentTarget.parentElement!.innerHTML = `
-                            <div class="w-full h-full flex items-center justify-center">
-                              <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                          `;
+                          const parent = e.currentTarget.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `
+                              <div class="w-full h-full flex items-center justify-center">
+                                <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                              </div>
+                            `;
+                          }
                         }}
                       />
                     ) : (
@@ -194,12 +214,14 @@ const CompanySettingsForm = () => {
                     id="primary_color"
                     name="primary_color"
                     type="color"
-                    defaultValue={settings?.primary_color || '#FF4500'}
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
                     className="w-16 h-10"
                   />
                   <Input
                     type="text"
-                    defaultValue={settings?.primary_color || '#FF4500'}
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
                     placeholder="#FF4500"
                     className="flex-1"
                   />
@@ -213,12 +235,14 @@ const CompanySettingsForm = () => {
                     id="secondary_color"
                     name="secondary_color"
                     type="color"
-                    defaultValue={settings?.secondary_color || '#00BFFF'}
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
                     className="w-16 h-10"
                   />
                   <Input
                     type="text"
-                    defaultValue={settings?.secondary_color || '#00BFFF'}
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
                     placeholder="#00BFFF"
                     className="flex-1"
                   />
@@ -232,12 +256,14 @@ const CompanySettingsForm = () => {
                     id="accent_color"
                     name="accent_color"
                     type="color"
-                    defaultValue={settings?.accent_color || '#32CD32'}
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
                     className="w-16 h-10"
                   />
                   <Input
                     type="text"
-                    defaultValue={settings?.accent_color || '#32CD32'}
+                    value={accentColor}
+                    onChange={(e) => setAccentColor(e.target.value)}
                     placeholder="#32CD32"
                     className="flex-1"
                   />

@@ -22,12 +22,13 @@ const OrdersFilters = ({
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const handleBarcodeScan = (code: string) => {
+    console.log('Código escaneado:', code); // Debug
     onSearchChange(code);
     setIsScannerOpen(false);
   };
 
   return (
-    <div className="flex items-center space-x-4">
+    <div className="flex items-center space-x-4 mb-6">
       <div className="flex-1 relative">
         <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
         <Input
@@ -41,14 +42,18 @@ const OrdersFilters = ({
       <Button
         variant="outline"
         size="icon"
-        onClick={() => setIsScannerOpen(true)}
+        onClick={() => {
+          console.log('Abrindo scanner de código de barras'); // Debug
+          setIsScannerOpen(true);
+        }}
         title="Escanear código de barras"
+        className="flex-shrink-0"
       >
         <Scan className="h-4 w-4" />
       </Button>
       
       <Select value={statusFilter} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-48 flex-shrink-0">
           <Filter className="h-4 w-4 mr-2" />
           <SelectValue placeholder="Filtrar por status" />
         </SelectTrigger>
@@ -65,7 +70,10 @@ const OrdersFilters = ({
 
       <BarcodeScanner
         isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
+        onClose={() => {
+          console.log('Fechando scanner de código de barras'); // Debug
+          setIsScannerOpen(false);
+        }}
         onScan={handleBarcodeScan}
         title="Escanear Código de Barras"
       />

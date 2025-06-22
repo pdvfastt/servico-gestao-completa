@@ -21,6 +21,7 @@ const Auth = () => {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState(false);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -39,7 +40,9 @@ const Auth = () => {
     const logoUrl = settings?.company_logo_url;
     const companyName = settings?.company_name || 'Sistema de Gestão OS';
     
-    if (logoUrl) {
+    console.log('Renderizando logo com URL:', logoUrl); // Debug
+    
+    if (logoUrl && !logoError) {
       return (
         <div className="flex justify-center mb-6">
           <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
@@ -47,16 +50,13 @@ const Auth = () => {
               src={logoUrl} 
               alt={companyName}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                // Fallback to default icon if image fails to load
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement!.innerHTML = `
-                  <div class="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
-                    <svg class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                `;
+              onError={() => {
+                console.log('Erro ao carregar logo, usando fallback');
+                setLogoError(true);
+              }}
+              onLoad={() => {
+                console.log('Logo carregada com sucesso');
+                setLogoError(false);
               }}
             />
           </div>
@@ -64,7 +64,7 @@ const Auth = () => {
       );
     }
 
-    // Default logo
+    // Default logo fallback
     return (
       <div className="flex justify-center mb-6">
         <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
@@ -78,7 +78,7 @@ const Auth = () => {
     const logoUrl = settings?.company_logo_url;
     const companyName = settings?.company_name || 'Sistema de Gestão OS';
     
-    if (logoUrl) {
+    if (logoUrl && !logoError) {
       return (
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
@@ -86,16 +86,8 @@ const Auth = () => {
               src={logoUrl} 
               alt={companyName}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                e.currentTarget.parentElement!.innerHTML = `
-                  <div class="w-16 h-16 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center">
-                    <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                `;
-              }}
+              onError={() => setLogoError(true)}
+              onLoad={() => setLogoError(false)}
             />
           </div>
         </div>
