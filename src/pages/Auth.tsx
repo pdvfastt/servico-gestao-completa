@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +98,27 @@ const Auth = () => {
           <p className="text-red-100">
             {settings?.company_description || 'Sistema de Gestão de Ordens de Serviço'}
           </p>
+        </div>
+
+        {/* Logo acima do formulário */}
+        <div className="flex justify-center mb-6">
+          {settings?.company_logo_url ? (
+            <img 
+              src={settings.company_logo_url} 
+              alt="Logo da Empresa" 
+              className="h-16 w-auto"
+              onError={(e) => {
+                // Fallback para logo padrão em caso de erro
+                e.currentTarget.src = "https://i.postimg.cc/CLbCMsnH/logotecm.png";
+              }}
+            />
+          ) : (
+            <img 
+              src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
+              alt="Tecmax Logo" 
+              className="h-16 w-auto"
+            />
+          )}
         </div>
         
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
@@ -258,23 +278,6 @@ const Auth = () => {
         
         <footer className="bg-black text-white mt-8 p-4 rounded-lg text-center">
           <div className="flex items-center justify-center space-x-4">
-            {settings?.company_logo_url ? (
-              <img 
-                src={settings.company_logo_url} 
-                alt="Logo da Empresa" 
-                className="h-8 w-auto"
-                onError={(e) => {
-                  // Fallback para logo padrão em caso de erro
-                  e.currentTarget.src = "https://i.postimg.cc/CLbCMsnH/logotecm.png";
-                }}
-              />
-            ) : (
-              <img 
-                src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
-                alt="Tecmax Logo" 
-                className="h-8 w-auto"
-              />
-            )}
             <p className="text-sm">&copy; 2024 {settings?.company_name || 'Tecmax'}. Todos os direitos reservados.</p>
           </div>
         </footer>
