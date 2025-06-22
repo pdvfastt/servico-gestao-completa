@@ -14,14 +14,13 @@ import { useToast } from '@/hooks/use-toast';
 const Auth = () => {
   const { user, signIn, signUp, resetPassword } = useAuth();
   const { signInAsTechnician, loading: technicianLoading } = useTechnicianAuth();
-  const { settings } = useCompanySettings();
+  const { settings, loading: settingsLoading } = useCompanySettings();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [logoError, setLogoError] = useState(false);
 
   // Form states
   const [email, setEmail] = useState('');
@@ -36,27 +35,45 @@ const Auth = () => {
     }
   }, [user]);
 
+  // Debug settings
+  useEffect(() => {
+    console.log('Settings carregadas:', settings);
+    console.log('URL da logo:', settings?.company_logo_url);
+  }, [settings]);
+
   const renderLogo = () => {
     const logoUrl = settings?.company_logo_url;
     const companyName = settings?.company_name || 'Sistema de Gestão OS';
     
-    console.log('Renderizando logo com URL:', logoUrl); // Debug
+    console.log('Renderizando logo com URL:', logoUrl);
+    console.log('Nome da empresa:', companyName);
     
-    if (logoUrl && !logoError) {
+    if (logoUrl) {
       return (
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-white">
             <img 
               src={logoUrl} 
               alt={companyName}
               className="w-full h-full object-cover"
-              onError={() => {
-                console.log('Erro ao carregar logo, usando fallback');
-                setLogoError(true);
+              onError={(e) => {
+                console.log('Erro ao carregar logo da URL:', logoUrl);
+                // Remover a imagem com erro e mostrar fallback
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-r from-orange-600 to-cyan-600 flex items-center justify-center">
+                      <svg class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                  `;
+                }
               }}
               onLoad={() => {
-                console.log('Logo carregada com sucesso');
-                setLogoError(false);
+                console.log('Logo carregada com sucesso da URL:', logoUrl);
               }}
             />
           </div>
@@ -78,16 +95,29 @@ const Auth = () => {
     const logoUrl = settings?.company_logo_url;
     const companyName = settings?.company_name || 'Sistema de Gestão OS';
     
-    if (logoUrl && !logoError) {
+    if (logoUrl) {
       return (
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20">
+          <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-white">
             <img 
               src={logoUrl} 
               alt={companyName}
               className="w-full h-full object-cover"
-              onError={() => setLogoError(true)}
-              onLoad={() => setLogoError(false)}
+              onError={(e) => {
+                console.log('Erro ao carregar logo de reset de senha');
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-r from-orange-600 to-cyan-600 flex items-center justify-center">
+                      <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                  `;
+                }
+              }}
             />
           </div>
         </div>

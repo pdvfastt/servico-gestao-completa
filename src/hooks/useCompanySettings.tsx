@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,14 +20,23 @@ export const useCompanySettings = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchSettings = async () => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      console.log('Buscando configurações da empresa para usuário:', user.id);
+      console.log('Buscando configurações da empresa para usuário:', user?.id);
+      
+      if (!user) {
+        // Definir configurações padrão quando não há usuário
+        const defaultSettings: CompanySettings = {
+          company_name: 'Sistema de Gestão de OS',
+          company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
+          primary_color: '#FF4500',
+          secondary_color: '#00BFFF',
+          accent_color: '#32CD32',
+        };
+        setSettings(defaultSettings);
+        setLoading(false);
+        return;
+      }
       
       const { data, error } = await supabase
         .from('company_settings' as any)
@@ -41,16 +51,18 @@ export const useCompanySettings = () => {
       
       if (data) {
         console.log('Configurações encontradas:', data);
-        setSettings({
+        const loadedSettings = {
           id: data.id,
-          company_name: data.company_name,
+          company_name: data.company_name || 'Sistema de Gestão de OS',
           company_logo_url: data.company_logo_url || 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
-          primary_color: data.primary_color,
-          secondary_color: data.secondary_color,
-          accent_color: data.accent_color,
-        });
+          primary_color: data.primary_color || '#FF4500',
+          secondary_color: data.secondary_color || '#00BFFF',
+          accent_color: data.accent_color || '#32CD32',
+        };
+        console.log('Configurações processadas:', loadedSettings);
+        setSettings(loadedSettings);
       } else {
-        // Configurações padrão baseadas na logomarca
+        // Configurações padrão quando não há dados no banco
         const defaultSettings: CompanySettings = {
           company_name: 'Sistema de Gestão de OS',
           company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
@@ -58,6 +70,7 @@ export const useCompanySettings = () => {
           secondary_color: '#00BFFF',
           accent_color: '#32CD32',
         };
+        console.log('Usando configurações padrão:', defaultSettings);
         setSettings(defaultSettings);
       }
     } catch (error) {
@@ -114,14 +127,16 @@ export const useCompanySettings = () => {
 
         if (error) throw error;
         
-        setSettings({
+        const newSettingsData = {
           id: data.id,
           company_name: data.company_name,
           company_logo_url: data.company_logo_url || undefined,
           primary_color: data.primary_color,
           secondary_color: data.secondary_color,
           accent_color: data.accent_color,
-        });
+        };
+        console.log('Configurações atualizadas:', newSettingsData);
+        setSettings(newSettingsData);
       } else {
         const { data, error } = await supabase
           .from('company_settings' as any)
@@ -138,14 +153,16 @@ export const useCompanySettings = () => {
 
         if (error) throw error;
         
-        setSettings({
+        const newSettingsData = {
           id: data.id,
           company_name: data.company_name,
           company_logo_url: data.company_logo_url || undefined,
           primary_color: data.primary_color,
           secondary_color: data.secondary_color,
           accent_color: data.accent_color,
-        });
+        };
+        console.log('Configurações criadas:', newSettingsData);
+        setSettings(newSettingsData);
       }
       
       toast({
