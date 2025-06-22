@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,13 +41,15 @@ const Auth = () => {
     try {
       if (type === 'signin') {
         const result = await signIn(formData.email, formData.password);
-        if (result && 'error' in result) {
-          alert('Erro ao fazer login: ' + result.error?.message);
+        // Só mostrar erro se realmente houver um erro
+        if (result.error) {
+          alert('Erro ao fazer login: ' + (result.error.message || 'Erro desconhecido'));
         }
       } else {
         const result = await signUp(formData.email, formData.password, formData.fullName);
-        if (result && 'error' in result) {
-          alert('Erro ao criar conta: ' + result.error?.message);
+        // Só mostrar erro se realmente houver um erro
+        if (result.error) {
+          alert('Erro ao criar conta: ' + (result.error.message || 'Erro desconhecido'));
         }
       }
     } catch (error) {
@@ -71,8 +74,8 @@ const Auth = () => {
     setIsLoading(true);
     try {
       const result = await resetPassword(formData.email);
-      if (result && 'error' in result) {
-        alert('Erro ao enviar email de redefinição: ' + result.error?.message);
+      if (result.error) {
+        alert('Erro ao enviar email de redefinição: ' + (result.error.message || 'Erro desconhecido'));
       } else {
         alert('Email de redefinição enviado com sucesso!');
       }
