@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -140,34 +141,51 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  console.log('Inert toast function called:', props);
-  
-  // Return a dummy object without any real functionality
+  const id = genId()
+
+  const update = (props: ToasterToast) =>
+    dispatch({
+      type: "UPDATE_TOAST",
+      toast: { ...props, id },
+    })
+  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+
+  dispatch({
+    type: "ADD_TOAST",
+    toast: {
+      ...props,
+      id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss()
+      },
+    },
+  })
+
   return {
-    id: 'dummy-' + Date.now(),
-    dismiss: () => console.log('Dummy dismiss called'),
-    update: () => console.log('Dummy update called'),
+    id: id,
+    dismiss,
+    update,
   }
 }
 
-// Completely inert useToast that doesn't use any React hooks
 function useToast() {
-  console.log('useToast called - returning completely inert implementation');
-  
-  // Don't use any React hooks at all - just return static values
+  const [state, setState] = React.useState<State>(memoryState)
+
+  React.useEffect(() => {
+    listeners.push(setState)
+    return () => {
+      const index = listeners.indexOf(setState)
+      if (index > -1) {
+        listeners.splice(index, 1)
+      }
+    }
+  }, [state])
+
   return {
-    toasts: [],
-    toast: (props: Toast) => {
-      console.log('Inert toast called:', props);
-      return {
-        id: 'dummy-' + Date.now(),
-        dismiss: () => console.log('Dummy dismiss'),
-        update: () => console.log('Dummy update'),
-      };
-    },
-    dismiss: (toastId?: string) => {
-      console.log('Inert dismiss called:', toastId);
-    },
+    ...state,
+    toast,
+    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }
 
