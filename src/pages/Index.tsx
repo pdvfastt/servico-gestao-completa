@@ -166,7 +166,7 @@ const Index = () => {
                   {isMobile ? 'Gestão OS' : (settings?.company_name || 'Sistema de Gestão de OS')}
                 </h1>
                 <p className="text-gray-600 text-xs md:text-lg hidden sm:block">
-                  Controle completo de ordens de serviço e gestão empresarial
+                  {settings?.company_description || 'Controle completo de ordens de serviço e gestão empresarial'}
                 </p>
               </div>
             </div>

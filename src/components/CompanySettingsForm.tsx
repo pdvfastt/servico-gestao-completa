@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from '@/hooks/use-toast';
 import { Building2, Loader2, Palette, Upload, Image as ImageIcon } from 'lucide-react';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
@@ -69,6 +70,7 @@ const CompanySettingsForm = () => {
     
     const newSettings = {
       company_name: formData.get('company_name') as string,
+      company_description: formData.get('company_description') as string,
       company_logo_url: logoUrl,
       primary_color: primaryColor,
       secondary_color: secondaryColor,
@@ -129,6 +131,21 @@ const CompanySettingsForm = () => {
                 placeholder="Digite o nome da empresa"
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="company_description">Descrição da Empresa</Label>
+              <Textarea
+                id="company_description"
+                name="company_description"
+                defaultValue={settings?.company_description || ''}
+                placeholder="Digite a descrição da empresa que aparecerá no cabeçalho"
+                rows={3}
+                className="resize-none"
+              />
+              <p className="text-xs text-gray-500">
+                Esta descrição aparecerá no cabeçalho principal do sistema
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -275,6 +292,7 @@ const CompanySettingsForm = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
               <strong>Dica:</strong> O logo será exibido na página de login e em todo o sistema. 
+              A descrição aparecerá no cabeçalho principal.
               Recomendamos usar uma imagem quadrada com fundo transparente para melhor resultado.
             </p>
           </div>
