@@ -1,8 +1,11 @@
 
 import * as React from "react"
 
-// Completely standalone tooltip implementation without any Radix UI dependencies
-const TooltipProvider = ({ children }: { children: React.ReactNode }) => {
+// Completely standalone tooltip implementation without any dependencies
+const TooltipProvider = ({ children, delayDuration, ...props }: { 
+  children: React.ReactNode;
+  delayDuration?: number;
+}) => {
   return <>{children}</>;
 };
 
@@ -33,8 +36,19 @@ TooltipTrigger.displayName = "TooltipTrigger";
 
 const TooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & {
+    side?: "top" | "right" | "bottom" | "left";
+    sideOffset?: number;
+    align?: "start" | "center" | "end";
+    alignOffset?: number;
+    avoidCollisions?: boolean;
+    collisionBoundary?: Element | null | Array<Element | null>;
+    collisionPadding?: number | Partial<Record<"top" | "right" | "bottom" | "left", number>>;
+    arrowPadding?: number;
+    sticky?: "partial" | "always";
+    hideWhenDetached?: boolean;
+  }
+>(({ children, className, side, align, ...props }, ref) => {
   return (
     <div 
       ref={ref} 
