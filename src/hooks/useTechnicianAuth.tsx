@@ -1,10 +1,8 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 export const useTechnicianAuth = () => {
-  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const signInAsTechnician = async (email: string, password: string) => {
@@ -51,11 +49,6 @@ export const useTechnicianAuth = () => {
       }
 
       console.log('Login de técnico bem-sucedido:', technicianData.name);
-      
-      toast({
-        title: "Login realizado com sucesso!",
-        description: `Bem-vindo, ${technicianData.name}!`,
-      });
 
       // Redirecionar para a página principal
       setTimeout(() => {
@@ -81,12 +74,6 @@ export const useTechnicianAuth = () => {
       } else {
         errorMessage = error.message;
       }
-      
-      toast({
-        title: "Erro no login de técnico",
-        description: errorMessage,
-        variant: "destructive",
-      });
       
       return { error: { message: errorMessage } };
     } finally {
