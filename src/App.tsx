@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('App.tsx - React available:', !!React);
+console.log('App.tsx - Starting fresh without any tooltip dependencies');
 console.log('App.tsx - React version:', React.version);
 
 const queryClient = new QueryClient({
@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  console.log('App component rendering - React context:', !!React);
+  console.log('App component rendering - clean app structure');
   
   return (
     <QueryClientProvider client={queryClient}>

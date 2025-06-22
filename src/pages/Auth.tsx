@@ -11,11 +11,18 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, LogIn, UserPlus, AlertCircle, Wrench, Shield } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 
+console.log('Auth.tsx - Starting to load Auth component');
+
 const Auth = () => {
+  console.log('Auth component - Starting render');
+  
   const { user, signIn, signUp, resetPassword } = useAuth();
   const { signInAsTechnician, loading: technicianLoading } = useTechnicianAuth();
   const { settings, loading: settingsLoading } = useCompanySettings();
   const { toast } = useToast();
+  
+  console.log('Auth component - All hooks loaded successfully');
+  
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
   const [showResetPassword, setShowResetPassword] = useState(false);
