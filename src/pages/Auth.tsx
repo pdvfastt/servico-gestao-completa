@@ -7,14 +7,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/useAuth';
 import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield, Wrench } from 'lucide-react';
+import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield, Wrench, KeyRound } from 'lucide-react';
 
 const Auth = () => {
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, resetPassword, user } = useAuth();
   const { signInAsTechnician } = useTechnicianAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [technicianLoading, setTechnicianLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
   // Verificar se novos cadastros estão habilitados (padrão: true)
@@ -174,6 +175,54 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setResetLoading(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+
+    console.log('Tentando recuperar senha para:', email);
+
+    try {
+      const { error } = await resetPassword(email);
+      
+      if (error) {
+        console.error('Erro na recuperação de senha:', error);
+        
+        let errorMessage = 'Erro ao enviar email de recuperação';
+        
+        if (error.message.includes('Email not found')) {
+          errorMessage = 'Email não encontrado no sistema';
+        } else if (error.message.includes('For security purposes')) {
+          errorMessage = 'Email de recuperação enviado! Verifique sua caixa de entrada';
+        } else {
+          errorMessage = error.message;
+        }
+        
+        toast({
+          title: error.message.includes('For security purposes') ? "Email enviado!" : "Erro na recuperação",
+          description: errorMessage,
+          variant: error.message.includes('For security purposes') ? "default" : "destructive",
+        });
+      } else {
+        toast({
+          title: "Email enviado!",
+          description: "Verifique sua caixa de entrada para redefinir sua senha",
+        });
+      }
+    } catch (error) {
+      console.error('Erro inesperado na recuperação de senha:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente em alguns instantes",
+        variant: "destructive",
+      });
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decoration */}
@@ -211,7 +260,7 @@ const Auth = () => {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-100">
+              <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100">
                 <TabsTrigger value="login" className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">
                   <LogIn className="h-3 w-3" />
                   <span>Login</span>
@@ -219,6 +268,10 @@ const Auth = () => {
                 <TabsTrigger value="technician" className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">
                   <Wrench className="h-3 w-3" />
                   <span>Técnico</span>
+                </TabsTrigger>
+                <TabsTrigger value="reset" className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">
+                  <KeyRound className="h-3 w-3" />
+                  <span>Recuperar</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="signup" 
@@ -340,6 +393,49 @@ const Auth = () => {
                       <>
                         <Wrench className="mr-2 h-4 w-4" />
                         Entrar como Técnico
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value="reset">
+                <form onSubmit={handleResetPassword} className="space-y-5">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <div className="flex items-center space-x-2">
+                      <KeyRound className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-800">Recuperar Senha</span>
+                    </div>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Digite seu email para receber as instruções de recuperação
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email" className="text-sm font-medium text-gray-700">Email</Label>
+                    <Input
+                      id="reset-email"
+                      name="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      required
+                      disabled={resetLoading}
+                      className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium" 
+                    disabled={resetLoading}
+                  >
+                    {resetLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <KeyRound className="mr-2 h-4 w-4" />
+                        Enviar Email de Recuperação
                       </>
                     )}
                   </Button>
