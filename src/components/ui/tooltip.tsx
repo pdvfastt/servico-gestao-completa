@@ -2,17 +2,17 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading completely standalone tooltip implementation');
+console.log('Loading pure CSS tooltip - no React hooks');
 
-// Standalone tooltip implementation - no external dependencies
+// Pure CSS-based tooltip implementation - no React hooks needed
 const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
-  console.log('Standalone TooltipProvider rendering');
-  return <div data-tooltip-provider="custom">{children}</div>;
+  console.log('Pure TooltipProvider rendering');
+  return <div data-tooltip-provider="pure">{children}</div>;
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('Standalone Tooltip rendering');
-  return <div className="relative inline-block group" data-tooltip="custom">{children}</div>;
+  console.log('Pure Tooltip rendering');
+  return <div className="relative inline-block group" data-tooltip="pure">{children}</div>;
 };
 
 const TooltipTrigger = ({ children, asChild, ...props }: { 
@@ -20,16 +20,16 @@ const TooltipTrigger = ({ children, asChild, ...props }: {
   asChild?: boolean; 
   [key: string]: any;
 }) => {
-  console.log('Standalone TooltipTrigger rendering');
+  console.log('Pure TooltipTrigger rendering');
   
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, { 
       ...props,
-      'data-tooltip-trigger': 'custom'
+      'data-tooltip-trigger': 'pure'
     });
   }
   return (
-    <span {...props} data-tooltip-trigger="custom">
+    <span {...props} data-tooltip-trigger="pure">
       {children}
     </span>
   );
@@ -50,7 +50,7 @@ const TooltipContent = ({
   align?: "start" | "center" | "end";
   [key: string]: any;
 }) => {
-  console.log('Standalone TooltipContent rendering');
+  console.log('Pure TooltipContent rendering');
   
   return (
     <div 
@@ -63,7 +63,7 @@ const TooltipContent = ({
         side === "right" && "left-full top-1/2 transform -translate-y-1/2 ml-1",
         className
       )}
-      data-tooltip-content="custom"
+      data-tooltip-content="pure"
       {...props}
     >
       {children}

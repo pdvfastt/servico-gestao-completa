@@ -8,7 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('App.tsx - Loading without any tooltip providers');
+console.log('App.tsx - Clean React app without any tooltip providers');
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,7 +20,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  console.log('App component rendering - no tooltip provider used');
+  console.log('App component rendering - clean structure');
   
   return (
     <QueryClientProvider client={queryClient}>
