@@ -1,50 +1,47 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/hooks/useAuth';
-import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, LogIn, UserPlus, AlertCircle, Wrench, Shield } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield, Wrench, KeyRound } from 'lucide-react';
 
 const Auth = () => {
-  const { signIn, signUp, resetPassword, user } = useAuth();
-  const { signInAsTechnician } = useTechnicianAuth();
+  const { user, signIn, signUp, resetPassword } = useAuth();
+  const { signInAsTechnician, loading: technicianLoading } = useTechnicianAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [technicianLoading, setTechnicianLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  
-  // Verificar se novos cadastros estão habilitados (padrão: true)
-  const signUpEnabled = localStorage.getItem('signUpEnabled') !== 'false';
+  const [activeTab, setActiveTab] = useState("signin");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  // Redirect se já estiver logado
-  React.useEffect(() => {
+  // Form states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Redirect authenticated users
+  useEffect(() => {
     if (user) {
-      console.log('Usuário já logado, redirecionando...');
       window.location.href = '/';
     }
   }, [user]);
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    console.log('Tentando fazer login...');
+    setError(null);
 
     try {
       const { error } = await signIn(email, password);
-      
       if (error) {
-        console.error('Erro no login:', error);
-        
         let errorMessage = 'Erro no login';
         
         if (error.message === 'Invalid login credentials') {
@@ -57,270 +54,243 @@ const Auth = () => {
           errorMessage = error.message;
         }
         
-        toast({
-          title: "Erro no login",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Redirecionando...",
-        });
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error('Erro inesperado no login:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente em alguns instantes",
-        variant: "destructive",
-      });
+      console.error('Erro no login:', error);
+      setError('Erro inesperado no login');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTechnicianSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleTechnicianSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTechnicianLoading(true);
+    setError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    await signInAsTechnician(email, password);
-    setTechnicianLoading(false);
+    const { error } = await signInAsTechnician(email, password);
+    if (error) {
+      setError(error.message);
+    }
   };
 
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!signUpEnabled) {
-      toast({
-        title: "Cadastro desabilitado",
-        description: "O cadastro de novos usuários está temporariamente desabilitado",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const fullName = formData.get('fullName') as string;
-
-    console.log('Tentando fazer cadastro...');
-
-    // Validações simples
-    if (!fullName.trim()) {
-      toast({
-        title: "Nome obrigatório",
-        description: "Por favor, informe seu nome completo",
-        variant: "destructive",
-      });
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem');
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Senha muito curta",
-        description: "A senha deve ter pelo menos 6 caracteres",
-        variant: "destructive",
-      });
+      setError('A senha deve ter pelo menos 6 caracteres');
       setLoading(false);
       return;
     }
 
     try {
       const { error } = await signUp(email, password, fullName);
-      
       if (error) {
-        console.error('Erro no cadastro:', error);
-        
         let errorMessage = 'Erro no cadastro';
         
-        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
-          errorMessage = 'Este email já está cadastrado. Tente fazer login';
+        if (error.message.includes('already registered')) {
+          errorMessage = 'Este email já está cadastrado';
         } else if (error.message.includes('Password should be')) {
           errorMessage = 'A senha deve ter pelo menos 6 caracteres';
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Email inválido';
+        } else if (error.message.includes('Signups not allowed')) {
+          errorMessage = 'Cadastros estão desabilitados pelo administrador';
         } else {
           errorMessage = error.message;
         }
         
-        toast({
-          title: "Erro no cadastro",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        setError(errorMessage);
       } else {
-        toast({
-          title: "Cadastro realizado com sucesso!",
-          description: "Verifique seu email para confirmar a conta ou aguarde o redirecionamento",
-        });
+        setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
+        // Limpar o formulário
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFullName('');
       }
     } catch (error) {
-      console.error('Erro inesperado no cadastro:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente em alguns instantes",
-        variant: "destructive",
-      });
+      console.error('Erro no cadastro:', error);
+      setError('Erro inesperado no cadastro');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    setResetLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-
-    console.log('Tentando recuperar senha para:', email);
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
       const { error } = await resetPassword(email);
-      
       if (error) {
-        console.error('Erro na recuperação de senha:', error);
-        
-        let errorMessage = 'Erro ao enviar email de recuperação';
-        
-        if (error.message.includes('Email not found')) {
-          errorMessage = 'Email não encontrado no sistema';
-        } else if (error.message.includes('For security purposes')) {
-          errorMessage = 'Email de recuperação enviado! Verifique sua caixa de entrada';
-        } else {
-          errorMessage = error.message;
-        }
-        
-        toast({
-          title: error.message.includes('For security purposes') ? "Email enviado!" : "Erro na recuperação",
-          description: errorMessage,
-          variant: error.message.includes('For security purposes') ? "default" : "destructive",
-        });
+        setError('Erro ao enviar email de recuperação');
       } else {
-        toast({
-          title: "Email enviado!",
-          description: "Verifique sua caixa de entrada para redefinir sua senha",
-        });
+        setSuccess('Email de recuperação enviado! Verifique sua caixa de entrada.');
+        setShowResetPassword(false);
       }
     } catch (error) {
-      console.error('Erro inesperado na recuperação de senha:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente em alguns instantes",
-        variant: "destructive",
-      });
+      console.error('Erro na recuperação de senha:', error);
+      setError('Erro inesperado na recuperação de senha');
     } finally {
-      setResetLoading(false);
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-white rounded-full blur-xl"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white rounded-full blur-lg"></div>
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
-              <Settings className="h-12 w-12 text-white" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-3 drop-shadow-lg">
-            Sistema de Gestão de OS
-          </h1>
-          <p className="text-white/90 text-lg drop-shadow">
-            Gerencie suas ordens de serviço com eficiência
-          </p>
-        </div>
-
-        {/* Main Card */}
-        <Card className="backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-              Acesso ao Sistema
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
+        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+              <Shield className="h-6 w-6 text-orange-600" />
+              Recuperar Senha
             </CardTitle>
-            <CardDescription className="text-gray-600 text-base">
-              Entre com sua conta ou crie uma nova
+            <CardDescription>
+              Digite seu email para receber um link de recuperação
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6 bg-gray-100">
-                <TabsTrigger value="login" className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">
-                  <LogIn className="h-3 w-3" />
-                  <span>Login</span>
-                </TabsTrigger>
-                <TabsTrigger value="technician" className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">
-                  <Wrench className="h-3 w-3" />
-                  <span>Técnico</span>
-                </TabsTrigger>
-                <TabsTrigger value="reset" className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs">
-                  <KeyRound className="h-3 w-3" />
-                  <span>Recuperar</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="signup" 
-                  className="flex items-center space-x-1 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs"
-                  disabled={!signUpEnabled}
-                >
-                  <UserPlus className="h-3 w-3" />
-                  <span>Cadastro</span>
-                </TabsTrigger>
-              </TabsList>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {success && (
+                <Alert className="border-green-200 bg-green-50 text-green-800">
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
 
-              <TabsContent value="login">
-                <form onSubmit={handleSignIn} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      disabled={loading}
-                      className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Sua senha"
-                        required
-                        disabled={loading}
-                        className="h-11 pr-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    'Enviar Email de Recuperação'
+                  )}
+                </Button>
+
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setShowResetPassword(false)}
+                  disabled={loading}
+                >
+                  Voltar ao Login
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
+      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+            <Shield className="h-6 w-6 text-orange-600" />
+            Sistema de Gestão OS
+          </CardTitle>
+          <CardDescription>
+            Entre em sua conta ou crie uma nova
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="signin" className="flex items-center gap-1">
+                <LogIn className="h-4 w-4" />
+                Login
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="flex items-center gap-1">
+                <UserPlus className="h-4 w-4" />
+                Cadastro
+              </TabsTrigger>
+              <TabsTrigger value="technician" className="flex items-center gap-1">
+                <Wrench className="h-4 w-4" />
+                Técnico
+              </TabsTrigger>
+            </TabsList>
+
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert className="mt-4 border-green-200 bg-green-50 text-green-800">
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Senha</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-3">
                   <Button 
                     type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium" 
+                    className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
                     disabled={loading}
                   >
                     {loading ? (
@@ -329,199 +299,139 @@ const Auth = () => {
                         Entrando...
                       </>
                     ) : (
-                      "Entrar no Sistema"
+                      'Entrar'
                     )}
                   </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="technician">
-                <form onSubmit={handleTechnicianSignIn} className="space-y-5">
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
-                    <div className="flex items-center space-x-2">
-                      <Wrench className="h-4 w-4 text-orange-600" />
-                      <span className="text-sm font-medium text-orange-800">Área do Técnico</span>
-                    </div>
-                    <p className="text-xs text-orange-700 mt-1">
-                      Entre com suas credenciais para acessar suas ordens de serviço
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tech-email" className="text-sm font-medium text-gray-700">Email</Label>
-                    <Input
-                      id="tech-email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      disabled={technicianLoading}
-                      className="h-11 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tech-password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="tech-password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Sua senha"
-                        required
-                        disabled={technicianLoading}
-                        className="h-11 pr-10 border-gray-200 focus:border-orange-500 focus:ring-orange-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
                   <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-medium" 
+                    type="button" 
+                    variant="link" 
+                    className="w-full text-sm"
+                    onClick={() => setShowResetPassword(true)}
+                    disabled={loading}
+                  >
+                    Esqueci minha senha
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Nome Completo</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Senha</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-confirm-password">Confirmar Senha</Label>
+                  <Input
+                    id="signup-confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Criando conta...
+                    </>
+                  ) : (
+                    'Criar Conta'
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="technician">
+              <form onSubmit={handleTechnicianSignIn} className="space-y-4">
+                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-cyan-700 flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    Área exclusiva para técnicos
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tech-email">Email</Label>
+                  <Input
+                    id="tech-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
                     disabled={technicianLoading}
-                  >
-                    {technicianLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Entrando...
-                      </>
-                    ) : (
-                      <>
-                        <Wrench className="mr-2 h-4 w-4" />
-                        Entrar como Técnico
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="reset">
-                <form onSubmit={handleResetPassword} className="space-y-5">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                    <div className="flex items-center space-x-2">
-                      <KeyRound className="h-4 w-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-800">Recuperar Senha</span>
-                    </div>
-                    <p className="text-xs text-blue-700 mt-1">
-                      Digite seu email para receber as instruções de recuperação
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-sm font-medium text-gray-700">Email</Label>
-                    <Input
-                      id="reset-email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      disabled={resetLoading}
-                      className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium" 
-                    disabled={resetLoading}
-                  >
-                    {resetLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <KeyRound className="mr-2 h-4 w-4" />
-                        Enviar Email de Recuperação
-                      </>
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Nome Completo</Label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      required
-                      disabled={loading || !signUpEnabled}
-                      className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      disabled={loading || !signUpEnabled}
-                      className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Mínimo 6 caracteres"
-                        minLength={6}
-                        required
-                        disabled={loading || !signUpEnabled}
-                        className="h-11 pr-10 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        disabled={!signUpEnabled}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium" 
-                    disabled={loading || !signUpEnabled}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Cadastrando...
-                      </>
-                    ) : !signUpEnabled ? (
-                      <>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Cadastro Desabilitado
-                      </>
-                    ) : (
-                      "Criar Conta"
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <div className="text-center mt-6 text-white/80">
-          <p className="text-sm drop-shadow">
-            Sistema seguro e confiável para gestão de ordens de serviço
-          </p>
-        </div>
-      </div>
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tech-password">Senha</Label>
+                  <Input
+                    id="tech-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={technicianLoading}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-cyan-600 to-orange-600 hover:from-cyan-700 hover:to-orange-700"
+                  disabled={technicianLoading}
+                >
+                  {technicianLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verificando...
+                    </>
+                  ) : (
+                    <>
+                      <Wrench className="mr-2 h-4 w-4" />
+                      Entrar como Técnico
+                    </>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };

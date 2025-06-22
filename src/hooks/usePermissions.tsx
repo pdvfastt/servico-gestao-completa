@@ -26,6 +26,8 @@ export const usePermissions = () => {
     }
 
     try {
+      console.log('🔍 Verificando permissões para usuário:', user.id);
+      
       // Primeiro verificar se é admin (admins têm acesso total)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -33,7 +35,12 @@ export const usePermissions = () => {
         .eq('id', user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Erro ao buscar perfil:', profileError);
+        throw profileError;
+      }
+
+      console.log('Perfil do usuário:', profile);
 
       if (profile.role === 'admin') {
         // Admins têm acesso a tudo
@@ -48,9 +55,19 @@ export const usePermissions = () => {
           settings: true,
           technician_orders: true,
         });
+        console.log('✅ Usuário é admin - todas as permissões concedidas');
         setLoading(false);
         return;
       }
+
+      // Verificar se o usuário é um técnico
+      const { data: technicianData } = await supabase
+        .from('technicians')
+        .select('id, status')
+        .eq('user_id', user.id)
+        .single();
+
+      console.log('Dados do técnico:', technicianData);
 
       // Para outros usuários, buscar permissões específicas
       const { data: userPermissions, error } = await supabase
@@ -58,7 +75,12 @@ export const usePermissions = () => {
         .select('permission, granted')
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar permissões específicas:', error);
+        throw error;
+      }
+
+      console.log('Permissões específicas encontradas:', userPermissions);
 
       const permissionsMap: Record<PermissionType, boolean> = {
         dashboard: false,
@@ -72,13 +94,21 @@ export const usePermissions = () => {
         technician_orders: false,
       };
 
+      // Aplicar permissões específicas do banco
       userPermissions?.forEach(perm => {
         permissionsMap[perm.permission as PermissionType] = perm.granted;
       });
 
+      // Se for técnico ativo, garantir acesso às suas ordens
+      if (technicianData && technicianData.status === 'Ativo') {
+        permissionsMap.technician_orders = true;
+        console.log('✅ Técnico ativo - permissão technician_orders concedida');
+      }
+
       setPermissions(permissionsMap);
+      console.log('✅ Permissões finais:', permissionsMap);
     } catch (error) {
-      console.error('Erro ao buscar permissões:', error);
+      console.error('❌ Erro ao buscar permissões:', error);
     } finally {
       setLoading(false);
     }
