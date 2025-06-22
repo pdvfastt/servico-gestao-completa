@@ -34,16 +34,16 @@ const Dashboard = () => {
   const activeTechnicians = technicians.filter(t => t.status === 'Ativo').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-red-500 via-gray-500 to-red-500 flex flex-col">
       {/* Header Section */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-white/20 shadow-sm">
         <div className="p-6">
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-r from-blue-600 to-green-600 p-3 rounded-xl">
+            <div className="bg-gradient-to-r from-red-600 to-gray-600 p-3 rounded-xl">
               <BarChart3 className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-red-600 to-gray-600 bg-clip-text text-transparent">
                 Dashboard
               </h1>
               <p className="text-gray-600 text-lg">
@@ -54,7 +54,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-8 flex-1">
         {/* Stats Cards */}
         <StatsCards
           clientsCount={clients.length}
@@ -82,6 +82,18 @@ const Dashboard = () => {
           onDeleteOrder={deleteOrder}
         />
       </div>
+
+      {/* Footer */}
+      <footer className="bg-black text-white mt-8 p-4 rounded-lg text-center">
+        <div className="flex items-center justify-center space-x-4">
+          <img 
+            src="https://i.postimg.cc/CLbCMsnH/logotecm.png" 
+            alt="Tecmax Logo" 
+            className="h-8 w-auto"
+          />
+          <p className="text-sm">&copy; 2024 Tecmax. Todos os direitos reservados.</p>
+        </div>
+      </footer>
     </div>
   );
 };
