@@ -1,16 +1,16 @@
 
 import * as React from "react"
 
-// Completely standalone tooltip implementation without any dependencies
-const TooltipProvider = ({ children, delayDuration, ...props }: { 
+// Simple tooltip implementation without complex state management
+const TooltipProvider = ({ children, ...props }: { 
   children: React.ReactNode;
   delayDuration?: number;
 }) => {
-  return <>{children}</>;
+  return <div {...props}>{children}</div>;
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
+  return <div className="relative inline-block">{children}</div>;
 };
 
 const TooltipTrigger = React.forwardRef<
@@ -52,7 +52,7 @@ const TooltipContent = React.forwardRef<
   return (
     <div 
       ref={ref} 
-      className={`bg-black text-white text-sm rounded px-2 py-1 ${className || ''}`}
+      className={`absolute z-50 bg-black text-white text-sm rounded px-2 py-1 pointer-events-none ${className || ''}`}
       {...props}
     >
       {children}
