@@ -1,16 +1,16 @@
 
-import React, { useState, useCallback, forwardRef } from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 // Create a simple native tabs implementation to avoid Radix UI issues
-const Tabs = forwardRef<
+const Tabs = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { value?: string; onValueChange?: (value: string) => void; defaultValue?: string }
 >(({ className, value, onValueChange, defaultValue, children, ...props }, ref) => {
-  const [internalValue, setInternalValue] = useState(defaultValue || '');
+  const [internalValue, setInternalValue] = React.useState(defaultValue || '');
   const currentValue = value !== undefined ? value : internalValue;
 
-  const handleValueChange = useCallback((newValue: string) => {
+  const handleValueChange = React.useCallback((newValue: string) => {
     if (value === undefined) {
       setInternalValue(newValue);
     }
@@ -38,7 +38,7 @@ const Tabs = forwardRef<
 });
 Tabs.displayName = "Tabs";
 
-const TabsList = forwardRef<
+const TabsList = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
@@ -54,7 +54,7 @@ const TabsList = forwardRef<
 ));
 TabsList.displayName = "TabsList";
 
-const TabsTrigger = forwardRef<
+const TabsTrigger = React.forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & { value: string }
 >(({ className, value, children, ...props }, ref) => {
@@ -82,7 +82,7 @@ const TabsTrigger = forwardRef<
 });
 TabsTrigger.displayName = "TabsTrigger";
 
-const TabsContent = forwardRef<
+const TabsContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { value: string }
 >(({ className, value, children, ...props }, ref) => {
