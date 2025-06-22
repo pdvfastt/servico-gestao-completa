@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
@@ -112,7 +111,6 @@ const Auth = () => {
         setError(errorMessage);
       } else {
         setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
-        // Limpar o formulário
         setEmail('');
         setPassword('');
         setConfirmPassword('');
@@ -153,8 +151,13 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
         <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
           <CardHeader className="text-center">
+            {/* Logo */}
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
+            </div>
             <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
-              <Shield className="h-6 w-6 text-orange-600" />
               Recuperar Senha
             </CardTitle>
             <CardDescription>
@@ -225,8 +228,13 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
       <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
-            <Shield className="h-6 w-6 text-orange-600" />
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
+              <Shield className="h-10 w-10 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-gray-900">
             Sistema de Gestão OS
           </CardTitle>
           <CardDescription>

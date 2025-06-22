@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Filter, Scan } from "lucide-react";
+import BarcodeScanner from "@/components/BarcodeScanner";
 
 interface OrdersFiltersProps {
   searchTerm: string;
@@ -17,6 +19,13 @@ const OrdersFilters = ({
   onSearchChange, 
   onStatusChange 
 }: OrdersFiltersProps) => {
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const handleBarcodeScan = (code: string) => {
+    onSearchChange(code);
+    setIsScannerOpen(false);
+  };
+
   return (
     <div className="flex items-center space-x-4">
       <div className="flex-1 relative">
@@ -28,6 +37,16 @@ const OrdersFilters = ({
           className="pl-10"
         />
       </div>
+      
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={() => setIsScannerOpen(true)}
+        title="Escanear código de barras"
+      >
+        <Scan className="h-4 w-4" />
+      </Button>
+      
       <Select value={statusFilter} onValueChange={onStatusChange}>
         <SelectTrigger className="w-48">
           <Filter className="h-4 w-4 mr-2" />
@@ -43,6 +62,13 @@ const OrdersFilters = ({
           <SelectItem value="Cancelada">Cancelada</SelectItem>
         </SelectContent>
       </Select>
+
+      <BarcodeScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScan={handleBarcodeScan}
+        title="Escanear Código de Barras"
+      />
     </div>
   );
 };
