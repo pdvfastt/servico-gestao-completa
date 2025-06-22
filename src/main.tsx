@@ -5,25 +5,6 @@ import App from "./App.tsx";
 import "./index.css";
 
 console.log('Starting React app...');
-console.log('React version:', React.version);
-
-// Ensure React is properly available globally before any other modules load
-if (typeof window !== 'undefined') {
-  (window as any).React = React;
-  (window as any).ReactDOM = ReactDOM;
-}
-
-// Force React to be available in the global scope for all modules
-(globalThis as any).React = React;
-(globalThis as any).ReactDOM = ReactDOM;
-
-// Also ensure React hooks are available globally
-if (typeof window !== 'undefined') {
-  (window as any).useState = React.useState;
-  (window as any).useEffect = React.useEffect;
-  (window as any).useContext = React.useContext;
-  (window as any).createContext = React.createContext;
-}
 
 // Register service worker
 if ('serviceWorker' in navigator) {
@@ -38,23 +19,22 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Add error boundary for the entire app
+// Simple error boundary
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
+  { hasError: boolean }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error) {
-    console.error('ErrorBoundary caught error:', error);
-    return { hasError: true, error };
+  static getDerivedStateFromError() {
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('ErrorBoundary details:', error, errorInfo);
+    console.error('ErrorBoundary caught error:', error, errorInfo);
   }
 
   render() {
