@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 
 console.log('Loading minimal custom tooltip implementation');
 
-// Minimal tooltip implementation
+// Minimal tooltip implementation that doesn't use React hooks
 const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
   console.log('Minimal TooltipProvider rendering');
   return <>{children}</>;
@@ -12,7 +12,7 @@ const TooltipProvider = ({ children }: { children: React.ReactNode; delayDuratio
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
   console.log('Minimal Tooltip rendering');
-  return <div className="relative inline-block">{children}</div>;
+  return <div className="relative inline-block group">{children}</div>;
 };
 
 const TooltipTrigger = React.forwardRef<
