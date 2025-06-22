@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
@@ -321,7 +322,7 @@ const Auth = () => {
               className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
             >
               <img 
-                src="https://tecmax.net/wp-content/uploads/2024/01/Logo-Tecmax-Horizontal-Vetor-1.png"
+                src="https://i.postimg.cc/CLbCMsnH/logotecm.png"
                 alt="Tecmax"
                 className="h-4 w-auto"
               />
@@ -557,7 +558,7 @@ const Auth = () => {
             className="flex items-center space-x-1 text-orange-600 hover:text-orange-700 transition-colors"
           >
             <img 
-              src="https://tecmax.net/wp-content/uploads/2024/01/Logo-Tecmax-Horizontal-Vetor-1.png"
+              src="https://i.postimg.cc/CLbCMsnH/logotecm.png"
               alt="Tecmax"
               className="h-4 w-auto"
             />
