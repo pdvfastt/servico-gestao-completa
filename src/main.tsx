@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log('🚀 main.tsx - NUCLEAR SOLUTION: Clean React initialization');
+console.log('🚀 main.tsx - Clean React initialization');
 
 // Ensure React is available globally
 (window as any).React = React;
@@ -48,7 +48,9 @@ console.log('✅ main.tsx - All validations passed, proceeding with app render')
 try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
-    React.createElement(React.StrictMode, null, React.createElement(App))
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
   );
   console.log('✅ main.tsx - App rendered successfully');
 } catch (error) {
