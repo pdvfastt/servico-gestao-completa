@@ -49,6 +49,12 @@ const Dashboard = () => {
   const openOrders = orders.filter(o => o.status === 'Aberta').length;
   const inProgressOrders = orders.filter(o => o.status === 'Em Andamento').length;
 
+  const chartData = [
+    { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
+    { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
+    { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
+  ];
+
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
   const [isNewOrderOpen, setIsNewOrderOpen] = React.useState(false);
@@ -146,11 +152,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="pl-2">
             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={[
-                { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
-                { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
-                { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
-              ]}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -168,11 +170,7 @@ const Dashboard = () => {
             <ResponsiveContainer width="100%" height={350}>
               <PieChart>
                 <Pie
-                  data={[
-                    { name: 'Aberta', value: orders.filter(o => o.status === 'Aberta').length },
-                    { name: 'Em Andamento', value: orders.filter(o => o.status === 'Em Andamento').length },
-                    { name: 'Finalizada', value: orders.filter(o => o.status === 'Finalizada').length },
-                  ]}
+                  data={chartData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -181,9 +179,9 @@ const Dashboard = () => {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  <Cell fill="#0088FE" />
-                  <Cell fill="#00C49F" />
-                  <Cell fill="#FFBB28" />
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
@@ -295,325 +293,104 @@ const QuickOrderForm = ({
   technicians: any[];
   services: any[];
 }) => {
-  // Estados para persistir TODOS os dados do formulário
-  const [formState, setFormState] = React.useState({
-    // Dados Básicos
-    selectedClient: "",
-    selectedTechnician: "",
-    selectedService: "",
-    selectedPriority: "Média",
-    invoiceNumber: "",
-    serialReceiver: "",
-    expectedDate: "",
-    expectedTime: "",
-    
-    // Dados Técnicos
-    description: "",
-    diagnosis: "",
-    observations: "",
-    
-    // Dados Financeiros
-    serviceValue: 0,
-    partsValue: 0,
-    selectedPaymentMethod: ""
-  });
-
-  const [showSerialField, setShowSerialField] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-  const totalValue = formState.serviceValue + formState.partsValue;
-
-  const updateFormState = (field: string, value: any) => {
-    setFormState(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const handleServiceChange = (serviceId: string) => {
-    updateFormState('selectedService', serviceId);
-    const service = services.find(s => s.id === serviceId);
-    if (service) {
-      updateFormState('serviceValue', service.price || 0);
-      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
-    }
-  };
+  const [selectedClient, setSelectedClient] = React.useState("");
+  const [selectedService, setSelectedService] = React.useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formDataObj = new FormData(form);
     
-    if (!formState.description || formState.description.trim() === '') {
+    const description = formDataObj.get('description') as string;
+    const invoiceNumber = formDataObj.get('invoiceNumber') as string;
+    
+    if (!description || description.trim() === '') {
       alert('Descrição é obrigatória');
       return;
     }
 
-    if (!formState.invoiceNumber) {
+    if (!invoiceNumber) {
       alert('Número da Nota Fiscal é obrigatório');
       return;
     }
-
-    if (showSerialField && !formState.serialReceiver) {
-      alert('Serial do Receptor é obrigatório para Instalação NPD');
-      return;
+    
+    let fullDescription = description.trim();
+    if (invoiceNumber) {
+      fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
     }
     
-    setIsSubmitting(true);
-    
-    try {
-      let expected_date = null;
-      if (formState.expectedDate) {
-        if (formState.expectedTime) {
-          expected_date = `${formState.expectedDate}T${formState.expectedTime}:00`;
-        } else {
-          expected_date = `${formState.expectedDate}T09:00:00`;
-        }
-      }
-      
-      let fullDescription = formState.description.trim();
-      if (formState.invoiceNumber) {
-        fullDescription += `\n\nNº Nota Fiscal: ${formState.invoiceNumber}`;
-      }
-      if (showSerialField && formState.serialReceiver) {
-        fullDescription += `\nSerial Receptor: ${formState.serialReceiver}`;
-      }
-      
-      const data = {
-        client_id: formState.selectedClient || null,
-        technician_id: formState.selectedTechnician || null,
-        priority: formState.selectedPriority,
-        expected_date,
-        description: fullDescription,
-        diagnosis: formState.diagnosis || null,
-        observations: formState.observations || null,
-        service_value: formState.serviceValue || 0,
-        parts_value: formState.partsValue || 0,
-        total_value: totalValue || 0,
-        payment_method: formState.selectedPaymentMethod || null,
-        status: 'Aberta'
-      };
+    const data = {
+      client_id: selectedClient || null,
+      priority: 'Média',
+      description: fullDescription,
+      status: 'Aberta',
+      service_value: 0,
+      parts_value: 0,
+      total_value: 0
+    };
 
-      onSubmit(data);
-    } catch (error) {
-      console.error('Erro no submit:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
-          <TabsTrigger value="technical">Dados Técnicos</TabsTrigger>
-          <TabsTrigger value="financial">Dados Financeiros</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="basic" className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="client">Cliente</Label>
-              <Select value={formState.selectedClient} onValueChange={(value) => updateFormState('selectedClient', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o cliente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map(client => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="technician">Técnico Responsável</Label>
-              <Select value={formState.selectedTechnician} onValueChange={(value) => updateFormState('selectedTechnician', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o técnico" />
-                </SelectTrigger>
-                <SelectContent>
-                  {technicians.map(technician => (
-                    <SelectItem key={technician.id} value={technician.id}>
-                      {technician.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="client">Cliente</Label>
+        <Select value={selectedClient} onValueChange={setSelectedClient}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o cliente" />
+          </SelectTrigger>
+          <SelectContent>
+            {clients.map(client => (
+              <SelectItem key={client.id} value={client.id}>
+                {client.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div>
-            <Label htmlFor="service">Tipo de Serviço</Label>
-            <Select value={formState.selectedService} onValueChange={handleServiceChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de serviço" />
-              </SelectTrigger>
-              <SelectContent>
-                {services.map(service => (
-                  <SelectItem key={service.id} value={service.id}>
-                    {service.name} - R$ {service.price?.toFixed(2)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <div>
+        <Label htmlFor="service">Tipo de Serviço</Label>
+        <Select value={selectedService} onValueChange={setSelectedService}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione o tipo de serviço" />
+          </SelectTrigger>
+          <SelectContent>
+            {services.map(service => (
+              <SelectItem key={service.id} value={service.id}>
+                {service.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-          <div>
-            <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
-            <Input 
-              type="number"
-              placeholder="Digite o número da nota fiscal"
-              value={formState.invoiceNumber}
-              onChange={(e) => updateFormState('invoiceNumber', e.target.value)}
-              required
-            />
-          </div>
+      <div>
+        <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
+        <Input 
+          name="invoiceNumber"
+          type="number"
+          placeholder="Digite o número da nota fiscal"
+          required
+        />
+      </div>
 
-          {showSerialField && (
-            <div>
-              <Label htmlFor="serialReceiver">Serial Receptor *</Label>
-              <Input 
-                placeholder="Digite o serial do receptor"
-                value={formState.serialReceiver}
-                onChange={(e) => updateFormState('serialReceiver', e.target.value)}
-                required={showSerialField}
-              />
-            </div>
-          )}
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="priority">Prioridade</Label>
-              <Select value={formState.selectedPriority} onValueChange={(value) => updateFormState('selectedPriority', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a prioridade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Alta">Alta</SelectItem>
-                  <SelectItem value="Média">Média</SelectItem>
-                  <SelectItem value="Baixa">Baixa</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="expectedDate">Data Prevista</Label>
-              <Input 
-                type="date" 
-                value={formState.expectedDate}
-                onChange={(e) => updateFormState('expectedDate', e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="expectedTime">Horário Previsto</Label>
-            <Input 
-              type="time" 
-              value={formState.expectedTime}
-              onChange={(e) => updateFormState('expectedTime', e.target.value)}
-            />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="technical" className="space-y-4">
-          <div>
-            <Label htmlFor="description">Descrição do Problema *</Label>
-            <Textarea 
-              placeholder="Descreva detalhadamente o problema relatado pelo cliente..."
-              className="min-h-[100px]"
-              value={formState.description}
-              onChange={(e) => updateFormState('description', e.target.value)}
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="diagnosis">Diagnóstico</Label>
-            <Textarea 
-              placeholder="Diagnóstico técnico do problema..."
-              className="min-h-[100px]"
-              value={formState.diagnosis}
-              onChange={(e) => updateFormState('diagnosis', e.target.value)}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="observations">Observações Internas</Label>
-            <Textarea 
-              placeholder="Observações visíveis apenas para a equipe..."
-              className="min-h-[80px]"
-              value={formState.observations}
-              onChange={(e) => updateFormState('observations', e.target.value)}
-            />
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="financial" className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="serviceValue">Valor dos Serviços</Label>
-              <Input 
-                placeholder="0.00" 
-                type="number" 
-                step="0.01"
-                value={formState.serviceValue || ''}
-                onChange={(e) => updateFormState('serviceValue', parseFloat(e.target.value) || 0)}
-              />
-            </div>
-            <div>
-              <Label htmlFor="partsValue">Valor das Peças</Label>
-              <Input 
-                placeholder="0.00" 
-                type="number" 
-                step="0.01"
-                value={formState.partsValue || ''}
-                onChange={(e) => updateFormState('partsValue', parseFloat(e.target.value) || 0)}
-              />
-            </div>
-          </div>
-          
-          <div>
-            <Label htmlFor="totalValue">Valor Total</Label>
-            <Input 
-              placeholder="R$ 0,00" 
-              value={`R$ ${totalValue.toFixed(2)}`}
-              readOnly
-              className="bg-gray-50"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="paymentMethod">Forma de Pagamento</Label>
-            <Select value={formState.selectedPaymentMethod} onValueChange={(value) => updateFormState('selectedPaymentMethod', value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a forma de pagamento" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                <SelectItem value="cartao">Cartão</SelectItem>
-                <SelectItem value="pix">PIX</SelectItem>
-                <SelectItem value="boleto">Boleto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </TabsContent>
-      </Tabs>
+      <div>
+        <Label htmlFor="description">Descrição do Problema *</Label>
+        <Textarea 
+          name="description"
+          placeholder="Descreva o problema..."
+          required
+        />
+      </div>
       
       <div className="flex justify-end space-x-2">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => window.location.reload()}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
           Cancelar
         </Button>
-        <Button 
-          type="submit" 
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Criando...' : 'Criar OS'}
+        <Button type="submit">
+          Criar OS
         </Button>
       </div>
     </form>

@@ -7,14 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield, Users } from 'lucide-react';
+import { LogIn, UserPlus, Settings, Loader2 } from 'lucide-react';
 
 const Auth = () => {
   const { signIn, signUp, user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [signUpEnabled, setSignUpEnabled] = useState(true);
 
   // Redirect se já estiver logado
   React.useEffect(() => {
@@ -77,16 +75,6 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    if (!signUpEnabled) {
-      toast({
-        title: "Cadastro desabilitado",
-        description: "O cadastro de novos usuários está temporariamente desabilitado",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -159,61 +147,46 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-white rounded-full blur-xl"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white rounded-full blur-lg"></div>
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
-              <Settings className="h-12 w-12 text-white" />
+          <div className="flex justify-center mb-4">
+            <div className="bg-blue-600 p-3 rounded-full">
+              <Settings className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3 drop-shadow-lg">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Sistema de Gestão de OS
           </h1>
-          <p className="text-white/90 text-lg drop-shadow">
-            Gerencie suas ordens de serviço com eficiência
+          <p className="text-gray-600">
+            Faça login para acessar o sistema
           </p>
         </div>
 
-        {/* Main Card */}
-        <Card className="backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-              Acesso ao Sistema
-            </CardTitle>
-            <CardDescription className="text-gray-600 text-base">
+        <Card>
+          <CardHeader>
+            <CardTitle>Acesso ao Sistema</CardTitle>
+            <CardDescription>
               Entre com sua conta ou crie uma nova
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100">
-                <TabsTrigger value="login" className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login" className="flex items-center space-x-2">
                   <LogIn className="h-4 w-4" />
                   <span>Login</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="signup" 
-                  className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={!signUpEnabled}
-                >
+                <TabsTrigger value="signup" className="flex items-center space-x-2">
                   <UserPlus className="h-4 w-4" />
                   <span>Cadastro</span>
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
-                <form onSubmit={handleSignIn} className="space-y-5">
+                <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
                       name="email"
@@ -221,110 +194,73 @@ const Auth = () => {
                       placeholder="seu@email.com"
                       required
                       disabled={loading}
-                      className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Sua senha"
-                        required
-                        disabled={loading}
-                        className="h-11 pr-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    <Label htmlFor="password">Senha</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      placeholder="Sua senha"
+                      required
+                      disabled={loading}
+                    />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium" 
-                    disabled={loading}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Entrando...
                       </>
                     ) : (
-                      "Entrar no Sistema"
+                      "Entrar"
                     )}
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-5">
+                <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Nome Completo</Label>
+                    <Label htmlFor="fullName">Nome Completo</Label>
                     <Input
                       id="fullName"
                       name="fullName"
                       type="text"
                       placeholder="Seu nome completo"
                       required
-                      disabled={loading || !signUpEnabled}
-                      className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
                       placeholder="seu@email.com"
                       required
-                      disabled={loading || !signUpEnabled}
-                      className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
+                      disabled={loading}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Mínimo 6 caracteres"
-                        minLength={6}
-                        required
-                        disabled={loading || !signUpEnabled}
-                        className="h-11 pr-10 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        disabled={!signUpEnabled}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                    <Label htmlFor="password">Senha</Label>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      placeholder="Mínimo 6 caracteres"
+                      minLength={6}
+                      required
+                      disabled={loading}
+                    />
                   </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium" 
-                    disabled={loading || !signUpEnabled}
-                  >
+                  <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Cadastrando...
-                      </>
-                    ) : !signUpEnabled ? (
-                      <>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Cadastro Desabilitado
                       </>
                     ) : (
                       "Criar Conta"
@@ -333,30 +269,12 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
-
-            {/* Admin Toggle */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Permitir novos cadastros</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSignUpEnabled(!signUpEnabled)}
-                  className={`${signUpEnabled ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-red-300 text-red-700 hover:bg-red-50'}`}
-                >
-                  {signUpEnabled ? 'Ativado' : 'Desativado'}
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6 text-white/80">
-          <p className="text-sm drop-shadow">
-            Sistema seguro e confiável para gestão de ordens de serviço
+        <div className="text-center mt-4 text-sm text-gray-600">
+          <p>
+            Primeiro acesso? Crie sua conta no sistema.
           </p>
         </div>
       </div>
