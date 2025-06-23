@@ -13,11 +13,9 @@ if (!rootElement) {
 
 const root = createRoot(rootElement);
 root.render(
-  React.createElement(
-    React.StrictMode,
-    null,
-    React.createElement(App, null)
-  )
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
 );
 
 console.log('✅ main.tsx - App rendered successfully');

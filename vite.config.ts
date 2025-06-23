@@ -9,7 +9,11 @@ console.log('🔧 vite.config.ts - Clean configuration');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const plugins: PluginOption[] = [react()];
+  const plugins: PluginOption[] = [
+    react({
+      jsxImportSource: 'react'
+    })
+  ];
   
   // Add componentTagger only in development
   if (mode === 'development') {
