@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,10 +30,15 @@ import { useServices } from '@/hooks/useServices';
 import OrderView from '@/components/OrderView';
 
 const OrdersManager = () => {
+  console.log('OrdersManager: Componente carregando...');
+  
   const { orders, loading, createOrder, updateOrder, deleteOrder } = useServiceOrders();
   const { clients } = useClients();
   const { technicians } = useTechnicians();
   const { services } = useServices();
+  
+  console.log('OrdersManager: Hooks carregados', { orders: orders?.length, clients: clients?.length, technicians: technicians?.length, services: services?.length, loading });
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
@@ -134,13 +140,18 @@ Sistema de Gestão de OS
     window.open(whatsappUrl, '_blank');
   };
 
+  console.log('OrdersManager: Renderizando componente');
+
   if (loading) {
+    console.log('OrdersManager: Mostrando loading');
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
+
+  console.log('OrdersManager: Renderizando interface principal');
 
   return (
     <div className="space-y-6">
@@ -277,33 +288,37 @@ Sistema de Gestão de OS
       </Card>
 
       {/* Modals */}
-      <OrderView
-        order={selectedOrder}
-        client={selectedOrder ? clients.find(c => c.id === selectedOrder.client_id) : null}
-        technician={selectedOrder ? technicians.find(t => t.id === selectedOrder.technician_id) : null}
-        isOpen={isViewOpen}
-        onClose={() => {
-          setIsViewOpen(false);
-          setSelectedOrder(null);
-        }}
-        onEdit={() => {
-          setIsViewOpen(false);
-          setIsEditOpen(true);
-        }}
-      />
+      {selectedOrder && (
+        <OrderView
+          order={selectedOrder}
+          client={selectedOrder ? clients.find(c => c.id === selectedOrder.client_id) : null}
+          technician={selectedOrder ? technicians.find(t => t.id === selectedOrder.technician_id) : null}
+          isOpen={isViewOpen}
+          onClose={() => {
+            setIsViewOpen(false);
+            setSelectedOrder(null);
+          }}
+          onEdit={() => {
+            setIsViewOpen(false);
+            setIsEditOpen(true);
+          }}
+        />
+      )}
 
-      <OrderEditModal
-        order={selectedOrder}
-        clients={clients}
-        technicians={technicians}
-        services={services}
-        isOpen={isEditOpen}
-        onClose={() => {
-          setIsEditOpen(false);
-          setSelectedOrder(null);
-        }}
-        onSave={handleSaveOrder}
-      />
+      {selectedOrder && (
+        <OrderEditModal
+          order={selectedOrder}
+          clients={clients}
+          technicians={technicians}
+          services={services}
+          isOpen={isEditOpen}
+          onClose={() => {
+            setIsEditOpen(false);
+            setSelectedOrder(null);
+          }}
+          onSave={handleSaveOrder}
+        />
+      )}
     </div>
   );
 };
