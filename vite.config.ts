@@ -34,8 +34,5 @@ export default defineConfig(({ mode }) => {
     define: {
       'global': 'globalThis',
     },
-    esbuild: {
-      jsxInject: `import React from 'react'`
-    },
   };
 });
