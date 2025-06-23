@@ -21,11 +21,23 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     // AGGRESSIVE PLUGIN to block Radix imports
     {
-      name: 'block-radix-imports',
+      name: 'ultimate-radix-blocker',
       resolveId(id: string) {
         if (id.includes('@radix-ui') || id.includes('radix')) {
-          console.log('🚫 BLOCKED IMPORT:', id);
+          console.log('🚫 ULTIMATE BLOCKED IMPORT:', id);
+          // Always redirect to our custom tooltip
           return path.resolve(__dirname, "./src/components/ui/tooltip.tsx");
+        }
+        return null;
+      },
+      load(id: string) {
+        if (id.includes('@radix-ui') || id.includes('radix')) {
+          console.log('🚫 ULTIMATE BLOCKED LOAD:', id);
+          // Return our custom implementation
+          return `
+            export { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "${path.resolve(__dirname, "./src/components/ui/tooltip.tsx")}";
+            export default { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent };
+          `;
         }
         return null;
       }
@@ -41,11 +53,14 @@ export default defineConfig(({ mode }) => ({
       "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
       // ULTIMATE BLOCKING: Redirect ALL possible Radix paths
       "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
-      "@radix-ui/react-toast": path.resolve(__dirname, "./src/components/ui/toast.tsx"),
+      "@radix-ui/react-toast": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       "@radix-ui/react-tooltip/dist/index.js": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
-      "@radix-ui/react-toast/dist/index.js": path.resolve(__dirname, "./src/components/ui/toast.tsx"),
+      "@radix-ui/react-toast/dist/index.js": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       "@radix-ui/react-tooltip/dist/index.mjs": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       "@radix-ui/react-toast/dist/index.mjs": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
+      // Block all other radix packages
+      "@radix-ui": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
+      "radix-ui": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
@@ -56,6 +71,7 @@ export default defineConfig(({ mode }) => ({
     '__RADIX_UI_TOOLTIP__': 'false',
     '__RADIX_UI_TOAST__': 'false',
     '__RADIX_UI_BLOCKED__': 'true',
+    '__RADIX_BLOCKED__': 'true',
   },
   optimizeDeps: {
     include: [
@@ -69,6 +85,8 @@ export default defineConfig(({ mode }) => ({
       "@radix-ui/react-tooltip",
       "@radix-ui/react-toast",
       "@radix-ui/*",
+      "radix-ui/*",
+      "*radix*"
     ],
     force: true,
     esbuildOptions: {
@@ -77,6 +95,7 @@ export default defineConfig(({ mode }) => ({
         '__RADIX_UI_TOOLTIP__': 'false',
         '__RADIX_UI_TOAST__': 'false',
         '__RADIX_UI_BLOCKED__': 'true',
+        '__RADIX_BLOCKED__': 'true',
       }
     },
   },
@@ -92,8 +111,8 @@ export default defineConfig(({ mode }) => ({
       external: (id: string) => {
         // ULTIMATE BLOCKING of any radix imports
         if (id.includes('@radix-ui') || id.includes('radix')) {
-          console.log('🚫 ULTIMATE BLOCK:', id);
-          return false; // Don't make it external, redirect it
+          console.log('🚫 ULTIMATE EXTERNAL BLOCK:', id);
+          return false; // Don't make it external, let our plugin handle it
         }
         return false;
       }
@@ -110,8 +129,9 @@ export default defineConfig(({ mode }) => ({
       '__RADIX_UI_TOOLTIP__': 'false',
       '__RADIX_UI_TOAST__': 'false',
       '__RADIX_UI_BLOCKED__': 'true',
+      '__RADIX_BLOCKED__': 'true',
     }
   },
-  // ULTIMATE CACHE CLEARING with unique timestamp
+  // ULTIMATE CACHE CLEARING with unique timestamp to force rebuild
   cacheDir: path.resolve(__dirname, '.vite-ultimate-' + Date.now()),
 }));
