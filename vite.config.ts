@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: 'esnext',
     rollupOptions: {
+      external: ['@radix-ui/react-tooltip'],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
