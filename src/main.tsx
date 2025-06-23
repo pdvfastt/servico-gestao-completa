@@ -2,34 +2,74 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 
-// CRITICAL: Set React globally IMMEDIATELY before any other imports
-// This must happen before any Radix UI components are imported
-(window as any).React = React;
-(globalThis as any).React = React;
+// CRITICAL: Aggressively set React globally IMMEDIATELY and repeatedly
+// This must be the absolute first thing that happens
+const setReactGlobally = () => {
+  const reactObj = React;
+  
+  // Set on window
+  if (typeof window !== 'undefined') {
+    (window as any).React = reactObj;
+    (window as any).react = reactObj;
+    
+    // Set all React hooks individually
+    (window as any).useState = reactObj.useState;
+    (window as any).useEffect = reactObj.useEffect;
+    (window as any).useContext = reactObj.useContext;
+    (window as any).useRef = reactObj.useRef;
+    (window as any).useMemo = reactObj.useMemo;
+    (window as any).useCallback = reactObj.useCallback;
+    (window as any).useReducer = reactObj.useReducer;
+    (window as any).createContext = reactObj.createContext;
+    (window as any).forwardRef = reactObj.forwardRef;
+    (window as any).memo = reactObj.memo;
+  }
+  
+  // Set on globalThis
+  if (typeof globalThis !== 'undefined') {
+    (globalThis as any).React = reactObj;
+    (globalThis as any).react = reactObj;
+    
+    // Set all React hooks individually
+    (globalThis as any).useState = reactObj.useState;
+    (globalThis as any).useEffect = reactObj.useEffect;
+    (globalThis as any).useContext = reactObj.useContext;
+    (globalThis as any).useRef = reactObj.useRef;
+    (globalThis as any).useMemo = reactObj.useMemo;
+    (globalThis as any).useCallback = reactObj.useCallback;
+    (globalThis as any).useReducer = reactObj.useReducer;
+    (globalThis as any).createContext = reactObj.createContext;
+    (globalThis as any).forwardRef = reactObj.forwardRef;
+    (globalThis as any).memo = reactObj.memo;
+  }
+  
+  // Set on global (Node.js compatibility)
+  if (typeof global !== 'undefined') {
+    (global as any).React = reactObj;
+    (global as any).react = reactObj;
+    
+    // Set all React hooks individually
+    (global as any).useState = reactObj.useState;
+    (global as any).useEffect = reactObj.useEffect;
+    (global as any).useContext = reactObj.useContext;
+    (global as any).useRef = reactObj.useRef;
+    (global as any).useMemo = reactObj.useMemo;
+    (global as any).useCallback = reactObj.useCallback;
+    (global as any).useReducer = reactObj.useReducer;
+    (global as any).createContext = reactObj.createContext;
+    (global as any).forwardRef = reactObj.forwardRef;
+    (global as any).memo = reactObj.memo;
+  }
+};
 
-// Set React as both React and react for maximum compatibility
-if (typeof window !== 'undefined') {
-  (window as any).react = React;
-  (window as any).React = React;
-}
+// Call it multiple times to ensure it sticks
+setReactGlobally();
+setReactGlobally();
+setReactGlobally();
 
-if (typeof globalThis !== 'undefined') {
-  (globalThis as any).react = React;
-  (globalThis as any).React = React;
-}
-
-// Also set React on the global object for Node.js compatibility
-if (typeof global !== 'undefined') {
-  (global as any).React = React;
-  (global as any).react = React;
-}
-
-// Force all React hooks to be available globally
-if (typeof window !== 'undefined') {
-  (window as any).useState = React.useState;
-  (window as any).useEffect = React.useEffect;
-  (window as any).useContext = React.useContext;
-  (window as any).createContext = React.createContext;
+// Also set it on the module system if available
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports.React = React;
 }
 
 // Now import other modules after React is globally available
