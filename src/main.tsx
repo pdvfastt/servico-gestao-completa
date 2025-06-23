@@ -36,6 +36,17 @@ const reactCheck = () => {
 
 reactCheck();
 
+// Force React into global scope for Radix UI components
+try {
+  if (typeof global === 'undefined') {
+    (window as any).global = globalThis;
+  }
+  (global as any).React = React;
+  console.log('main.tsx - Set React on global object');
+} catch (e) {
+  console.log('main.tsx - Could not set React on global object:', e);
+}
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error('Root element not found');

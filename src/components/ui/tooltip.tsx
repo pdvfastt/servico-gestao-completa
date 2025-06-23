@@ -7,18 +7,24 @@ import { cn } from "@/lib/utils"
 console.log('Tooltip component - React available:', !!React);
 console.log('Tooltip component - React version:', React?.version);
 
-// Simple wrapper that checks for React availability
-const TooltipProvider = (props: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>) => {
+// Create a completely safe TooltipProvider that doesn't use Radix until React is ready
+const TooltipProvider = ({ children, ...props }: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>) => {
   console.log('TooltipProvider rendering - React available:', !!React);
   console.log('TooltipProvider rendering - React.useState available:', !!React?.useState);
   
-  // Safety check for React
+  // If React or useState is not available, render children without tooltip functionality
   if (!React || !React.useState) {
-    console.error('TooltipProvider: React or React.useState is not available');
-    return null;
+    console.error('TooltipProvider: React or React.useState is not available, rendering children without tooltip');
+    return <div>{children}</div>;
   }
   
-  return <TooltipPrimitive.Provider {...props} />;
+  // Only use the Radix TooltipProvider when React is fully available
+  try {
+    return <TooltipPrimitive.Provider {...props}>{children}</TooltipPrimitive.Provider>;
+  } catch (error) {
+    console.error('TooltipProvider: Error with Radix TooltipProvider, falling back to div:', error);
+    return <div>{children}</div>;
+  }
 };
 
 TooltipProvider.displayName = "TooltipProvider";
