@@ -48,6 +48,18 @@ if (originalImport) {
   };
 }
 
+// Block dynamic imports of tooltip
+const originalDynamicImport = (window as any).import;
+if (originalDynamicImport) {
+  (window as any).import = (url: string) => {
+    if (url.includes('tooltip') || url.includes('radix')) {
+      console.log('🚫 BLOCKED DYNAMIC TOOLTIP IMPORT:', url);
+      return Promise.resolve({});
+    }
+    return originalDynamicImport(url);
+  };
+}
+
 // Enhanced error logging
 const originalConsoleError = console.error;
 console.error = (...args) => {
