@@ -1,30 +1,18 @@
 
 import React from 'react';
 
-console.log('🔧 SafeQueryProvider - NUCLEAR React validation v2');
+console.log('🔧 SafeQueryProvider - Clean React validation v3');
 
-// NUCLEAR: Validate React is properly available before doing anything
+// Simple validation that React is properly available
 if (!React || !React.useEffect || !React.useState) {
   console.error('❌ React hooks not available in SafeQueryProvider');
   throw new Error('React hooks not available - check React import configuration');
 }
 
-// NUCLEAR: Ensure React is available globally for QueryClient and all dependencies
-if (typeof window !== 'undefined' && !window.React) {
-  (window as any).React = React;
-  console.log('🔧 SafeQueryProvider - Set React on window');
-}
-
-if (typeof globalThis !== 'undefined' && !globalThis.React) {
-  (globalThis as any).React = React;
-  console.log('🔧 SafeQueryProvider - Set React on globalThis');
-}
-
-console.log('✅ React hooks validated in SafeQueryProvider v2:', {
+console.log('✅ React hooks validated in SafeQueryProvider v3:', {
   useEffect: !!React.useEffect,
   useState: !!React.useState,
-  createContext: !!React.createContext,
-  globalReact: !!(window as any)?.React || !!(globalThis as any)?.React
+  createContext: !!React.createContext
 });
 
 // Import QueryClient AFTER React validation
@@ -41,7 +29,7 @@ const queryClient = new QueryClient({
 });
 
 const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
-  console.log('✅ SafeQueryProvider rendering with nuclear React validation v2');
+  console.log('✅ SafeQueryProvider rendering with clean React validation v3');
   
   return (
     <QueryClientProvider client={queryClient}>

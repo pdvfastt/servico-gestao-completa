@@ -2,28 +2,15 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-console.log('🚀 main.tsx - NUCLEAR React setup v2');
+console.log('🚀 main.tsx - Clean React setup v3');
 
-// NUCLEAR: Ensure React is available globally BEFORE any other imports
-if (typeof window !== 'undefined') {
-  (window as any).React = React;
-  (window as any).ReactDOM = { createRoot };
-  console.log('✅ React set globally on window:', !!window.React);
-}
-
-if (typeof globalThis !== 'undefined') {
-  (globalThis as any).React = React;
-  (globalThis as any).ReactDOM = { createRoot };
-  console.log('✅ React set globally on globalThis:', !!globalThis.React);
-}
-
-// NUCLEAR: Validate React before proceeding
+// Simple validation that React is properly loaded
 if (!React || !React.useEffect || !React.useState || !React.createElement) {
-  console.error('❌ React not properly loaded - aborting');
+  console.error('❌ React not properly loaded');
   throw new Error('React hooks not available - check React configuration');
 }
 
-console.log('🔍 React nuclear validation:', {
+console.log('✅ React validation passed:', {
   React: !!React,
   createElement: !!React.createElement,
   useEffect: !!React.useEffect,
@@ -32,7 +19,7 @@ console.log('🔍 React nuclear validation:', {
   Component: !!React.Component
 });
 
-// Import App AFTER React is globally available
+// Import App AFTER React validation
 import App from "./App.tsx";
 import "./index.css";
 
@@ -48,4 +35,4 @@ root.render(
   </React.StrictMode>
 );
 
-console.log('✅ main.tsx - App rendered with nuclear React setup v2');
+console.log('✅ main.tsx - App rendered successfully v3');

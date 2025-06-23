@@ -5,12 +5,13 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { PluginOption } from "vite";
 
-console.log('🔧 vite.config.ts - NUCLEAR React resolution v2');
+console.log('🔧 vite.config.ts - ULTIMATE React resolution v3');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const plugins: PluginOption[] = [
     react({
+      // Force React to be imported from our exact instance
       jsxImportSource: 'react'
     })
   ];
@@ -29,19 +30,19 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        // NUCLEAR: Force ALL React-related packages to use the same instance
+        // ULTIMATE: Force ALL React-related packages to use the same instance
         "react": path.resolve(__dirname, "./node_modules/react"),
         "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
         "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
         "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
-        // NUCLEAR: Force React Query to use our React instance
+        // ULTIMATE: Force React Query to use our React instance
         "@tanstack/react-query": path.resolve(__dirname, "./node_modules/@tanstack/react-query"),
-        // NUCLEAR: Replace ALL problematic Radix components
-        "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       },
+      // ULTIMATE: Dedupe all React-related packages
       dedupe: ["react", "react-dom", "react/jsx-runtime", "@tanstack/react-query"],
     },
     optimizeDeps: {
+      // ULTIMATE: Include all React packages in optimization
       include: [
         "react", 
         "react-dom", 
@@ -49,30 +50,33 @@ export default defineConfig(({ mode }) => {
         "react/jsx-dev-runtime",
         "@tanstack/react-query"
       ],
-      exclude: [
-        "@radix-ui/react-tooltip"
-      ],
+      // ULTIMATE: Force optimization
       force: true,
       esbuildOptions: {
+        // ULTIMATE: Ensure global is available
         define: {
           global: 'globalThis',
         },
+        // ULTIMATE: Set JSX configuration
+        jsx: 'automatic',
+        jsxDev: mode === 'development',
       },
     },
     define: {
+      // ULTIMATE: Define globals
       'global': 'globalThis',
-      // NUCLEAR: Ensure React is available everywhere
-      '__REACT__': 'React',
       'process.env.NODE_ENV': JSON.stringify(mode),
     },
     esbuild: {
-      jsxFactory: 'React.createElement',
-      jsxFragment: 'React.Fragment',
+      // ULTIMATE: JSX configuration
+      jsx: 'automatic',
+      jsxDev: mode === 'development',
       define: {
         global: 'globalThis',
       },
     },
     build: {
+      // ULTIMATE: Rollup configuration for consistent React usage
       rollupOptions: {
         external: [],
         output: {
@@ -82,6 +86,7 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
+      // ULTIMATE: CommonJS options
       commonjsOptions: {
         include: [/node_modules/],
         transformMixedEsModules: true,
