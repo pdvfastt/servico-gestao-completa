@@ -12,7 +12,7 @@ console.log('🔍 main.tsx - ULTRA DEFENSIVE React system check:', {
   ReactVersion: React?.version,
   useState: !!React?.useState,
   ReactDOM: !!ReactDOM,
-  ReactDOMVersion: ReactDOM?.version,
+  ReactDOMClient: !!ReactDOM?.createRoot,
 });
 
 // Block any tooltip imports at the module level
