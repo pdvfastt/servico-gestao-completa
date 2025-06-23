@@ -1,25 +1,30 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, 
   Users, 
   Settings, 
-  BarChart3,
+  BarChart3, 
+  Plus,
+  Clock,
+  CheckCircle,
+  AlertCircle,
   DollarSign,
   Calendar,
   User,
   LogOut,
   Wrench,
-  Cog
+  Cog,
+  Menu
 } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
+import { useUserManagement } from '@/hooks/useUserManagement';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
-import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from "@/components/ui/button";
+import { supabase } from '@/integrations/supabase/client';
 import Dashboard from "@/components/Dashboard";
 import ClientsManager from "@/components/ClientsManager";
 import TechniciansManager from "@/components/TechniciansManager";
@@ -29,74 +34,58 @@ import ReportsManager from "@/components/ReportsManager";
 import OrdersManager from "@/components/OrdersManager";
 import SettingsManager from "@/components/SettingsManager";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import TechnicianOrdersPage from "@/components/TechnicianOrdersPage";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
+  const { isAdmin } = useUserManagement();
   const { settings } = useCompanySettings();
-  const { permissions, hasPermission } = usePermissions();
   const isMobile = useIsMobile();
 
-  // Configuração simplificada das abas
+  // Verificar se o usuário é um técnico
+  const [isTechnician, setIsTechnician] = useState(false);
+
+  useEffect(() => {
+    const checkIfTechnician = async () => {
+      if (!user) return;
+      
+      try {
+        const { data } = await supabase
+          .from('technicians')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
+        setIsTechnician(!!data);
+      } catch (error) {
+        setIsTechnician(false);
+      }
+    };
+
+    checkIfTechnician();
+  }, [user]);
+
   const tabsConfig = [
-    { 
-      value: "dashboard", 
-      icon: BarChart3, 
-      label: "Dashboard", 
-      shortLabel: "Home"
-    },
-    { 
-      value: "orders", 
-      icon: FileText, 
-      label: "Ordens de Serviço", 
-      shortLabel: "OS"
-    },
-    { 
-      value: "clients", 
-      icon: Users, 
-      label: "Clientes", 
-      shortLabel: "Clientes"
-    },
-    { 
-      value: "technicians", 
-      icon: User, 
-      label: "Técnicos", 
-      shortLabel: "Técnicos"
-    },
-    { 
-      value: "services", 
-      icon: Wrench, 
-      label: "Serviços", 
-      shortLabel: "Serviços"
-    },
-    { 
-      value: "financial", 
-      icon: DollarSign, 
-      label: "Financeiro", 
-      shortLabel: "$$"
-    },
-    { 
-      value: "reports", 
-      icon: BarChart3, 
-      label: "Relatórios", 
-      shortLabel: "Reports"
-    },
-    { 
-      value: "settings", 
-      icon: Cog, 
-      label: "Configurações", 
-      shortLabel: "Config"
-    }
+    { value: "dashboard", icon: BarChart3, label: "Dashboard", shortLabel: "Home" },
+    { value: "orders", icon: FileText, label: "Ordens de Serviço", shortLabel: "OS" },
+    ...(isTechnician ? [{ value: "technician-orders", icon: Wrench, label: "Minhas OS", shortLabel: "Minhas OS" }] : []),
+    { value: "clients", icon: Users, label: "Clientes", shortLabel: "Clientes" },
+    { value: "technicians", icon: User, label: "Técnicos", shortLabel: "Técnicos" },
+    { value: "services", icon: Wrench, label: "Serviços", shortLabel: "Serviços" },
+    { value: "financial", icon: DollarSign, label: "Financeiro", shortLabel: "$$" },
+    { value: "reports", icon: BarChart3, label: "Relatórios", shortLabel: "Reports" },
+    ...(isAdmin ? [{ value: "settings", icon: Cog, label: "Configurações", shortLabel: "Config" }] : [])
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="container mx-auto p-3 md:p-6 flex-1">
-        {/* Header simplificado */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50">
+      <div className="container mx-auto p-3 md:p-6">
+        {/* Modern Header */}
         <div className="mb-4 md:mb-8">
-          <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
+          <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg border border-white/20">
             <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-1">
-              <div className="bg-red-600 p-2 md:p-3 rounded-lg md:rounded-xl shadow-md flex-shrink-0">
+              <div className="bg-gradient-to-br from-orange-500 to-cyan-500 p-2 md:p-3 rounded-lg md:rounded-xl shadow-md flex-shrink-0">
                 {settings?.company_logo_url ? (
                   <img 
                     src={settings.company_logo_url} 
@@ -108,11 +97,11 @@ const Index = () => {
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl md:text-4xl font-bold text-red-600 mb-1 md:mb-2 truncate">
+                <h1 className="text-xl md:text-4xl font-bold bg-gradient-to-r from-orange-600 to-cyan-600 bg-clip-text text-transparent mb-1 md:mb-2 truncate">
                   {isMobile ? 'Gestão OS' : (settings?.company_name || 'Sistema de Gestão de OS')}
                 </h1>
                 <p className="text-gray-600 text-xs md:text-lg hidden sm:block">
-                  {settings?.company_description || 'Controle completo de ordens de serviço e gestão empresarial'}
+                  Controle completo de ordens de serviço e gestão empresarial
                 </p>
               </div>
             </div>
@@ -143,12 +132,12 @@ const Index = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <Card className="shadow-xl border border-gray-200 bg-white">
+        <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
           <CardContent className="p-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <div className="border-b border-gray-100 bg-gray-50 rounded-t-lg">
+              <div className="border-b border-gray-100 bg-gray-50/50 rounded-t-lg">
                 <div className="tabs-responsive">
-                  <TabsList className="tabs-list-responsive w-full grid bg-transparent h-auto p-1 md:p-2 gap-0.5 md:gap-1" style={{ gridTemplateColumns: `repeat(${tabsConfig.length}, minmax(0, 1fr))` }}>
+                  <TabsList className={`tabs-list-responsive w-full grid bg-transparent h-auto p-1 md:p-2 gap-0.5 md:gap-1`} style={{ gridTemplateColumns: `repeat(${tabsConfig.length}, minmax(0, 1fr))` }}>
                     {tabsConfig.map(({ value, icon: Icon, label, shortLabel }) => (
                       <TabsTrigger 
                         key={value}
@@ -174,6 +163,12 @@ const Index = () => {
                   <OrdersManager />
                 </TabsContent>
 
+                {isTechnician && (
+                  <TabsContent value="technician-orders" className="mt-0">
+                    <TechnicianOrdersPage />
+                  </TabsContent>
+                )}
+
                 <TabsContent value="clients" className="mt-0">
                   <ClientsManager />
                 </TabsContent>
@@ -194,9 +189,11 @@ const Index = () => {
                   <ReportsManager />
                 </TabsContent>
 
-                <TabsContent value="settings" className="mt-0">
-                  <SettingsManager />
-                </TabsContent>
+                {isAdmin && (
+                  <TabsContent value="settings" className="mt-0">
+                    <SettingsManager />
+                  </TabsContent>
+                )}
               </div>
             </Tabs>
           </CardContent>

@@ -86,7 +86,7 @@ const PWAInstallPrompt = () => {
           <div className="flex items-center space-x-3 md:space-x-4 p-3 md:p-4 bg-orange-50 rounded-lg">
             <div className="flex-shrink-0">
               <img 
-                src="https://i.postimg.cc/ZYXtxzM8/logoadmin.png" 
+                src="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" 
                 alt="Logo" 
                 className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-contain bg-white p-1"
               />

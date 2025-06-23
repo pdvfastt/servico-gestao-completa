@@ -1,77 +1,46 @@
-
 import * as React from "react"
+import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+
 import { cn } from "@/lib/utils"
 
-console.log('🛡️ scroll-area.tsx - Standalone scroll area implementation with NO Radix dependencies');
-
-// Completely standalone scroll area implementation with no external dependencies
 const ScrollArea = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    orientation?: "vertical" | "horizontal" | "both";
-  }
->(({ className, children, orientation = "vertical", ...props }, ref) => {
-  console.log('✅ ScrollArea - CUSTOM implementation with no Radix');
-  
-  const getScrollClasses = () => {
-    switch (orientation) {
-      case "horizontal":
-        return "overflow-x-auto overflow-y-hidden";
-      case "both":
-        return "overflow-auto";
-      default:
-        return "overflow-y-auto overflow-x-hidden";
-    }
-  };
+  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
+>(({ className, children, ...props }, ref) => (
+  <ScrollAreaPrimitive.Root
+    ref={ref}
+    className={cn("relative overflow-hidden", className)}
+    {...props}
+  >
+    <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
+      {children}
+    </ScrollAreaPrimitive.Viewport>
+    <ScrollBar />
+    <ScrollAreaPrimitive.Corner />
+  </ScrollAreaPrimitive.Root>
+))
+ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
 
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "relative",
-        getScrollClasses(),
-        "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
-        className
-      )}
-      {...props}
-    >
-      <div className="h-full w-full">
-        {children}
-      </div>
-    </div>
-  );
-});
-ScrollArea.displayName = "ScrollArea";
-
-// Standalone ScrollBar component for compatibility
 const ScrollBar = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    orientation?: "vertical" | "horizontal";
-  }
->(({ className, orientation = "vertical", ...props }, ref) => {
-  console.log('✅ ScrollBar - CUSTOM implementation for compatibility');
-  
-  // This is now just a visual component for compatibility
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "absolute bg-gray-200 rounded",
-        orientation === "vertical" ? "right-0 top-0 w-2 h-full" : "bottom-0 left-0 h-2 w-full",
-        className
-      )}
-      style={{ display: 'none' }} // Hidden since we use CSS scrollbars
-      {...props}
-    />
-  );
-});
-ScrollBar.displayName = "ScrollBar";
+  React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
+>(({ className, orientation = "vertical", ...props }, ref) => (
+  <ScrollAreaPrimitive.ScrollAreaScrollbar
+    ref={ref}
+    orientation={orientation}
+    className={cn(
+      "flex touch-none select-none transition-colors",
+      orientation === "vertical" &&
+        "h-full w-2.5 border-l border-l-transparent p-[1px]",
+      orientation === "horizontal" &&
+        "h-2.5 flex-col border-t border-t-transparent p-[1px]",
+      className
+    )}
+    {...props}
+  >
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
+  </ScrollAreaPrimitive.ScrollAreaScrollbar>
+))
+ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
 
-console.log('🎯 scroll-area.tsx - CUSTOM scroll area system ready - NO RADIX DEPENDENCIES');
-
-export { ScrollArea, ScrollBar };
-
-// Mark as completely custom implementation
-(window as any).__CUSTOM_SCROLL_AREA_STANDALONE__ = true;
-console.log('🏁 scroll-area.tsx - Custom scroll area marked as loaded');
+export { ScrollArea, ScrollBar }

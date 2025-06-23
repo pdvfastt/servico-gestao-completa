@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Users, 
   Plus, 
@@ -30,7 +31,6 @@ const ClientsManager = () => {
   const [editingClient, setEditingClient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [newClient, setNewClient] = useState({
     name: '',
     email: '',
@@ -51,53 +51,35 @@ const ClientsManager = () => {
     secondary_document: ''
   });
 
-  const resetNewClient = () => {
-    setNewClient({
-      name: '',
-      email: '',
-      phone: '',
-      document: '',
-      type: 'Física',
-      status: 'Ativo',
-      fantasy_name: '',
-      contact_person: '',
-      street: '',
-      number: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      cep: '',
-      complement: '',
-      birth_date: '',
-      secondary_document: ''
-    });
-  };
-
   const handleCreateClient = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!newClient.name.trim() || !newClient.email.trim() || !newClient.phone.trim() || !newClient.document.trim()) {
-      alert('Preencha todos os campos obrigatórios');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const result = await createClient(newClient);
-      if (result.success) {
-        setIsCreateOpen(false);
-        resetNewClient();
-      }
-    } catch (error) {
-      console.error('Erro ao criar cliente:', error);
-    } finally {
-      setIsSubmitting(false);
+    const result = await createClient(newClient);
+    if (result.success) {
+      setIsCreateOpen(false);
+      setNewClient({
+        name: '',
+        email: '',
+        phone: '',
+        document: '',
+        type: 'Física',
+        status: 'Ativo',
+        fantasy_name: '',
+        contact_person: '',
+        street: '',
+        number: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+        cep: '',
+        complement: '',
+        birth_date: '',
+        secondary_document: ''
+      });
     }
   };
 
   const handleEditClient = (client: any) => {
-    setEditingClient({...client});
+    setEditingClient(client);
     setIsEditOpen(true);
   };
 
@@ -105,18 +87,10 @@ const ClientsManager = () => {
     e.preventDefault();
     if (!editingClient) return;
     
-    setIsSubmitting(true);
-    
-    try {
-      const result = await updateClient(editingClient.id, editingClient);
-      if (result.success) {
-        setIsEditOpen(false);
-        setEditingClient(null);
-      }
-    } catch (error) {
-      console.error('Erro ao atualizar cliente:', error);
-    } finally {
-      setIsSubmitting(false);
+    const result = await updateClient(editingClient.id, editingClient);
+    if (result.success) {
+      setIsEditOpen(false);
+      setEditingClient(null);
     }
   };
 
@@ -204,7 +178,7 @@ const ClientsManager = () => {
                       {/* Dados Básicos */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="type">Tipo de Pessoa *</Label>
+                          <Label htmlFor="type">Tipo de Pessoa</Label>
                           <Select value={newClient.type} onValueChange={(value) => setNewClient(prev => ({ ...prev, type: value }))}>
                             <SelectTrigger>
                               <SelectValue />
@@ -216,7 +190,7 @@ const ClientsManager = () => {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="status">Status *</Label>
+                          <Label htmlFor="status">Status</Label>
                           <Select value={newClient.status} onValueChange={(value) => setNewClient(prev => ({ ...prev, status: value }))}>
                             <SelectTrigger>
                               <SelectValue />
@@ -231,7 +205,7 @@ const ClientsManager = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="name">{newClient.type === 'Física' ? 'Nome Completo' : 'Razão Social'} *</Label>
+                          <Label htmlFor="name">{newClient.type === 'Física' ? 'Nome Completo' : 'Razão Social'}</Label>
                           <Input
                             id="name"
                             value={newClient.name}
@@ -253,7 +227,7 @@ const ClientsManager = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="document">{newClient.type === 'Física' ? 'CPF' : 'CNPJ'} *</Label>
+                          <Label htmlFor="document">{newClient.type === 'Física' ? 'CPF' : 'CNPJ'}</Label>
                           <Input
                             id="document"
                             value={newClient.document}
@@ -277,7 +251,7 @@ const ClientsManager = () => {
                       {/* Contato */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="email">Email *</Label>
+                          <Label htmlFor="email">Email</Label>
                           <Input
                             id="email"
                             type="email"
@@ -287,7 +261,7 @@ const ClientsManager = () => {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="phone">Telefone *</Label>
+                          <Label htmlFor="phone">Telefone</Label>
                           <Input
                             id="phone"
                             value={newClient.phone}
@@ -378,23 +352,11 @@ const ClientsManager = () => {
                       </div>
 
                       <DialogFooter>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => {
-                            setIsCreateOpen(false);
-                            resetNewClient();
-                          }}
-                          disabled={isSubmitting}
-                        >
+                        <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                           Cancelar
                         </Button>
-                        <Button 
-                          type="submit" 
-                          className="bg-gradient-to-r from-blue-600 to-green-600"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? 'Cadastrando...' : 'Cadastrar Cliente'}
+                        <Button type="submit" className="bg-gradient-to-r from-blue-600 to-green-600">
+                          Cadastrar Cliente
                         </Button>
                       </DialogFooter>
                     </form>
@@ -569,20 +531,11 @@ const ClientsManager = () => {
                 </div>
 
                 <DialogFooter>
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsEditOpen(false)}
-                    disabled={isSubmitting}
-                  >
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button 
-                    type="submit" 
-                    className="bg-gradient-to-r from-blue-600 to-green-600"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Atualizando...' : 'Atualizar Cliente'}
+                  <Button type="submit" className="bg-gradient-to-r from-blue-600 to-green-600">
+                    Atualizar Cliente
                   </Button>
                 </DialogFooter>
               </form>

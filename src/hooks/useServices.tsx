@@ -23,15 +23,18 @@ export const useServices = () => {
     
     try {
       setLoading(true);
-      console.log('🔍 Buscando todos os serviços');
+      console.log('🔍 Buscando serviços para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('services')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('❌ Erro Supabase ao buscar serviços:', error);
+        console.error('❌ Código do erro:', error.code);
+        console.error('❌ Mensagem do erro:', error.message);
         throw error;
       }
       
@@ -41,7 +44,7 @@ export const useServices = () => {
       console.error('❌ Erro geral ao buscar serviços:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar serviços.",
+        description: "Erro ao carregar serviços. Verifique o console para mais detalhes.",
         variant: "destructive",
       });
     } finally {
@@ -51,7 +54,6 @@ export const useServices = () => {
 
   const createService = async (serviceData: Omit<ServiceInsert, 'user_id'>) => {
     if (!user) {
-      console.error('❌ Usuário não autenticado para criar serviço');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -61,18 +63,7 @@ export const useServices = () => {
     }
 
     try {
-      console.log('📝 Criando serviço:', serviceData);
-      
-      // Validar dados obrigatórios
-      if (!serviceData.name || serviceData.name.trim() === '') {
-        throw new Error('Nome é obrigatório');
-      }
-      if (!serviceData.category || serviceData.category.trim() === '') {
-        throw new Error('Categoria é obrigatória');
-      }
-      if (!serviceData.price || serviceData.price <= 0) {
-        throw new Error('Preço é obrigatório e deve ser maior que zero');
-      }
+      console.log('Criando serviço:', serviceData);
       
       const { data, error } = await supabase
         .from('services')
@@ -84,23 +75,22 @@ export const useServices = () => {
         .single();
 
       if (error) {
-        console.error('❌ Erro Supabase ao criar serviço:', error);
+        console.error('Erro Supabase ao criar serviço:', error);
         throw error;
       }
       
-      console.log('✅ Serviço criado com sucesso:', data);
-      await fetchServices(); // Recarregar lista
+      console.log('Serviço criado com sucesso:', data);
+      setServices(prev => [data, ...prev]);
       toast({
-        title: "Sucesso!",
-        description: "Serviço cadastrado com sucesso!",
+        title: "Serviço Cadastrado",
+        description: "O novo serviço foi cadastrado com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('❌ Erro ao criar serviço:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao cadastrar serviço';
+      console.error('Erro ao criar serviço:', error);
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: "Erro ao cadastrar serviço.",
         variant: "destructive",
       });
       return { success: false, error };
@@ -109,7 +99,6 @@ export const useServices = () => {
 
   const updateService = async (id: string, serviceData: Partial<ServiceInsert>) => {
     if (!user) {
-      console.error('❌ Usuário não autenticado para atualizar serviço');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -119,33 +108,33 @@ export const useServices = () => {
     }
 
     try {
-      console.log('📝 Atualizando serviço:', id, serviceData);
+      console.log('Atualizando serviço:', id, serviceData);
       
       const { data, error } = await supabase
         .from('services')
         .update(serviceData)
         .eq('id', id)
+        .eq('user_id', user.id)
         .select()
         .single();
 
       if (error) {
-        console.error('❌ Erro Supabase ao atualizar serviço:', error);
+        console.error('Erro Supabase ao atualizar serviço:', error);
         throw error;
       }
       
-      console.log('✅ Serviço atualizado com sucesso:', data);
-      await fetchServices(); // Recarregar lista
+      console.log('Serviço atualizado com sucesso:', data);
+      setServices(prev => prev.map(service => service.id === id ? data : service));
       toast({
-        title: "Sucesso!",
-        description: "Serviço atualizado com sucesso!",
+        title: "Serviço Atualizado",
+        description: "O serviço foi atualizado com sucesso!",
       });
       return { success: true, data };
     } catch (error) {
-      console.error('❌ Erro ao atualizar serviço:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar serviço';
+      console.error('Erro ao atualizar serviço:', error);
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: "Erro ao atualizar serviço.",
         variant: "destructive",
       });
       return { success: false, error };
@@ -154,7 +143,6 @@ export const useServices = () => {
 
   const deleteService = async (id: string) => {
     if (!user) {
-      console.error('❌ Usuário não autenticado para deletar serviço');
       toast({
         title: "Erro",
         description: "Usuário não autenticado.",
@@ -164,31 +152,31 @@ export const useServices = () => {
     }
 
     try {
-      console.log('🗑️ Removendo serviço:', id);
+      console.log('Removendo serviço:', id);
       
       const { error } = await supabase
         .from('services')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', user.id);
 
       if (error) {
-        console.error('❌ Erro Supabase ao remover serviço:', error);
+        console.error('Erro Supabase ao remover serviço:', error);
         throw error;
       }
       
-      console.log('✅ Serviço removido com sucesso');
-      await fetchServices(); // Recarregar lista
+      console.log('Serviço removido com sucesso');
+      setServices(prev => prev.filter(service => service.id !== id));
       toast({
-        title: "Sucesso!",
-        description: "Serviço removido com sucesso!",
+        title: "Serviço Removido",
+        description: "O serviço foi removido com sucesso!",
       });
       return { success: true };
     } catch (error) {
-      console.error('❌ Erro ao remover serviço:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro ao remover serviço';
+      console.error('Erro ao remover serviço:', error);
       toast({
         title: "Erro",
-        description: errorMessage,
+        description: "Erro ao remover serviço.",
         variant: "destructive",
       });
       return { success: false, error };
@@ -196,6 +184,7 @@ export const useServices = () => {
   };
 
   useEffect(() => {
+    console.log('🚀 useServices: useEffect disparado, user:', user?.id);
     fetchServices();
   }, [user]);
 

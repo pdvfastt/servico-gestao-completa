@@ -5,7 +5,7 @@ const urlsToCache = [
   '/static/js/bundle.js',
   '/static/css/main.css',
   '/manifest.json',
-  'https://i.postimg.cc/ZYXtxzM8/logoadmin.png'
+  'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png'
 ];
 
 // Install event
@@ -80,8 +80,8 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'Nova notificação do Sistema de Gestão de OS',
-    icon: 'https://i.postimg.cc/ZYXtxzM8/logoadmin.png',
-    badge: 'https://i.postimg.cc/ZYXtxzM8/logoadmin.png',
+    icon: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
+    badge: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -91,12 +91,12 @@ self.addEventListener('push', (event) => {
       {
         action: 'explore',
         title: 'Abrir Sistema',
-        icon: 'https://i.postimg.cc/ZYXtxzM8/logoadmin.png'
+        icon: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png'
       },
       {
         action: 'close',
         title: 'Fechar',
-        icon: 'https://i.postimg.cc/ZYXtxzM8/logoadmin.png'
+        icon: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png'
       }
     ]
   };

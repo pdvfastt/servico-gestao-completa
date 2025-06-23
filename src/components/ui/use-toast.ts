@@ -1,43 +1,19 @@
 
-// Completely custom toast hook with no external dependencies
+// This file should re-export the actual toast functionality
+// Remove the circular import and use the correct hook location
+export { useToast } from "@/hooks/use-toast";
 
-interface ToastOptions {
-  title?: string;
-  description?: string;
-  variant?: 'default' | 'destructive';
-  duration?: number;
-}
+// If there's a toast function, it should come from the hook as well
+// For now, we'll create a simple wrapper if needed
+import { useToast as useToastHook } from "@/hooks/use-toast";
 
-const toasts: Array<{ id: string } & ToastOptions> = [];
-const listeners: Array<() => void> = [];
-
-let toastIdCounter = 0;
-
-export const useToast = () => {
-  const toast = (options: ToastOptions) => {
-    const id = `toast-${++toastIdCounter}`;
-    const toastItem = { id, ...options };
-    
-    toasts.push(toastItem);
-    listeners.forEach(listener => listener());
-    
-    // Auto-remove after duration
-    const duration = options.duration ?? 5000;
-    if (duration > 0) {
-      setTimeout(() => {
-        const index = toasts.findIndex(t => t.id === id);
-        if (index > -1) {
-          toasts.splice(index, 1);
-          listeners.forEach(listener => listener());
-        }
-      }, duration);
+export const toast = (() => {
+  let toastRef: ReturnType<typeof useToastHook> | null = null;
+  
+  return (props: Parameters<ReturnType<typeof useToastHook>['toast']>[0]) => {
+    if (typeof window !== 'undefined' && toastRef) {
+      return toastRef.toast(props);
     }
-    
-    return { id };
+    console.warn('Toast called before initialization');
   };
-
-  return {
-    toast,
-    toasts
-  };
-};
+})();

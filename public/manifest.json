@@ -10,49 +10,49 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "96x96",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "128x128",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "384x384",
       "type": "image/png",
       "purpose": "maskable any"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable any"
@@ -68,7 +68,7 @@
       "url": "/?tab=orders",
       "icons": [
         {
-          "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+          "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
           "sizes": "96x96"
         }
       ]
@@ -80,7 +80,7 @@
       "url": "/?tab=dashboard",
       "icons": [
         {
-          "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+          "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
           "sizes": "96x96"
         }
       ]
@@ -88,14 +88,14 @@
   ],
   "screenshots": [
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "type": "image/png",
       "sizes": "1280x720",
       "form_factor": "wide",
       "label": "Dashboard do Sistema de Gestão de OS"
     },
     {
-      "src": "https://i.postimg.cc/ZYXtxzM8/logoadmin.png",
+      "src": "https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png",
       "type": "image/png",
       "sizes": "750x1334",
       "form_factor": "narrow",
