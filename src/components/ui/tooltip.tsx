@@ -2,6 +2,8 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
+console.log('tooltip.tsx - Loading custom tooltip implementation');
+
 // Completely safe tooltip components that don't use any external libraries
 const TooltipProvider = ({ 
   children, 
@@ -12,6 +14,7 @@ const TooltipProvider = ({
   delayDuration?: number;
   [key: string]: any;
 }) => {
+  console.log('TooltipProvider - Custom implementation loaded');
   return <div className="tooltip-provider" {...props}>{children}</div>;
 };
 
@@ -73,3 +76,5 @@ export default {
   TooltipTrigger,
   TooltipContent,
 };
+
+console.log('tooltip.tsx - All exports ready');

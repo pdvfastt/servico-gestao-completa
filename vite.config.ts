@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
       "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
-      // Redirect @radix-ui/react-tooltip to our custom implementation
+      // COMPLETE redirect of @radix-ui/react-tooltip to our custom implementation
       "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
@@ -40,17 +40,21 @@ export default defineConfig(({ mode }) => ({
       "react/jsx-dev-runtime",
       "@tanstack/react-query"
     ],
+    // COMPLETELY exclude @radix-ui/react-tooltip from optimization
     exclude: [
       "@radix-ui/react-tooltip"
     ],
     force: true,
     esbuildOptions: {
       target: 'esnext',
+      // Additional step to prevent any tooltip imports
+      external: ['@radix-ui/react-tooltip'],
     },
   },
   build: {
     target: 'esnext',
     rollupOptions: {
+      // COMPLETELY exclude from build
       external: ['@radix-ui/react-tooltip'],
       output: {
         manualChunks: {
