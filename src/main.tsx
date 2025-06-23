@@ -1,11 +1,6 @@
 
 console.log('main.tsx - Starting React application');
 
-// Ensure React is available globally before any imports
-if (typeof globalThis !== 'undefined') {
-  globalThis.React = globalThis.React || {};
-}
-
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";

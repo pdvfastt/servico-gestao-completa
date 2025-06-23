@@ -3,8 +3,16 @@ import React from "react"
 import { cn } from "@/lib/utils"
 
 // Completely safe tooltip components that don't use any external libraries
-const TooltipProvider = ({ children }: { children: React.ReactNode }) => {
-  return <div className="tooltip-provider">{children}</div>;
+const TooltipProvider = ({ 
+  children, 
+  delayDuration, 
+  ...props 
+}: { 
+  children: React.ReactNode; 
+  delayDuration?: number;
+  [key: string]: any;
+}) => {
+  return <div className="tooltip-provider" {...props}>{children}</div>;
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
@@ -13,8 +21,8 @@ const Tooltip = ({ children }: { children: React.ReactNode }) => {
 
 const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ children, className, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
+>(({ children, className, asChild, ...props }, ref) => {
   return (
     <div 
       ref={ref}
@@ -29,8 +37,13 @@ TooltipTrigger.displayName = "TooltipTrigger";
 
 const TooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { 
+    side?: string; 
+    align?: string; 
+    sideOffset?: number;
+    [key: string]: any;
+  }
+>(({ className, children, side, align, sideOffset, ...props }, ref) => {
   return (
     <div 
       ref={ref}
