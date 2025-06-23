@@ -13,11 +13,11 @@ console.log('🔍 main.tsx - React system check:', {
   ReactDOM: !!ReactDOM,
 });
 
-// ULTIMATE cleanup - ensure React is available
+// ULTIMATE cleanup - ensure React is available and block ALL Radix
 const ultimateSetup = () => {
   console.log('☢️ Starting ULTIMATE setup');
   
-  // Ensure React is globally available
+  // Ensure React is globally available and properly initialized
   (window as any).React = React;
   (window as any).ReactDOM = ReactDOM;
   
@@ -34,7 +34,7 @@ const ultimateSetup = () => {
     }
   });
   
-  // ULTIMATE: Override any dynamic imports
+  // ULTIMATE: Override any dynamic imports completely
   const originalImport = (window as any).__vitePreload || (window as any).import;
   if (originalImport) {
     (window as any).__vitePreload = (window as any).import = (url: string) => {
@@ -45,10 +45,22 @@ const ultimateSetup = () => {
           Tooltip: (props: any) => React.createElement('div', props, props.children),
           TooltipTrigger: (props: any) => React.createElement('div', props, props.children),
           TooltipContent: (props: any) => React.createElement('div', props, props.children),
+          default: {
+            Provider: (props: any) => React.createElement('div', props, props.children),
+            Root: (props: any) => React.createElement('div', props, props.children),
+            Trigger: (props: any) => React.createElement('div', props, props.children),
+            Content: (props: any) => React.createElement('div', props, props.children),
+          }
         });
       }
       return originalImport(url);
     };
+  }
+  
+  // ULTIMATE: Ensure React hooks are available
+  if (!React.useState) {
+    console.error('❌ React.useState not available!');
+    throw new Error('React hooks not available');
   }
   
   console.log('✅ ULTIMATE setup completed');

@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
     // AGGRESSIVE PLUGIN to block Radix imports
     {
       name: 'block-radix-imports',
-      resolveId(id) {
+      resolveId(id: string) {
         if (id.includes('@radix-ui') || id.includes('radix')) {
           console.log('🚫 BLOCKED IMPORT:', id);
           return path.resolve(__dirname, "./src/components/ui/tooltip.tsx");
@@ -89,7 +89,7 @@ export default defineConfig(({ mode }) => ({
           'query-vendor': ['@tanstack/react-query'],
         },
       },
-      external: (id) => {
+      external: (id: string) => {
         // ULTIMATE BLOCKING of any radix imports
         if (id.includes('@radix-ui') || id.includes('radix')) {
           console.log('🚫 ULTIMATE BLOCK:', id);
