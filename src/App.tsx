@@ -8,10 +8,10 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('🚀 App.tsx - Clean app without tooltip dependencies');
+console.log('🚀 App.tsx - COMPLETELY CLEAN app without ANY tooltip dependencies');
 
 const App = () => {
-  console.log('✅ App component rendering safely');
+  console.log('✅ App component rendering with zero Radix dependencies');
   
   return (
     <SafeQueryProvider>
