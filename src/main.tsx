@@ -1,25 +1,23 @@
 
+console.log('🚀 main.tsx - SIMPLE React setup v4');
+
+// Import React first and ensure it's globally available
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-console.log('🚀 main.tsx - Clean React setup v3');
+// Make React globally available for all packages
+(window as any).React = React;
+(globalThis as any).React = React;
 
-// Simple validation that React is properly loaded
-if (!React || !React.useEffect || !React.useState || !React.createElement) {
-  console.error('❌ React not properly loaded');
-  throw new Error('React hooks not available - check React configuration');
-}
-
-console.log('✅ React validation passed:', {
+console.log('✅ React made globally available:', {
   React: !!React,
-  createElement: !!React.createElement,
   useEffect: !!React.useEffect,
   useState: !!React.useState,
-  createContext: !!React.createContext,
-  Component: !!React.Component
+  windowReact: !!(window as any).React,
+  globalReact: !!(globalThis as any).React
 });
 
-// Import App AFTER React validation
+// Now import other modules
 import App from "./App.tsx";
 import "./index.css";
 
@@ -35,4 +33,4 @@ root.render(
   </React.StrictMode>
 );
 
-console.log('✅ main.tsx - App rendered successfully v3');
+console.log('✅ main.tsx - App rendered successfully v4');
