@@ -9,7 +9,7 @@ console.log('🔧 vite.config.ts - NUCLEAR OPTION: Complete Radix elimination');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  const plugins = [react()];
+  const plugins: any[] = [react()];
   
   // Add componentTagger only in development
   if (mode === 'development') {
