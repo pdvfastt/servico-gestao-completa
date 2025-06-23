@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,20 +28,15 @@ import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
 import { useTechnicians } from '@/hooks/useTechnicians';
 import { useServices } from '@/hooks/useServices';
-import OrderView from './OrderView';
-import OrderEdit from './OrderEdit';
 
 const OrdersManager = () => {
-  const { orders, loading, createOrder, updateOrder, deleteOrder } = useServiceOrders();
+  const { orders, loading, createOrder } = useServiceOrders();
   const { clients } = useClients();
   const { technicians } = useTechnicians();
   const { services } = useServices();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [isViewOpen, setIsViewOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -85,36 +81,9 @@ const OrdersManager = () => {
   });
 
   const handleCreateOrder = async (orderData: any) => {
-    console.log('HandleCreateOrder chamado com:', orderData);
     const result = await createOrder(orderData);
-    console.log('Resultado da criação:', result);
-    
     if (result?.success) {
       setIsNewOrderOpen(false);
-    }
-  };
-
-  const handleViewOrder = (order: any) => {
-    setSelectedOrder(order);
-    setIsViewOpen(true);
-  };
-
-  const handleEditOrder = (order: any) => {
-    setSelectedOrder(order);
-    setIsEditOpen(true);
-  };
-
-  const handleSaveOrder = async (orderId: string, data: any) => {
-    const result = await updateOrder(orderId, data);
-    if (result?.success) {
-      setIsEditOpen(false);
-      setSelectedOrder(null);
-    }
-  };
-
-  const handleDeleteOrder = async (orderId: string) => {
-    if (confirm('Tem certeza que deseja excluir esta ordem de serviço?')) {
-      await deleteOrder(orderId);
     }
   };
 
@@ -184,9 +153,6 @@ const OrdersManager = () => {
       </div>
     );
   }
-
-  const selectedClient = selectedOrder ? clients.find(c => c.id === selectedOrder.client_id) : null;
-  const selectedTechnician = selectedOrder ? technicians.find(t => t.id === selectedOrder.technician_id) : null;
 
   return (
     <div className="space-y-6">
@@ -320,17 +286,13 @@ const OrdersManager = () => {
                   )}
                   
                   <div className="flex space-x-2 pt-2">
-                    <Button variant="outline" size="sm" onClick={() => handleViewOrder(order)}>
+                    <Button variant="outline" size="sm">
                       <Eye className="h-4 w-4 mr-1" />
                       Ver
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleEditOrder(order)}>
+                    <Button variant="outline" size="sm">
                       <Edit className="h-4 w-4 mr-1" />
                       Editar
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleDeleteOrder(order.id)}>
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Excluir
                     </Button>
                   </div>
                 </CardContent>
@@ -339,40 +301,11 @@ const OrdersManager = () => {
           })}
         </div>
       )}
-
-      {/* Modals */}
-      <OrderView
-        order={selectedOrder}
-        client={selectedClient}
-        technician={selectedTechnician}
-        isOpen={isViewOpen}
-        onClose={() => {
-          setIsViewOpen(false);
-          setSelectedOrder(null);
-        }}
-        onEdit={() => {
-          setIsViewOpen(false);
-          setIsEditOpen(true);
-        }}
-      />
-
-      <OrderEdit
-        order={selectedOrder}
-        clients={clients}
-        technicians={technicians}
-        services={services}
-        isOpen={isEditOpen}
-        onClose={() => {
-          setIsEditOpen(false);
-          setSelectedOrder(null);
-        }}
-        onSave={handleSaveOrder}
-      />
     </div>
   );
 };
 
-// Componente do formulário de nova OS com novos campos
+// Componente do formulário de nova OS
 const NewOrderForm = ({ 
   onSubmit, 
   clients, 
@@ -391,94 +324,60 @@ const NewOrderForm = ({
   const [selectedService, setSelectedService] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Média");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSerialField, setShowSerialField] = useState(false);
 
   const totalValue = serviceValue + partsValue;
 
-  // Verificar se é serviço de Instalação NPD
+  // Atualizar valor do serviço quando um serviço é selecionado
   const handleServiceChange = (serviceId: string) => {
     setSelectedService(serviceId);
     const service = services.find(s => s.id === serviceId);
     if (service) {
       setServiceValue(service.price || 0);
-      // Mostrar campo Serial Receptor se for Instalação NPD
-      setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isSubmitting) return;
-    
     const form = e.target as HTMLFormElement;
     const formDataObj = new FormData(form);
     
-    const description = (formDataObj.get('description') as string)?.trim();
-    const invoiceNumber = formDataObj.get('invoiceNumber') as string;
-    const serialReceiver = formDataObj.get('serialReceiver') as string;
+    const description = formDataObj.get('description') as string;
     
-    if (!description) {
+    if (!description || description.trim() === '') {
       alert('Descrição é obrigatória');
       return;
     }
-
-    if (!invoiceNumber) {
-      alert('Número da Nota Fiscal é obrigatório');
-      return;
-    }
-
-    if (showSerialField && !serialReceiver) {
-      alert('Serial do Receptor é obrigatório para Instalação NPD');
-      return;
+    
+    const expectedDateStr = formDataObj.get('expectedDate') as string;
+    const expectedTimeStr = formDataObj.get('expectedTime') as string;
+    
+    let expected_date = null;
+    if (expectedDateStr) {
+      if (expectedTimeStr) {
+        expected_date = `${expectedDateStr}T${expectedTimeStr}:00`;
+      } else {
+        expected_date = `${expectedDateStr}T09:00:00`;
+      }
     }
     
-    setIsSubmitting(true);
-    
-    try {
-      const expectedDateStr = formDataObj.get('expectedDate') as string;
-      const expectedTimeStr = formDataObj.get('expectedTime') as string;
-      
-      let expected_date = null;
-      if (expectedDateStr) {
-        if (expectedTimeStr) {
-          expected_date = `${expectedDateStr}T${expectedTimeStr}:00`;
-        } else {
-          expected_date = `${expectedDateStr}T09:00:00`;
-        }
-      }
-      
-      let fullDescription = description;
-      if (invoiceNumber) {
-        fullDescription += `\n\nNº Nota Fiscal: ${invoiceNumber}`;
-      }
-      if (showSerialField && serialReceiver) {
-        fullDescription += `\nSerial Receptor: ${serialReceiver}`;
-      }
-      
-      const data = {
-        client_id: selectedClient || null,
-        technician_id: selectedTechnician || null,
-        priority: selectedPriority,
-        expected_date,
-        description: fullDescription,
-        diagnosis: (formDataObj.get('diagnosis') as string) || null,
-        observations: (formDataObj.get('observations') as string) || null,
-        service_value: serviceValue || 0,
-        parts_value: partsValue || 0,
-        total_value: totalValue || 0,
-        payment_method: selectedPaymentMethod || null,
-        status: 'Aberta'
-      };
+    const data = {
+      client_id: selectedClient || null,
+      technician_id: selectedTechnician || null,
+      service_id: selectedService || null,
+      priority: selectedPriority,
+      expected_date,
+      description: description.trim(),
+      diagnosis: (formDataObj.get('diagnosis') as string) || null,
+      observations: (formDataObj.get('observations') as string) || null,
+      service_value: serviceValue || 0,
+      parts_value: partsValue || 0,
+      total_value: totalValue || 0,
+      payment_method: selectedPaymentMethod || null,
+      status: 'Aberta'
+    };
 
-      console.log('Dados a serem enviados:', data);
-      await onSubmit(data);
-    } catch (error) {
-      console.error('Erro no submit:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    console.log('Dados do formulário para submissão:', data);
+    onSubmit(data);
   };
 
   return (
@@ -533,7 +432,7 @@ const NewOrderForm = ({
           </div>
 
           <div>
-            <Label htmlFor="service">Tipo de Serviço (Referência de Preço)</Label>
+            <Label htmlFor="service">Tipo de Serviço</Label>
             <Select value={selectedService} onValueChange={handleServiceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
@@ -551,29 +450,6 @@ const NewOrderForm = ({
               </SelectContent>
             </Select>
           </div>
-
-          {/* Campo obrigatório: Número da Nota Fiscal */}
-          <div>
-            <Label htmlFor="invoiceNumber">Nº da Nota Fiscal *</Label>
-            <Input 
-              name="invoiceNumber"
-              type="number"
-              placeholder="Digite o número da nota fiscal"
-              required
-            />
-          </div>
-
-          {/* Campo condicional: Serial Receptor (apenas para Instalação NPD) */}
-          {showSerialField && (
-            <div>
-              <Label htmlFor="serialReceiver">Serial Receptor *</Label>
-              <Input 
-                name="serialReceiver"
-                placeholder="Digite o serial do receptor"
-                required={showSerialField}
-              />
-            </div>
-          )}
           
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -683,20 +559,11 @@ const NewOrderForm = ({
       </Tabs>
       
       <div className="flex justify-end space-x-2">
-        <Button 
-          type="button" 
-          variant="outline" 
-          onClick={() => window.location.reload()}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
           Cancelar
         </Button>
-        <Button 
-          type="submit" 
-          className="bg-blue-600 hover:bg-blue-700"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Criando...' : 'Criar Ordem de Serviço'}
+        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+          Criar Ordem de Serviço
         </Button>
       </div>
     </form>
