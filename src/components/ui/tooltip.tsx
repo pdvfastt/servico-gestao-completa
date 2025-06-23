@@ -59,4 +59,17 @@ const TooltipContent = React.forwardRef<
 });
 TooltipContent.displayName = "TooltipContent";
 
+// Export all the components that Radix UI would export
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+
+// Also export as default for any default imports
+export default {
+  Provider: TooltipProvider,
+  Root: Tooltip,
+  Trigger: TooltipTrigger,
+  Content: TooltipContent,
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+};
