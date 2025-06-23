@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -81,7 +80,10 @@ const OrdersManager = () => {
   });
 
   const handleCreateOrder = async (orderData: any) => {
+    console.log('HandleCreateOrder chamado com:', orderData);
     const result = await createOrder(orderData);
+    console.log('Resultado da criação:', result);
+    
     if (result?.success) {
       setIsNewOrderOpen(false);
     }
@@ -324,6 +326,7 @@ const NewOrderForm = ({
   const [selectedService, setSelectedService] = useState("");
   const [selectedPriority, setSelectedPriority] = useState("Média");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalValue = serviceValue + partsValue;
 
@@ -336,48 +339,58 @@ const NewOrderForm = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
+    
     const form = e.target as HTMLFormElement;
     const formDataObj = new FormData(form);
     
-    const description = formDataObj.get('description') as string;
+    const description = (formDataObj.get('description') as string)?.trim();
     
-    if (!description || description.trim() === '') {
+    if (!description) {
       alert('Descrição é obrigatória');
       return;
     }
     
-    const expectedDateStr = formDataObj.get('expectedDate') as string;
-    const expectedTimeStr = formDataObj.get('expectedTime') as string;
+    setIsSubmitting(true);
     
-    let expected_date = null;
-    if (expectedDateStr) {
-      if (expectedTimeStr) {
-        expected_date = `${expectedDateStr}T${expectedTimeStr}:00`;
-      } else {
-        expected_date = `${expectedDateStr}T09:00:00`;
+    try {
+      const expectedDateStr = formDataObj.get('expectedDate') as string;
+      const expectedTimeStr = formDataObj.get('expectedTime') as string;
+      
+      let expected_date = null;
+      if (expectedDateStr) {
+        if (expectedTimeStr) {
+          expected_date = `${expectedDateStr}T${expectedTimeStr}:00`;
+        } else {
+          expected_date = `${expectedDateStr}T09:00:00`;
+        }
       }
-    }
-    
-    const data = {
-      client_id: selectedClient || null,
-      technician_id: selectedTechnician || null,
-      service_id: selectedService || null,
-      priority: selectedPriority,
-      expected_date,
-      description: description.trim(),
-      diagnosis: (formDataObj.get('diagnosis') as string) || null,
-      observations: (formDataObj.get('observations') as string) || null,
-      service_value: serviceValue || 0,
-      parts_value: partsValue || 0,
-      total_value: totalValue || 0,
-      payment_method: selectedPaymentMethod || null,
-      status: 'Aberta'
-    };
+      
+      const data = {
+        client_id: selectedClient || null,
+        technician_id: selectedTechnician || null,
+        priority: selectedPriority,
+        expected_date,
+        description,
+        diagnosis: (formDataObj.get('diagnosis') as string) || null,
+        observations: (formDataObj.get('observations') as string) || null,
+        service_value: serviceValue || 0,
+        parts_value: partsValue || 0,
+        total_value: totalValue || 0,
+        payment_method: selectedPaymentMethod || null,
+        status: 'Aberta'
+      };
 
-    console.log('Dados do formulário para submissão:', data);
-    onSubmit(data);
+      console.log('Dados a serem enviados:', data);
+      await onSubmit(data);
+    } catch (error) {
+      console.error('Erro no submit:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -432,7 +445,7 @@ const NewOrderForm = ({
           </div>
 
           <div>
-            <Label htmlFor="service">Tipo de Serviço</Label>
+            <Label htmlFor="service">Tipo de Serviço (Referência de Preço)</Label>
             <Select value={selectedService} onValueChange={handleServiceChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo de serviço" />
@@ -559,11 +572,20 @@ const NewOrderForm = ({
       </Tabs>
       
       <div className="flex justify-end space-x-2">
-        <Button type="button" variant="outline" onClick={() => window.location.reload()}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={() => window.location.reload()}
+          disabled={isSubmitting}
+        >
           Cancelar
         </Button>
-        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-          Criar Ordem de Serviço
+        <Button 
+          type="submit" 
+          className="bg-blue-600 hover:bg-blue-700"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Criando...' : 'Criar Ordem de Serviço'}
         </Button>
       </div>
     </form>
