@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log('🚀 main.tsx - Clean React initialization');
+console.log('🚀 main.tsx - Starting React app');
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
