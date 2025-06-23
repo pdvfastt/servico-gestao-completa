@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 15 100% 50%;
+    --primary: 212 100% 50%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -25,7 +25,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 196 100% 47%;
+    --accent: 147 50% 47%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -33,25 +33,25 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 15 100% 50%;
+    --ring: 212 100% 50%;
 
     --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 15 100% 50%;
+    --sidebar-primary: 212 100% 50%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 25 100% 97%;
-    --sidebar-accent-foreground: 15 100% 47%;
+    --sidebar-accent: 147 50% 97%;
+    --sidebar-accent-foreground: 147 50% 47%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 15 100% 50%;
+    --sidebar-ring: 212 100% 50%;
 
-    /* Custom gradient colors baseadas na logomarca */
-    --gradient-start: 15 100% 50%;
-    --gradient-end: 196 100% 47%;
+    /* Custom gradient colors */
+    --gradient-start: 212 100% 50%;
+    --gradient-end: 147 50% 47%;
     --success-color: 147 50% 47%;
     --warning-color: 25 95% 53%;
-    --info-color: 196 100% 47%;
+    --info-color: 212 100% 50%;
   }
 
   .dark {
@@ -64,7 +64,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 15 100% 50%;
+    --primary: 212 100% 50%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -73,7 +73,7 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 196 100% 47%;
+    --accent: 147 50% 47%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -81,15 +81,15 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 15 100% 50%;
+    --ring: 212 100% 50%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 15 100% 50%;
+    --sidebar-primary: 212 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 15 100% 50%;
+    --sidebar-ring: 212 100% 50%;
   }
 }
 
@@ -123,77 +123,19 @@
     @apply bg-gradient-to-br from-white to-gray-50 border-0 shadow-md card-hover;
   }
   
-  .stat-card-orange {
-    @apply bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200;
+  .stat-card-blue {
+    @apply bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200;
   }
   
-  .stat-card-cyan {
-    @apply bg-gradient-to-br from-cyan-50 to-cyan-100 border-cyan-200;
+  .stat-card-green {
+    @apply bg-gradient-to-br from-green-50 to-green-100 border-green-200;
   }
   
   .stat-card-purple {
     @apply bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200;
   }
   
-  .stat-card-green {
-    @apply bg-gradient-to-br from-green-50 to-green-100 border-green-200;
-  }
-
-  /* Responsive PWA styles */
-  @media (max-width: 768px) {
-    .container {
-      @apply px-4;
-    }
-    
-    .card-responsive {
-      @apply mx-2 rounded-lg;
-    }
-    
-    .text-responsive {
-      @apply text-sm;
-    }
-    
-    .header-responsive {
-      @apply text-2xl;
-    }
-    
-    .tabs-responsive {
-      @apply overflow-x-auto scrollbar-hide;
-    }
-    
-    .tabs-list-responsive {
-      @apply min-w-max;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .header-responsive {
-      @apply text-xl;
-    }
-    
-    .text-responsive {
-      @apply text-xs;
-    }
-  }
-  
-  /* PWA specific styles */
-  @media (display-mode: standalone) {
-    body {
-      @apply select-none;
-    }
-    
-    .pwa-header {
-      padding-top: env(safe-area-inset-top);
-    }
-  }
-  
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
+  .stat-card-orange {
+    @apply bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200;
   }
 }

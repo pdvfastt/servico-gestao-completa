@@ -1,10 +1,7 @@
 
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-
-console.log('useAuth - React available:', !!React);
-console.log('useAuth - React hooks available:', !!(React && React.useState));
 
 interface AuthContextType {
   user: User | null;
@@ -12,7 +9,6 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
@@ -20,6 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Função para limpar estado de auth
 const cleanupAuthState = () => {
+  // Remove todas as chaves relacionadas ao Supabase
   Object.keys(localStorage).forEach((key) => {
     if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
       localStorage.removeItem(key);
@@ -34,8 +31,6 @@ const cleanupAuthState = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  console.log('AuthProvider - React context available:', !!React);
-  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,8 +72,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('Iniciando login para:', email);
     
     try {
+      // Limpar estado anterior antes do login
       cleanupAuthState();
       
+      // Tentar logout global primeiro
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
@@ -97,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('Login bem-sucedido:', data.user?.email);
       
+      // Forçar reload da página para estado limpo
       if (data.user) {
         setTimeout(() => {
           window.location.href = '/';
@@ -114,8 +112,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('Iniciando cadastro para:', email);
     
     try {
+      // Limpar estado anterior antes do cadastro
       cleanupAuthState();
       
+      // Tentar logout global primeiro
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
@@ -142,6 +142,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       console.log('Cadastro bem-sucedido:', data.user?.email);
       
+      // Se o usuário foi criado e confirmado automaticamente, redirecionar
       if (data.user && !data.user.email_confirmed_at) {
         console.log('Usuário criado, aguardando confirmação de email');
       } else if (data.user && data.user.email_confirmed_at) {
@@ -158,50 +159,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const resetPassword = async (email: string) => {
-    console.log('Iniciando recuperação de senha para:', email);
-    
-    try {
-      const redirectUrl = `${window.location.origin}/auth`;
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
-      });
-
-      if (error) {
-        console.error('Erro na recuperação de senha:', error);
-        return { error };
-      }
-
-      console.log('Email de recuperação enviado com sucesso');
-      return { error: null };
-    } catch (error) {
-      console.error('Erro inesperado na recuperação de senha:', error);
-      return { error };
-    }
-  };
-
   const signOut = async () => {
     console.log('Iniciando logout...');
     
     try {
+      // Limpar estado primeiro
       cleanupAuthState();
       
+      // Fazer logout global
       try {
         await supabase.auth.signOut({ scope: 'global' });
       } catch (err) {
         console.log('Erro no logout global (ignorado):', err);
       }
       
+      // Forçar reload para estado limpo
       window.location.href = '/auth';
     } catch (error) {
       console.error('Erro no logout:', error);
+      // Mesmo com erro, redirecionar para tela de login
       window.location.href = '/auth';
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, resetPassword, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
