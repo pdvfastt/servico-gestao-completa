@@ -2,23 +2,23 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('🔧 tooltip.tsx - Loading COMPLETELY ISOLATED tooltip implementation');
+console.log('🔧 tooltip.tsx - Loading NUCLEAR ISOLATED tooltip implementation');
 
-// Completely standalone tooltip components with no external dependencies
+// NUCLEAR standalone tooltip components with ZERO external dependencies
 const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ TooltipProvider - STANDALONE implementation without any hooks or dependencies');
+  console.log('✅ TooltipProvider - NUCLEAR STANDALONE implementation');
   return React.createElement('div', { 
-    className: "tooltip-provider-standalone", 
-    'data-tooltip-provider': 'custom',
+    className: "tooltip-provider-nuclear", 
+    'data-tooltip-provider': 'nuclear',
     ...props 
   }, children);
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('✅ Tooltip - STANDALONE wrapper');
+  console.log('✅ Tooltip - NUCLEAR STANDALONE wrapper');
   return React.createElement('div', { 
-    className: "tooltip-wrapper-standalone",
-    'data-tooltip': 'custom'
+    className: "tooltip-wrapper-nuclear",
+    'data-tooltip': 'nuclear'
   }, children);
 };
 
@@ -26,11 +26,11 @@ const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
 >(({ children, className, asChild, ...props }, ref) => {
-  console.log('✅ TooltipTrigger - STANDALONE trigger');
+  console.log('✅ TooltipTrigger - NUCLEAR STANDALONE trigger');
   return React.createElement('div', {
     ref,
-    className: cn("cursor-pointer tooltip-trigger-standalone", className),
-    'data-tooltip-trigger': 'custom',
+    className: cn("cursor-pointer tooltip-trigger-nuclear", className),
+    'data-tooltip-trigger': 'nuclear',
     ...props
   }, children);
 });
@@ -45,14 +45,14 @@ const TooltipContent = React.forwardRef<
     [key: string]: any;
   }
 >(({ className, children, side, align, sideOffset, ...props }, ref) => {
-  console.log('✅ TooltipContent - STANDALONE content');
+  console.log('✅ TooltipContent - NUCLEAR STANDALONE content');
   return React.createElement('div', {
     ref,
     className: cn(
-      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-standalone",
+      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-nuclear",
       className
     ),
-    'data-tooltip-content': 'custom',
+    'data-tooltip-content': 'nuclear',
     'data-side': side,
     'data-align': align,
     ...props
@@ -60,10 +60,34 @@ const TooltipContent = React.forwardRef<
 });
 TooltipContent.displayName = "TooltipContent";
 
-console.log('🎯 tooltip.tsx - STANDALONE tooltip system ready - NO DEPENDENCIES, NO HOOKS');
+console.log('🎯 tooltip.tsx - NUCLEAR STANDALONE tooltip system ready - ZERO DEPENDENCIES');
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+// Export everything that Radix would export
+export { 
+  Tooltip, 
+  TooltipTrigger, 
+  TooltipContent, 
+  TooltipProvider 
+}
 
-// Mark as completely custom implementation
-(window as any).__CUSTOM_TOOLTIP_STANDALONE__ = true;
-console.log('🏁 tooltip.tsx - Standalone custom tooltip marked as loaded');
+// Export default for any default imports
+export default {
+  Provider: TooltipProvider,
+  Root: Tooltip,
+  Trigger: TooltipTrigger,
+  Content: TooltipContent
+};
+
+// Mark as NUCLEAR custom implementation
+(window as any).__CUSTOM_TOOLTIP_NUCLEAR__ = true;
+console.log('🏁 tooltip.tsx - NUCLEAR custom tooltip marked as loaded');
+
+// Override any global Radix references
+if (typeof window !== 'undefined') {
+  (window as any).__RADIX_UI_TOOLTIP__ = {
+    Provider: TooltipProvider,
+    Root: Tooltip,
+    Trigger: TooltipTrigger,
+    Content: TooltipContent
+  };
+}
