@@ -8,12 +8,12 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('App.tsx - Starting application');
+console.log('App.tsx - Starting application with ULTIMATE TOOLTIP SAFETY');
 console.log('App.tsx - React available:', !!React);
 console.log('App.tsx - React version:', React.version);
 
 const App = () => {
-  console.log('App component rendering');
+  console.log('App component rendering with ULTIMATE SAFETY');
   
   return (
     <SafeQueryProvider>

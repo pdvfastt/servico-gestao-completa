@@ -2,25 +2,27 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('🛡️ tooltip.tsx - NUCLEAR OPTION - ZERO DEPENDENCIES, ZERO HOOKS');
+console.log('🛡️ tooltip.tsx - ULTIMATE SAFE TOOLTIP - NO DEPENDENCIES, NO HOOKS');
 
-// NUCLEAR OPTION - Completely standalone tooltip components - NO HOOKS, NO STATE, NO EXTERNAL DEPENDENCIES
+// ULTIMATE SAFE TOOLTIP - Completely standalone, no hooks, no external dependencies
 const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ TooltipProvider - NUCLEAR STANDALONE');
-  // Use React.createElement to avoid any potential hook calls
+  console.log('✅ TooltipProvider - ULTIMATE SAFE implementation');
+  // Ultra-safe implementation using only React.createElement
   return React.createElement('div', {
-    className: "tooltip-provider-nuclear",
-    'data-tooltip-provider': "nuclear",
+    className: "tooltip-provider-ultimate-safe",
+    'data-tooltip-provider': "ultimate-safe",
+    'data-safe-mode': "true",
     style: { display: 'contents' },
     ...props
   }, children);
 };
 
 const Tooltip = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ Tooltip - NUCLEAR STANDALONE wrapper');
+  console.log('✅ Tooltip - ULTIMATE SAFE wrapper');
   return React.createElement('div', {
-    className: "tooltip-wrapper-nuclear",
-    'data-tooltip': "nuclear",
+    className: "tooltip-wrapper-ultimate-safe",
+    'data-tooltip': "ultimate-safe",
+    'data-safe-mode': "true",
     style: { display: 'contents' },
     ...props
   }, children);
@@ -30,11 +32,12 @@ const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
 >(({ children, className, asChild, ...props }, ref) => {
-  console.log('✅ TooltipTrigger - NUCLEAR STANDALONE trigger');
+  console.log('✅ TooltipTrigger - ULTIMATE SAFE trigger');
   return React.createElement('div', {
     ref,
-    className: cn("cursor-pointer tooltip-trigger-nuclear", className),
-    'data-tooltip-trigger': "nuclear",
+    className: cn("cursor-pointer tooltip-trigger-ultimate-safe", className),
+    'data-tooltip-trigger': "ultimate-safe",
+    'data-safe-mode': "true",
     style: { display: 'contents' },
     ...props
   }, children);
@@ -50,23 +53,24 @@ const TooltipContent = React.forwardRef<
     [key: string]: any;
   }
 >(({ className, children, side, align, sideOffset, ...props }, ref) => {
-  console.log('✅ TooltipContent - NUCLEAR STANDALONE content');
+  console.log('✅ TooltipContent - ULTIMATE SAFE content');
   return React.createElement('div', {
     ref,
     className: cn(
-      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground tooltip-content-nuclear",
+      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground tooltip-content-ultimate-safe",
       className
     ),
-    'data-tooltip-content': "nuclear",
+    'data-tooltip-content': "ultimate-safe",
     'data-side': side,
     'data-align': align,
+    'data-safe-mode': "true",
     style: { display: 'none' },
     ...props
   }, children);
 });
 TooltipContent.displayName = "TooltipContent";
 
-console.log('🎯 tooltip.tsx - NUCLEAR STANDALONE tooltip system ready');
+console.log('🎯 tooltip.tsx - ULTIMATE SAFE tooltip system ready');
 
 // Export everything
 export { 
@@ -88,10 +92,18 @@ export default {
   TooltipContent
 };
 
-// NUCLEAR OPTION - Mark as loaded and block Radix
+// ULTIMATE SAFE MODE - Mark as loaded and ensure complete safety
 if (typeof window !== 'undefined') {
-  (window as any).__NUCLEAR_TOOLTIP_LOADED__ = true;
+  (window as any).__ULTIMATE_SAFE_TOOLTIP_LOADED__ = true;
   (window as any).__NO_RADIX_TOOLTIP__ = true;
   (window as any).__RADIX_TOOLTIP_BLOCKED__ = true;
-  console.log('🏁 tooltip.tsx - NUCLEAR tooltip ready, Radix completely blocked');
+  (window as any).__TOOLTIP_SAFE_MODE__ = true;
+  
+  // Override any global tooltip references
+  (window as any).TooltipProvider = TooltipProvider;
+  (window as any).Tooltip = Tooltip;
+  (window as any).TooltipTrigger = TooltipTrigger;
+  (window as any).TooltipContent = TooltipContent;
+  
+  console.log('🏁 tooltip.tsx - ULTIMATE SAFE tooltip ready, all Radix completely eliminated');
 }
