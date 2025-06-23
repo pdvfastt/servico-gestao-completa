@@ -2,10 +2,13 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading clean custom tooltip implementation - no Radix dependencies');
+console.log('Loading enhanced custom tooltip implementation');
 
-// Completely custom tooltip implementation - no external dependencies
-const CustomTooltipProvider = ({ children }: { children: React.ReactNode; delayDuration?: number }) => {
+// Simple custom tooltip implementation without external dependencies
+const CustomTooltipProvider = ({ children, delayDuration = 0 }: { 
+  children: React.ReactNode; 
+  delayDuration?: number;
+}) => {
   console.log('CustomTooltipProvider rendering');
   return <React.Fragment>{children}</React.Fragment>;
 };
@@ -15,37 +18,56 @@ const CustomTooltip = ({ children }: { children: React.ReactNode }) => {
   return <div className="relative inline-block group tooltip-container">{children}</div>;
 };
 
-const CustomTooltipTrigger = ({ children, asChild, ...props }: { 
-  children: React.ReactNode; 
-  asChild?: boolean; 
-  [key: string]: any;
-}) => {
+const CustomTooltipTrigger = React.forwardRef<
+  HTMLElement,
+  { 
+    children: React.ReactNode; 
+    asChild?: boolean; 
+    className?: string;
+    [key: string]: any;
+  }
+>(({ children, asChild, className, ...props }, ref) => {
   console.log('CustomTooltipTrigger rendering');
   
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, {
       ...props,
-      className: cn(props.className, 'tooltip-trigger')
+      ref,
+      className: cn(className, 'tooltip-trigger')
     });
   }
-  return <span {...props} className={cn(props.className, 'tooltip-trigger')}>{children}</span>;
-};
+  
+  return (
+    <span 
+      {...props} 
+      ref={ref as React.Ref<HTMLSpanElement>}
+      className={cn(className, 'tooltip-trigger')}
+    >
+      {children}
+    </span>
+  );
+});
 
-const CustomTooltipContent = ({ 
+CustomTooltipTrigger.displayName = "CustomTooltipTrigger";
+
+const CustomTooltipContent = React.forwardRef<
+  HTMLDivElement,
+  { 
+    children: React.ReactNode;
+    className?: string;
+    sideOffset?: number;
+    side?: "top" | "right" | "bottom" | "left";
+    align?: "start" | "center" | "end";
+    [key: string]: any;
+  }
+>(({ 
   children, 
   className, 
   sideOffset = 4, 
   side = "top", 
   align = "center", 
   ...props 
-}: { 
-  children: React.ReactNode;
-  className?: string;
-  sideOffset?: number;
-  side?: "top" | "right" | "bottom" | "left";
-  align?: "start" | "center" | "end";
-  [key: string]: any;
-}) => {
+}, ref) => {
   console.log('CustomTooltipContent rendering');
   
   const positionClasses = {
@@ -57,6 +79,7 @@ const CustomTooltipContent = ({
   
   return (
     <div 
+      ref={ref}
       className={cn(
         "absolute z-50 bg-black text-white text-xs rounded px-2 py-1 pointer-events-none opacity-0 invisible",
         "group-hover:opacity-100 group-hover:visible transition-opacity duration-200",
@@ -75,7 +98,9 @@ const CustomTooltipContent = ({
       {children}
     </div>
   );
-};
+});
+
+CustomTooltipContent.displayName = "CustomTooltipContent";
 
 // Export with standard names for compatibility
 export { 
