@@ -18,9 +18,23 @@ const cleanup = () => {
       delete (window as any)[key];
     }
   });
+  
+  // Clear any cached tooltip imports
+  if ((window as any).__VITE_TOOLTIP_CACHE__) {
+    delete (window as any).__VITE_TOOLTIP_CACHE__;
+  }
 };
 
 cleanup();
+
+// Log any module loading errors
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  if (args[0] && typeof args[0] === 'string' && args[0].includes('tooltip')) {
+    console.log('🚨 TOOLTIP ERROR DETECTED:', args);
+  }
+  originalConsoleError.apply(console, args);
+};
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -29,15 +43,19 @@ if (!rootElement) {
 
 console.log('main.tsx - Creating React root');
 
-// Additional safety check
+// Additional safety check with timeout to ensure React is fully loaded
 const startApp = () => {
   try {
     console.log('main.tsx - React check before render:', {
       React: !!React,
       ReactVersion: React.version,
       useState: !!React.useState,
-      ReactDOM: !!ReactDOM
+      ReactDOM: !!ReactDOM,
+      windowReact: !!(window as any).React
     });
+    
+    // Ensure React is properly attached to window for debugging
+    (window as any).React = React;
     
     const root = ReactDOM.createRoot(rootElement);
     
@@ -58,13 +76,23 @@ const startApp = () => {
       console.log('main.tsx - App rendered successfully (without StrictMode)');
     } catch (fallbackError) {
       console.error('main.tsx - Fallback render also failed:', fallbackError);
+      // Last resort - render a simple div
+      rootElement.innerHTML = `
+        <div style="padding: 20px; color: red;">
+          <h1>Application Failed to Load</h1>
+          <p>React Hook Error Detected</p>
+          <pre>${fallbackError}</pre>
+        </div>
+      `;
     }
   }
 };
 
-// Small delay to ensure everything is ready
+// Ensure everything is ready with a longer delay
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', startApp);
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(startApp, 100);
+  });
 } else {
-  setTimeout(startApp, 10);
+  setTimeout(startApp, 100);
 }

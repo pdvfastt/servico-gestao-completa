@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Force restart on config changes
+    watch: {
+      ignored: ['!**/node_modules/.vite/**']
+    }
   },
   plugins: [
     react(),
@@ -38,6 +42,7 @@ export default defineConfig(({ mode }) => ({
       "react/jsx-dev-runtime",
       "@tanstack/react-query"
     ],
+    // Force rebuild of all dependencies
     force: true,
     esbuildOptions: {
       target: 'esnext',
@@ -62,4 +67,6 @@ export default defineConfig(({ mode }) => ({
     jsx: 'automatic',
     target: 'esnext',
   },
+  // Force cache clearing
+  cacheDir: path.resolve(__dirname, '.vite-new'),
 }));
