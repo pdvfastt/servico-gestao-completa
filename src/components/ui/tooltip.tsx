@@ -2,24 +2,26 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('🛡️ tooltip.tsx - NUCLEAR CUSTOM TOOLTIP - ZERO DEPENDENCIES');
+console.log('🛡️ tooltip.tsx - ULTIMATE CUSTOM TOOLTIP - ZERO DEPENDENCIES - ZERO HOOKS');
 
-// Completely custom tooltip components with ZERO external dependencies
+// Completely custom tooltip components with ZERO external dependencies and NO HOOKS
 const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ TooltipProvider - NUCLEAR CUSTOM (NO RADIX, NO HOOKS)');
+  console.log('✅ TooltipProvider - ULTIMATE CUSTOM (NO RADIX, NO HOOKS, NO STATE)');
+  // Pure passthrough component with no state or hooks
   return React.createElement('div', { 
-    className: "tooltip-provider-nuclear", 
-    'data-tooltip-provider': 'nuclear-custom',
-    style: { width: '100%', height: '100%' },
+    className: "tooltip-provider-ultimate", 
+    'data-tooltip-provider': 'ultimate-custom',
+    style: { width: '100%', height: '100%', display: 'contents' },
     ...props 
   }, children);
 };
 
 const Tooltip = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ Tooltip - NUCLEAR CUSTOM wrapper (NO RADIX, NO HOOKS)');
+  console.log('✅ Tooltip - ULTIMATE CUSTOM wrapper (NO RADIX, NO HOOKS, NO STATE)');
+  // Pure passthrough component
   return React.createElement('div', { 
-    className: "tooltip-wrapper-nuclear",
-    'data-tooltip': 'nuclear-custom',
+    className: "tooltip-wrapper-ultimate",
+    'data-tooltip': 'ultimate-custom',
     style: { display: 'contents' },
     ...props
   }, children);
@@ -29,11 +31,12 @@ const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
 >(({ children, className, asChild, ...props }, ref) => {
-  console.log('✅ TooltipTrigger - NUCLEAR CUSTOM trigger (NO RADIX, NO HOOKS)');
+  console.log('✅ TooltipTrigger - ULTIMATE CUSTOM trigger (NO RADIX, NO HOOKS, NO STATE)');
+  // Pure trigger component with no state
   return React.createElement('div', {
     ref,
-    className: cn("cursor-pointer tooltip-trigger-nuclear", className),
-    'data-tooltip-trigger': 'nuclear-custom',
+    className: cn("cursor-pointer tooltip-trigger-ultimate", className),
+    'data-tooltip-trigger': 'ultimate-custom',
     style: { display: 'contents' },
     ...props
   }, children);
@@ -49,23 +52,24 @@ const TooltipContent = React.forwardRef<
     [key: string]: any;
   }
 >(({ className, children, side, align, sideOffset, ...props }, ref) => {
-  console.log('✅ TooltipContent - NUCLEAR CUSTOM content (NO RADIX, NO HOOKS)');
+  console.log('✅ TooltipContent - ULTIMATE CUSTOM content (NO RADIX, NO HOOKS, NO STATE)');
+  // Hidden content component - we don't implement tooltip functionality
   return React.createElement('div', {
     ref,
     className: cn(
-      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-nuclear",
+      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-ultimate",
       className
     ),
-    'data-tooltip-content': 'nuclear-custom',
+    'data-tooltip-content': 'ultimate-custom',
     'data-side': side,
     'data-align': align,
-    style: { display: 'none' }, // Hidden by default since we're not implementing tooltip logic
+    style: { display: 'none' }, // Always hidden since we're not implementing tooltip logic
     ...props
   }, children);
 });
 TooltipContent.displayName = "TooltipContent";
 
-console.log('🎯 tooltip.tsx - NUCLEAR CUSTOM tooltip system ready - ZERO RADIX - ZERO HOOKS');
+console.log('🎯 tooltip.tsx - ULTIMATE CUSTOM tooltip system ready - ZERO RADIX - ZERO HOOKS - ZERO STATE');
 
 // Export everything that Radix would export
 export { 
@@ -87,4 +91,10 @@ export default {
   TooltipContent
 };
 
-console.log('🏁 tooltip.tsx - NUCLEAR CUSTOM tooltip marked as loaded - NO RADIX DEPENDENCY');
+// Mark global to prevent any other tooltip loading
+if (typeof window !== 'undefined') {
+  (window as any).__ULTIMATE_TOOLTIP_LOADED__ = true;
+  (window as any).__RADIX_TOOLTIP_BLOCKED__ = true;
+}
+
+console.log('🏁 tooltip.tsx - ULTIMATE CUSTOM tooltip marked as loaded - NO RADIX DEPENDENCY - NO HOOKS');

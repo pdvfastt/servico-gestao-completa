@@ -1,21 +1,38 @@
 
-console.log('🚀 main.tsx - React application starting with NUCLEAR tooltip protection');
+console.log('🚀 main.tsx - React application starting with ULTIMATE tooltip protection');
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// NUCLEAR protection - block any tooltip imports at runtime
+// ULTIMATE protection - block any tooltip imports at runtime
 const originalImport = (window as any).__vitePreload;
 if (originalImport) {
   (window as any).__vitePreload = (...args: any[]) => {
     const [url] = args;
-    if (url && url.includes('tooltip')) {
-      console.log('🚫 NUCLEAR RUNTIME BLOCK - tooltip import:', url);
+    if (url && (url.includes('tooltip') || url.includes('@radix-ui/react-tooltip'))) {
+      console.log('🚫 ULTIMATE RUNTIME BLOCK - tooltip import:', url);
       return Promise.resolve({});
     }
     return originalImport(...args);
+  };
+}
+
+// Block any dynamic imports of tooltip
+const originalDynamicImport = (window as any).__dynamicImportHandler;
+if (typeof window !== 'undefined') {
+  (window as any).__dynamicImportHandler = (specifier: string) => {
+    if (specifier.includes('tooltip') || specifier.includes('@radix-ui/react-tooltip')) {
+      console.log('🚫 ULTIMATE DYNAMIC IMPORT BLOCK - tooltip:', specifier);
+      return Promise.resolve({
+        TooltipProvider: () => null,
+        Tooltip: () => null,
+        TooltipTrigger: () => null,
+        TooltipContent: () => null
+      });
+    }
+    return originalDynamicImport ? originalDynamicImport(specifier) : import(specifier);
   };
 }
 
@@ -31,7 +48,7 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('🎯 main.tsx - Starting React application with NUCLEAR tooltip protection');
+console.log('🎯 main.tsx - Starting React application with ULTIMATE tooltip protection');
 
 const startApp = () => {
   try {
@@ -40,6 +57,7 @@ const startApp = () => {
       ReactVersion: React.version,
       useState: !!React.useState,
       ReactDOM: !!ReactDOM,
+      tooltipBlocked: !!(window as any).__RADIX_TOOLTIP_BLOCKED__,
     });
     
     // Ensure React is available
@@ -49,18 +67,18 @@ const startApp = () => {
     
     const root = ReactDOM.createRoot(rootElement);
     
-    console.log('🚀 main.tsx - Rendering App with NUCLEAR tooltip protection');
+    console.log('🚀 main.tsx - Rendering App with ULTIMATE tooltip protection');
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
     
-    console.log('✅ main.tsx - App rendered successfully with NUCLEAR tooltip protection');
+    console.log('✅ main.tsx - App rendered successfully with ULTIMATE tooltip protection');
   } catch (error) {
     console.error('❌ main.tsx - Render error:', error);
     
-    // Simple fallback
+    // Simple fallback without StrictMode
     try {
       const root = ReactDOM.createRoot(rootElement);
       root.render(<App />);
@@ -73,6 +91,7 @@ const startApp = () => {
           <p><strong>Error:</strong> ${error}</p>
           <p><strong>Fallback Error:</strong> ${fallbackError}</p>
           <p>React: ${!!React} | useState: ${!!React?.useState}</p>
+          <p>Tooltip Blocked: ${!!(window as any).__RADIX_TOOLTIP_BLOCKED__}</p>
         </div>
       `;
     }

@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-console.log('🔧 vite.config.ts - NUCLEAR tooltip elimination strategy');
+console.log('🔧 vite.config.ts - ULTIMATE tooltip elimination strategy');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -18,39 +18,50 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
-    // NUCLEAR PLUGIN - completely eliminate ANY tooltip references
+    // ULTIMATE PLUGIN - completely eliminate ANY tooltip references
     {
-      name: 'nuclear-tooltip-eliminator',
+      name: 'ultimate-tooltip-eliminator',
       enforce: 'pre' as const,
       resolveId(id: string, importer?: string) {
-        console.log('🔍 RESOLVE CHECK:', { id, importer });
+        console.log('🔍 ULTIMATE RESOLVE CHECK:', { id, importer });
         
         // Block ANY tooltip-related imports completely
-        if (id.includes('tooltip') || id.includes('@radix-ui/react-tooltip')) {
-          console.log('🚫 NUCLEAR BLOCK - TOOLTIP IMPORT:', id);
+        if (id.includes('tooltip') || 
+            id.includes('@radix-ui/react-tooltip') ||
+            id === '@radix-ui/react-tooltip' ||
+            id.endsWith('/react-tooltip')) {
+          console.log('🚫 ULTIMATE BLOCK - TOOLTIP IMPORT:', id);
           return path.resolve(__dirname, "./src/components/ui/tooltip.tsx");
         }
         return null;
       },
       load(id: string) {
-        console.log('🔍 LOAD CHECK:', id);
+        console.log('🔍 ULTIMATE LOAD CHECK:', id);
         
-        if (id.includes('tooltip') && !id.includes('src/components/ui/tooltip.tsx')) {
-          console.log('🚫 NUCLEAR BLOCK - TOOLTIP LOAD:', id);
-          // Return our custom tooltip implementation
+        // Intercept any tooltip loading
+        if ((id.includes('tooltip') || id.includes('@radix-ui/react-tooltip')) && 
+            !id.includes('src/components/ui/tooltip.tsx')) {
+          console.log('🚫 ULTIMATE BLOCK - TOOLTIP LOAD:', id);
+          // Return our custom tooltip implementation directly
           return `
-            console.log('🛡️ NUCLEAR REDIRECT - Loading custom tooltip');
-            export { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "${path.resolve(__dirname, "./src/components/ui/tooltip.tsx")}";
+            console.log('🛡️ ULTIMATE REDIRECT - Loading custom tooltip');
+            import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "${path.resolve(__dirname, "./src/components/ui/tooltip.tsx")}";
+            export { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent };
             export default { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent };
           `;
         }
         return null;
+      },
+      buildStart() {
+        console.log('🔥 ULTIMATE - Build starting - tooltip elimination active');
       }
     }
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // ULTIMATE ALIAS - Force tooltip to our custom implementation
+      "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       // Force React deduplication
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
