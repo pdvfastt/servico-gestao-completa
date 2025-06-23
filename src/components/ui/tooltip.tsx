@@ -3,71 +3,88 @@ import React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 import { cn } from "@/lib/utils"
 
-// Debug React availability
-console.log('Tooltip component - React available:', !!React);
-console.log('Tooltip component - React version:', React?.version);
+// Simple fallback tooltip that doesn't use Radix UI
+const SimpleTooltipProvider = ({ children }: { children: React.ReactNode }) => {
+  return <div className="simple-tooltip-provider">{children}</div>;
+};
 
-// Create a safe wrapper that completely avoids Radix until React is ready
+const SimpleTooltip = ({ children }: { children: React.ReactNode }) => {
+  return <div className="simple-tooltip">{children}</div>;
+};
+
+const SimpleTooltipTrigger = ({ children, ...props }: any) => {
+  return <div {...props}>{children}</div>;
+};
+
+const SimpleTooltipContent = ({ children, className, ...props }: any) => {
+  return <div className={cn("simple-tooltip-content", className)} {...props}>{children}</div>;
+};
+
+// Check if React is fully available and stable
+const isReactStable = () => {
+  try {
+    // Multiple checks to ensure React is completely ready
+    return !!(
+      React &&
+      React.useState &&
+      React.useEffect &&
+      React.createElement &&
+      typeof React.useState === 'function' &&
+      typeof React.useEffect === 'function' &&
+      typeof React.createElement === 'function' &&
+      ((globalThis as any)?.React || (window as any)?.React)
+    );
+  } catch (error) {
+    console.error('React stability check failed:', error);
+    return false;
+  }
+};
+
+// Safe TooltipProvider that completely avoids Radix UI when React isn't ready
 const TooltipProvider = ({ children, ...props }: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>) => {
-  console.log('TooltipProvider rendering - React available:', !!React);
-  console.log('TooltipProvider rendering - React.useState available:', !!React?.useState);
-  console.log('TooltipProvider rendering - globalThis.React available:', !!(globalThis as any)?.React);
-  console.log('TooltipProvider rendering - window.React available:', !!(window as any)?.React);
+  console.log('TooltipProvider: Checking React stability');
   
-  // Multiple safety checks to ensure React is fully available
-  const isReactReady = React && 
-                      React.useState && 
-                      React.useEffect && 
-                      ((globalThis as any)?.React || (window as any)?.React);
-  
-  if (!isReactReady) {
-    console.error('TooltipProvider: React is not fully available, rendering children in a div');
-    // Return a simple div wrapper when React isn't ready
-    return React?.createElement ? React.createElement('div', {}, children) : <div>{children}</div>;
+  if (!isReactStable()) {
+    console.log('TooltipProvider: React not stable, using simple fallback');
+    return <SimpleTooltipProvider>{children}</SimpleTooltipProvider>;
   }
   
-  // Only use Radix TooltipProvider when React is fully available
   try {
     console.log('TooltipProvider: Using Radix TooltipProvider');
     return <TooltipPrimitive.Provider {...props}>{children}</TooltipPrimitive.Provider>;
   } catch (error) {
-    console.error('TooltipProvider: Error with Radix TooltipProvider, falling back to div:', error);
-    return <div>{children}</div>;
+    console.error('TooltipProvider: Radix error, falling back to simple provider:', error);
+    return <SimpleTooltipProvider>{children}</SimpleTooltipProvider>;
   }
 };
 
 TooltipProvider.displayName = "TooltipProvider";
 
-// Safe wrapper for Tooltip that doesn't use Radix when React isn't ready
+// Safe Tooltip wrapper
 const Tooltip = ({ children, ...props }: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>) => {
-  const isReactReady = React && React.useState && ((globalThis as any)?.React || (window as any)?.React);
-  
-  if (!isReactReady) {
-    console.log('Tooltip: React not ready, rendering children directly');
-    return <div>{children}</div>;
+  if (!isReactStable()) {
+    return <SimpleTooltip>{children}</SimpleTooltip>;
   }
   
   try {
     return <TooltipPrimitive.Root {...props}>{children}</TooltipPrimitive.Root>;
   } catch (error) {
-    console.error('Tooltip: Error with Radix Tooltip, falling back to div:', error);
-    return <div>{children}</div>;
+    console.error('Tooltip: Radix error, falling back to simple tooltip:', error);
+    return <SimpleTooltip>{children}</SimpleTooltip>;
   }
 };
 
-// Safe wrapper for TooltipTrigger
+// Safe TooltipTrigger wrapper
 const TooltipTrigger = ({ children, ...props }: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>) => {
-  const isReactReady = React && React.useState && ((globalThis as any)?.React || (window as any)?.React);
-  
-  if (!isReactReady) {
-    return <div>{children}</div>;
+  if (!isReactStable()) {
+    return <SimpleTooltipTrigger {...props}>{children}</SimpleTooltipTrigger>;
   }
   
   try {
     return <TooltipPrimitive.Trigger {...props}>{children}</TooltipPrimitive.Trigger>;
   } catch (error) {
-    console.error('TooltipTrigger: Error with Radix TooltipTrigger, falling back to div:', error);
-    return <div>{children}</div>;
+    console.error('TooltipTrigger: Radix error, falling back to simple trigger:', error);
+    return <SimpleTooltipTrigger {...props}>{children}</SimpleTooltipTrigger>;
   }
 };
 
@@ -75,10 +92,8 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => {
-  const isReactReady = React && React.useState && ((globalThis as any)?.React || (window as any)?.React);
-  
-  if (!isReactReady) {
-    return <div className={className} {...props} />;
+  if (!isReactStable()) {
+    return <SimpleTooltipContent className={className} {...props} />;
   }
   
   try {
@@ -94,8 +109,8 @@ const TooltipContent = React.forwardRef<
       />
     );
   } catch (error) {
-    console.error('TooltipContent: Error with Radix TooltipContent, falling back to div:', error);
-    return <div className={className} {...props} />;
+    console.error('TooltipContent: Radix error, falling back to simple content:', error);
+    return <SimpleTooltipContent className={className} {...props} />;
   }
 });
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
