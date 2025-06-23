@@ -2,23 +2,23 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('🔧 tooltip.tsx - Loading BULLETPROOF tooltip implementation');
+console.log('🔧 tooltip.tsx - Loading ULTIMATE standalone tooltip with ZERO hooks');
 
-// BULLETPROOF standalone tooltip components with ZERO external dependencies and NO HOOKS
+// ULTIMATE standalone tooltip components with ZERO dependencies and NO HOOKS
 const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ TooltipProvider - BULLETPROOF STANDALONE implementation (NO HOOKS)');
+  console.log('✅ TooltipProvider - ULTIMATE STANDALONE (NO HOOKS)');
   return React.createElement('div', { 
-    className: "tooltip-provider-bulletproof", 
-    'data-tooltip-provider': 'bulletproof',
+    className: "tooltip-provider-ultimate", 
+    'data-tooltip-provider': 'ultimate',
     ...props 
   }, children);
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('✅ Tooltip - BULLETPROOF STANDALONE wrapper (NO HOOKS)');
+  console.log('✅ Tooltip - ULTIMATE STANDALONE wrapper (NO HOOKS)');
   return React.createElement('div', { 
-    className: "tooltip-wrapper-bulletproof",
-    'data-tooltip': 'bulletproof'
+    className: "tooltip-wrapper-ultimate",
+    'data-tooltip': 'ultimate'
   }, children);
 };
 
@@ -26,11 +26,11 @@ const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
 >(({ children, className, asChild, ...props }, ref) => {
-  console.log('✅ TooltipTrigger - BULLETPROOF STANDALONE trigger (NO HOOKS)');
+  console.log('✅ TooltipTrigger - ULTIMATE STANDALONE trigger (NO HOOKS)');
   return React.createElement('div', {
     ref,
-    className: cn("cursor-pointer tooltip-trigger-bulletproof", className),
-    'data-tooltip-trigger': 'bulletproof',
+    className: cn("cursor-pointer tooltip-trigger-ultimate", className),
+    'data-tooltip-trigger': 'ultimate',
     ...props
   }, children);
 });
@@ -45,14 +45,14 @@ const TooltipContent = React.forwardRef<
     [key: string]: any;
   }
 >(({ className, children, side, align, sideOffset, ...props }, ref) => {
-  console.log('✅ TooltipContent - BULLETPROOF STANDALONE content (NO HOOKS)');
+  console.log('✅ TooltipContent - ULTIMATE STANDALONE content (NO HOOKS)');
   return React.createElement('div', {
     ref,
     className: cn(
-      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-bulletproof",
+      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-ultimate",
       className
     ),
-    'data-tooltip-content': 'bulletproof',
+    'data-tooltip-content': 'ultimate',
     'data-side': side,
     'data-align': align,
     ...props
@@ -60,7 +60,7 @@ const TooltipContent = React.forwardRef<
 });
 TooltipContent.displayName = "TooltipContent";
 
-console.log('🎯 tooltip.tsx - BULLETPROOF STANDALONE tooltip system ready - ZERO DEPENDENCIES - NO HOOKS');
+console.log('🎯 tooltip.tsx - ULTIMATE STANDALONE tooltip system ready - ZERO DEPENDENCIES - NO HOOKS');
 
 // Export everything that Radix would export
 export { 
@@ -78,9 +78,9 @@ export default {
   Content: TooltipContent
 };
 
-// BULLETPROOF Override - Mark as custom implementation
+// ULTIMATE Override - Mark as custom implementation
 if (typeof window !== 'undefined') {
-  (window as any).__CUSTOM_TOOLTIP_BULLETPROOF__ = true;
+  (window as any).__CUSTOM_TOOLTIP_ULTIMATE__ = true;
   (window as any).__RADIX_UI_TOOLTIP__ = {
     Provider: TooltipProvider,
     Root: Tooltip,
@@ -88,7 +88,7 @@ if (typeof window !== 'undefined') {
     Content: TooltipContent
   };
   
-  // BULLETPROOF: Override any existing Radix imports
+  // ULTIMATE: Override any existing Radix imports completely
   (window as any)['@radix-ui/react-tooltip'] = {
     TooltipProvider,
     Tooltip,
@@ -101,4 +101,4 @@ if (typeof window !== 'undefined') {
   };
 }
 
-console.log('🏁 tooltip.tsx - BULLETPROOF custom tooltip marked as loaded');
+console.log('🏁 tooltip.tsx - ULTIMATE custom tooltip marked as loaded');

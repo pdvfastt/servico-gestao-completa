@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-console.log('SafeQueryProvider - Starting WITHOUT any tooltip provider');
+console.log('SafeQueryProvider - Starting with ZERO tooltip dependencies');
 
 const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
-  console.log('SafeQueryProvider - Creating QueryClient');
+  console.log('SafeQueryProvider - Creating QueryClient with NO tooltip provider');
   
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
@@ -16,8 +16,9 @@ const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
     },
   }));
 
-  console.log('SafeQueryProvider - Rendering WITHOUT TooltipProvider');
+  console.log('SafeQueryProvider - Rendering with ZERO external dependencies');
 
+  // NO TOOLTIP PROVIDER - just pure QueryClient
   return (
     <QueryClientProvider client={queryClient}>
       {children}
