@@ -2,26 +2,30 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-// Safe, simple tooltip components that don't rely on external libraries
+// Completely safe tooltip components that don't use any external libraries
 const TooltipProvider = ({ children }: { children: React.ReactNode }) => {
-  return <div data-tooltip-provider>{children}</div>;
+  return <div className="tooltip-provider">{children}</div>;
 };
 
 const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  return <div data-tooltip>{children}</div>;
+  return <div className="tooltip-wrapper">{children}</div>;
 };
 
-const TooltipTrigger = ({ children, className, ...props }: any) => {
+const TooltipTrigger = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ children, className, ...props }, ref) => {
   return (
     <div 
+      ref={ref}
       className={cn("cursor-pointer", className)} 
-      {...props} 
-      data-tooltip-trigger
+      {...props}
     >
       {children}
     </div>
   );
-};
+});
+TooltipTrigger.displayName = "TooltipTrigger";
 
 const TooltipContent = React.forwardRef<
   HTMLDivElement,
@@ -30,9 +34,11 @@ const TooltipContent = React.forwardRef<
   return (
     <div 
       ref={ref}
-      className={cn("hidden", className)} 
-      {...props} 
-      data-tooltip-content
+      className={cn(
+        "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95",
+        className
+      )} 
+      {...props}
     >
       {children}
     </div>

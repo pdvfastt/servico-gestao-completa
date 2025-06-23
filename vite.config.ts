@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force all React imports to use the same instance
+      // Aggressive React deduplication
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
@@ -27,29 +27,34 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
   define: {
-    // Ensure React is available globally
     global: 'globalThis',
+    'process.env': {},
   },
   optimizeDeps: {
     include: [
       "react", 
       "react-dom", 
       "react/jsx-runtime",
-      "@radix-ui/react-tooltip",
+      "react/jsx-dev-runtime",
       "@tanstack/react-query"
     ],
-    exclude: [],
+    exclude: [
+      "@radix-ui/react-tooltip"
+    ],
     force: true,
+    esbuildOptions: {
+      target: 'esnext',
+    },
   },
   build: {
+    target: 'esnext',
     rollupOptions: {
-      external: [],
       output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        }
-      }
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'query-vendor': ['@tanstack/react-query'],
+        },
+      },
     },
     commonjsOptions: {
       include: [/node_modules/],
@@ -58,5 +63,6 @@ export default defineConfig(({ mode }) => ({
   },
   esbuild: {
     jsx: 'automatic',
+    target: 'esnext',
   },
 }));
