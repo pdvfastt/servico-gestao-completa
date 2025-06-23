@@ -10,7 +10,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('App.tsx - Starting with custom tooltip provider');
+console.log('App.tsx - Starting application');
+console.log('App.tsx - React available:', !!React);
 console.log('App.tsx - React version:', React.version);
 
 const queryClient = new QueryClient({
@@ -23,7 +24,7 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  console.log('App component rendering - with custom tooltip provider');
+  console.log('App component rendering');
   
   return (
     <QueryClientProvider client={queryClient}>

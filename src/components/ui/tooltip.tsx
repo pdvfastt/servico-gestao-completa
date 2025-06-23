@@ -2,23 +2,23 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading enhanced custom tooltip implementation');
+console.log('Loading completely custom tooltip implementation');
 
-// Simple custom tooltip implementation without external dependencies
-const CustomTooltipProvider = ({ children, delayDuration = 0 }: { 
+// Completely custom tooltip implementation without any external dependencies
+const TooltipProvider = ({ children, delayDuration = 0 }: { 
   children: React.ReactNode; 
   delayDuration?: number;
 }) => {
-  console.log('CustomTooltipProvider rendering');
-  return <React.Fragment>{children}</React.Fragment>;
+  console.log('Custom TooltipProvider rendering with React:', !!React);
+  return <>{children}</>;
 };
 
-const CustomTooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('CustomTooltip rendering');
-  return <div className="relative inline-block group tooltip-container">{children}</div>;
+const Tooltip = ({ children }: { children: React.ReactNode }) => {
+  console.log('Custom Tooltip rendering');
+  return <div className="relative inline-block group">{children}</div>;
 };
 
-const CustomTooltipTrigger = React.forwardRef<
+const TooltipTrigger = React.forwardRef<
   HTMLElement,
   { 
     children: React.ReactNode; 
@@ -27,13 +27,13 @@ const CustomTooltipTrigger = React.forwardRef<
     [key: string]: any;
   }
 >(({ children, asChild, className, ...props }, ref) => {
-  console.log('CustomTooltipTrigger rendering');
+  console.log('Custom TooltipTrigger rendering');
   
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, {
       ...props,
       ref,
-      className: cn(className, 'tooltip-trigger')
+      className: cn(className, 'cursor-pointer')
     });
   }
   
@@ -41,16 +41,16 @@ const CustomTooltipTrigger = React.forwardRef<
     <span 
       {...props} 
       ref={ref as React.Ref<HTMLSpanElement>}
-      className={cn(className, 'tooltip-trigger')}
+      className={cn(className, 'cursor-pointer')}
     >
       {children}
     </span>
   );
 });
 
-CustomTooltipTrigger.displayName = "CustomTooltipTrigger";
+TooltipTrigger.displayName = "TooltipTrigger";
 
-const CustomTooltipContent = React.forwardRef<
+const TooltipContent = React.forwardRef<
   HTMLDivElement,
   { 
     children: React.ReactNode;
@@ -68,7 +68,7 @@ const CustomTooltipContent = React.forwardRef<
   align = "center", 
   ...props 
 }, ref) => {
-  console.log('CustomTooltipContent rendering');
+  console.log('Custom TooltipContent rendering');
   
   const positionClasses = {
     top: "bottom-full left-1/2 transform -translate-x-1/2 mb-1",
@@ -81,9 +81,10 @@ const CustomTooltipContent = React.forwardRef<
     <div 
       ref={ref}
       className={cn(
-        "absolute z-50 bg-black text-white text-xs rounded px-2 py-1 pointer-events-none opacity-0 invisible",
-        "group-hover:opacity-100 group-hover:visible transition-opacity duration-200",
-        "tooltip-content",
+        "absolute z-50 bg-gray-900 text-white text-sm rounded-md px-3 py-1.5 pointer-events-none",
+        "opacity-0 invisible group-hover:opacity-100 group-hover:visible",
+        "transition-opacity duration-200 delay-300",
+        "whitespace-nowrap",
         positionClasses[side],
         className
       )}
@@ -96,16 +97,22 @@ const CustomTooltipContent = React.forwardRef<
       {...props}
     >
       {children}
+      <div className={cn(
+        "absolute w-2 h-2 bg-gray-900 transform rotate-45",
+        side === "top" && "top-full left-1/2 -translate-x-1/2 -translate-y-1/2",
+        side === "bottom" && "bottom-full left-1/2 -translate-x-1/2 translate-y-1/2",
+        side === "left" && "left-full top-1/2 -translate-x-1/2 -translate-y-1/2",
+        side === "right" && "right-full top-1/2 translate-x-1/2 -translate-y-1/2"
+      )} />
     </div>
   );
 });
 
-CustomTooltipContent.displayName = "CustomTooltipContent";
+TooltipContent.displayName = "TooltipContent";
 
-// Export with standard names for compatibility
 export { 
-  CustomTooltipProvider as TooltipProvider,
-  CustomTooltip as Tooltip, 
-  CustomTooltipTrigger as TooltipTrigger, 
-  CustomTooltipContent as TooltipContent 
+  TooltipProvider,
+  Tooltip, 
+  TooltipTrigger, 
+  TooltipContent 
 };
