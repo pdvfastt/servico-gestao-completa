@@ -91,7 +91,7 @@ export const useCompanySettings = () => {
 
   const updateSettings = async (newSettings: Partial<CompanySettings>) => {
     if (!user) {
-      return;
+      return { success: false, error: 'Usuário não autenticado' };
     }
 
     try {
@@ -128,6 +128,7 @@ export const useCompanySettings = () => {
         };
         console.log('Configurações atualizadas:', newSettingsData);
         setSettings(newSettingsData);
+        return { success: true };
       } else {
         const { data, error } = await supabase
           .from('company_settings' as any)
@@ -156,9 +157,11 @@ export const useCompanySettings = () => {
         };
         console.log('Configurações criadas:', newSettingsData);
         setSettings(newSettingsData);
+        return { success: true };
       }
     } catch (error) {
       console.error('Erro ao atualizar configurações:', error);
+      return { success: false, error: 'Erro ao salvar configurações' };
     }
   };
 
