@@ -3,11 +3,6 @@ import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 import { cn } from "@/lib/utils"
 
-// Ensure React is available globally for this component
-if (typeof window !== 'undefined' && !(window as any).React) {
-  (window as any).React = React;
-}
-
 const TooltipProvider = TooltipPrimitive.Provider
 
 const Tooltip = TooltipPrimitive.Root
