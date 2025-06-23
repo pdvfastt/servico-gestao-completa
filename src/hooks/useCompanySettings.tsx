@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -29,10 +30,10 @@ export const useCompanySettings = () => {
       console.log('Buscando configurações da empresa para usuário:', user.id);
       
       const { data, error } = await supabase
-        .from('company_settings' as any)
+        .from('company_settings')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle() as { data: any, error: any };
+        .maybeSingle();
 
       if (error) {
         console.error('Erro Supabase ao buscar configurações:', error);
@@ -44,19 +45,18 @@ export const useCompanySettings = () => {
         setSettings({
           id: data.id,
           company_name: data.company_name,
-          company_logo_url: data.company_logo_url || 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
+          company_logo_url: data.company_logo_url || undefined,
           primary_color: data.primary_color,
           secondary_color: data.secondary_color,
           accent_color: data.accent_color,
         });
       } else {
-        // Configurações padrão baseadas na logomarca
+        // Configurações padrão se não existir
         const defaultSettings: CompanySettings = {
           company_name: 'Sistema de Gestão de OS',
-          company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
-          primary_color: '#FF4500',
-          secondary_color: '#00BFFF',
-          accent_color: '#32CD32',
+          primary_color: '#2563eb',
+          secondary_color: '#059669',
+          accent_color: '#dc2626',
         };
         setSettings(defaultSettings);
       }
@@ -65,10 +65,9 @@ export const useCompanySettings = () => {
       // Definir configurações padrão em caso de erro
       const defaultSettings: CompanySettings = {
         company_name: 'Sistema de Gestão de OS',
-        company_logo_url: 'https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png',
-        primary_color: '#FF4500',
-        secondary_color: '#00BFFF',
-        accent_color: '#32CD32',
+        primary_color: '#2563eb',
+        secondary_color: '#059669',
+        accent_color: '#dc2626',
       };
       setSettings(defaultSettings);
       
@@ -98,8 +97,9 @@ export const useCompanySettings = () => {
       const updatedSettings = { ...settings, ...newSettings };
       
       if (settings?.id) {
+        // Atualizar configurações existentes
         const { data, error } = await supabase
-          .from('company_settings' as any)
+          .from('company_settings')
           .update({
             company_name: updatedSettings.company_name,
             company_logo_url: updatedSettings.company_logo_url,
@@ -110,7 +110,7 @@ export const useCompanySettings = () => {
           .eq('id', settings.id)
           .eq('user_id', user.id)
           .select()
-          .single() as { data: any, error: any };
+          .single();
 
         if (error) throw error;
         
@@ -123,8 +123,9 @@ export const useCompanySettings = () => {
           accent_color: data.accent_color,
         });
       } else {
+        // Criar novas configurações
         const { data, error } = await supabase
-          .from('company_settings' as any)
+          .from('company_settings')
           .insert({
             user_id: user.id,
             company_name: updatedSettings.company_name,
@@ -134,7 +135,7 @@ export const useCompanySettings = () => {
             accent_color: updatedSettings.accent_color,
           })
           .select()
-          .single() as { data: any, error: any };
+          .single();
 
         if (error) throw error;
         
