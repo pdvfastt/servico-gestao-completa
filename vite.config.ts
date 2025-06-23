@@ -96,9 +96,5 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     jsx: 'automatic',
     target: 'esnext',
-    // NUCLEAR OPTION - replace all tooltip imports at build time
-    define: {
-      '@radix-ui/react-tooltip': 'window.__CUSTOM_TOOLTIP__',
-    },
   },
 }));
