@@ -49,17 +49,19 @@ const Tabs = ({ defaultValue, value, onValueChange, className, children }: TabsP
 // TabsList component
 interface TabsListProps {
   className?: string
+  style?: React.CSSProperties
   children: React.ReactNode
 }
 
 const TabsList = React.forwardRef<HTMLDivElement, TabsListProps>(
-  ({ className, children }, ref) => (
+  ({ className, style, children }, ref) => (
     <div
       ref={ref}
       className={cn(
         "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
         className
       )}
+      style={style}
     >
       {children}
     </div>
