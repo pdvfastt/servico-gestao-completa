@@ -31,7 +31,13 @@ export default defineConfig(({ mode }) => ({
     global: 'globalThis',
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react/jsx-runtime"],
+    include: [
+      "react", 
+      "react-dom", 
+      "react/jsx-runtime",
+      "@radix-ui/react-tooltip",
+      "@tanstack/react-query"
+    ],
     exclude: [],
     force: true,
   },
@@ -47,6 +53,10 @@ export default defineConfig(({ mode }) => ({
     },
     commonjsOptions: {
       include: [/node_modules/],
+      transformMixedEsModules: true,
     },
+  },
+  esbuild: {
+    jsx: 'automatic',
   },
 }));
