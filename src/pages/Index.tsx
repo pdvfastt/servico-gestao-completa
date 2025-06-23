@@ -1,32 +1,25 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   FileText, 
   Users, 
   Settings, 
-  BarChart3, 
-  Plus,
-  Clock,
-  CheckCircle,
-  AlertCircle,
+  BarChart3,
   DollarSign,
   Calendar,
   User,
   LogOut,
   Wrench,
-  Cog,
-  Menu
+  Cog
 } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
-import { useUserManagement } from '@/hooks/useUserManagement';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
+import { Button } from "@/components/ui/button";
 import Dashboard from "@/components/Dashboard";
 import ClientsManager from "@/components/ClientsManager";
 import TechniciansManager from "@/components/TechniciansManager";
@@ -36,117 +29,70 @@ import ReportsManager from "@/components/ReportsManager";
 import OrdersManager from "@/components/OrdersManager";
 import SettingsManager from "@/components/SettingsManager";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
-import TechnicianOrdersPage from "@/components/TechnicianOrdersPage";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUserManagement();
   const { settings } = useCompanySettings();
   const { permissions, hasPermission } = usePermissions();
   const isMobile = useIsMobile();
 
-  // Verificar se o usuário é um técnico
-  const [isTechnician, setIsTechnician] = useState(false);
-
-  useEffect(() => {
-    const checkIfTechnician = async () => {
-      if (!user) return;
-      
-      try {
-        const { data } = await supabase
-          .from('technicians')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-        
-        setIsTechnician(!!data);
-      } catch (error) {
-        setIsTechnician(false);
-      }
-    };
-
-    checkIfTechnician();
-  }, [user]);
-
-  // Criar configuração das abas baseada nas permissões
+  // Configuração simplificada das abas
   const tabsConfig = [
     { 
       value: "dashboard", 
       icon: BarChart3, 
       label: "Dashboard", 
-      shortLabel: "Home",
-      permission: "dashboard" as const
+      shortLabel: "Home"
     },
     { 
       value: "orders", 
       icon: FileText, 
       label: "Ordens de Serviço", 
-      shortLabel: "OS",
-      permission: "orders" as const
+      shortLabel: "OS"
     },
-    ...(isTechnician && hasPermission("technician_orders") ? [{
-      value: "technician-orders", 
-      icon: Wrench, 
-      label: "Minhas OS", 
-      shortLabel: "Minhas OS",
-      permission: "technician_orders" as const
-    }] : []),
     { 
       value: "clients", 
       icon: Users, 
       label: "Clientes", 
-      shortLabel: "Clientes",
-      permission: "clients" as const
+      shortLabel: "Clientes"
     },
     { 
       value: "technicians", 
       icon: User, 
       label: "Técnicos", 
-      shortLabel: "Técnicos",
-      permission: "technicians" as const
+      shortLabel: "Técnicos"
     },
     { 
       value: "services", 
       icon: Wrench, 
       label: "Serviços", 
-      shortLabel: "Serviços",
-      permission: "services" as const
+      shortLabel: "Serviços"
     },
     { 
       value: "financial", 
       icon: DollarSign, 
       label: "Financeiro", 
-      shortLabel: "$$",
-      permission: "financial" as const
+      shortLabel: "$$"
     },
     { 
       value: "reports", 
       icon: BarChart3, 
       label: "Relatórios", 
-      shortLabel: "Reports",
-      permission: "reports" as const
+      shortLabel: "Reports"
     },
-    ...(hasPermission("settings") ? [{
+    { 
       value: "settings", 
       icon: Cog, 
       label: "Configurações", 
-      shortLabel: "Config",
-      permission: "settings" as const
-    }] : [])
-  ].filter(tab => hasPermission(tab.permission));
-
-  // Garantir que o usuário sempre tenha acesso ao dashboard
-  useEffect(() => {
-    if (tabsConfig.length > 0 && !tabsConfig.find(tab => tab.value === activeTab)) {
-      setActiveTab(tabsConfig[0].value);
+      shortLabel: "Config"
     }
-  }, [tabsConfig, activeTab]);
+  ];
 
   return (
     <div className="min-h-screen flex flex-col">
       <div className="container mx-auto p-3 md:p-6 flex-1">
-        {/* Modern Header */}
+        {/* Header simplificado */}
         <div className="mb-4 md:mb-8">
           <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-6 shadow-lg">
             <div className="flex items-center space-x-2 md:space-x-4 min-w-0 flex-1">
@@ -202,7 +148,7 @@ const Index = () => {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <div className="border-b border-gray-100 bg-gray-50 rounded-t-lg">
                 <div className="tabs-responsive">
-                  <TabsList className={`tabs-list-responsive w-full grid bg-transparent h-auto p-1 md:p-2 gap-0.5 md:gap-1`} style={{ gridTemplateColumns: `repeat(${tabsConfig.length}, minmax(0, 1fr))` }}>
+                  <TabsList className="tabs-list-responsive w-full grid bg-transparent h-auto p-1 md:p-2 gap-0.5 md:gap-1" style={{ gridTemplateColumns: `repeat(${tabsConfig.length}, minmax(0, 1fr))` }}>
                     {tabsConfig.map(({ value, icon: Icon, label, shortLabel }) => (
                       <TabsTrigger 
                         key={value}
@@ -220,71 +166,37 @@ const Index = () => {
               </div>
 
               <div className="p-3 md:p-6">
-                {hasPermission("dashboard") && (
-                  <TabsContent value="dashboard" className="mt-0">
-                    <Dashboard />
-                  </TabsContent>
-                )}
+                <TabsContent value="dashboard" className="mt-0">
+                  <Dashboard />
+                </TabsContent>
 
-                {hasPermission("orders") && (
-                  <TabsContent value="orders" className="mt-0">
-                    <OrdersManager />
-                  </TabsContent>
-                )}
+                <TabsContent value="orders" className="mt-0">
+                  <OrdersManager />
+                </TabsContent>
 
-                {isTechnician && hasPermission("technician_orders") && (
-                  <TabsContent value="technician-orders" className="mt-0">
-                    <TechnicianOrdersPage />
-                  </TabsContent>
-                )}
+                <TabsContent value="clients" className="mt-0">
+                  <ClientsManager />
+                </TabsContent>
 
-                {hasPermission("clients") && (
-                  <TabsContent value="clients" className="mt-0">
-                    <ClientsManager />
-                  </TabsContent>
-                )}
+                <TabsContent value="technicians" className="mt-0">
+                  <TechniciansManager />
+                </TabsContent>
 
-                {hasPermission("technicians") && (
-                  <TabsContent value="technicians" className="mt-0">
-                    <TechniciansManager />
-                  </TabsContent>
-                )}
+                <TabsContent value="services" className="mt-0">
+                  <ServicesManager />
+                </TabsContent>
 
-                {hasPermission("services") && (
-                  <TabsContent value="services" className="mt-0">
-                    <ServicesManager />
-                  </TabsContent>
-                )}
+                <TabsContent value="financial" className="mt-0">
+                  <FinancialManager />
+                </TabsContent>
 
-                {hasPermission("financial") && (
-                  <TabsContent value="financial" className="mt-0">
-                    <FinancialManager />
-                  </TabsContent>
-                )}
+                <TabsContent value="reports" className="mt-0">
+                  <ReportsManager />
+                </TabsContent>
 
-                {hasPermission("reports") && (
-                  <TabsContent value="reports" className="mt-0">
-                    <ReportsManager />
-                  </TabsContent>
-                )}
-
-                {hasPermission("settings") && (
-                  <TabsContent value="settings" className="mt-0">
-                    <SettingsManager />
-                  </TabsContent>
-                )}
-
-                {/* Mostrar mensagem se o usuário não tiver acesso a nenhuma funcionalidade */}
-                {tabsConfig.length === 0 && (
-                  <div className="text-center py-12">
-                    <Settings className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold text-gray-600 mb-2">Acesso Restrito</h2>
-                    <p className="text-gray-500">
-                      Você não tem permissão para acessar nenhuma funcionalidade do sistema. 
-                      Entre em contato com o administrador.
-                    </p>
-                  </div>
-                )}
+                <TabsContent value="settings" className="mt-0">
+                  <SettingsManager />
+                </TabsContent>
               </div>
             </Tabs>
           </CardContent>
