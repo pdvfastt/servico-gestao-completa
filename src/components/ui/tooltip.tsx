@@ -3,7 +3,26 @@ import React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 import { cn } from "@/lib/utils"
 
-const TooltipProvider = TooltipPrimitive.Provider
+// Debug React availability
+console.log('Tooltip component - React available:', !!React);
+console.log('Tooltip component - React version:', React?.version);
+
+const TooltipProvider = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Provider>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>
+>((props, ref) => {
+  console.log('TooltipProvider rendering - React available:', !!React);
+  
+  // Safety check for React
+  if (!React || !React.useState) {
+    console.error('TooltipProvider: React or React.useState is not available');
+    return null;
+  }
+  
+  return <TooltipPrimitive.Provider ref={ref} {...props} />;
+});
+
+TooltipProvider.displayName = "TooltipProvider";
 
 const Tooltip = TooltipPrimitive.Root
 
