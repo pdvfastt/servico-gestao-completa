@@ -2,23 +2,16 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('Loading completely custom tooltip implementation');
-
-// Completely custom tooltip implementation without any external dependencies
-const TooltipProvider = ({ children, delayDuration = 0 }: { 
-  children: React.ReactNode; 
-  delayDuration?: number;
-}) => {
-  console.log('Custom TooltipProvider rendering with React:', !!React);
+// Simple custom tooltip implementation with proper React usage
+export const TooltipProvider = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const Tooltip = ({ children }: { children: React.ReactNode }) => {
-  console.log('Custom Tooltip rendering');
+export const Tooltip = ({ children }: { children: React.ReactNode }) => {
   return <div className="relative inline-block group">{children}</div>;
 };
 
-const TooltipTrigger = React.forwardRef<
+export const TooltipTrigger = React.forwardRef<
   HTMLElement,
   { 
     children: React.ReactNode; 
@@ -27,8 +20,6 @@ const TooltipTrigger = React.forwardRef<
     [key: string]: any;
   }
 >(({ children, asChild, className, ...props }, ref) => {
-  console.log('Custom TooltipTrigger rendering');
-  
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, {
       ...props,
@@ -50,7 +41,7 @@ const TooltipTrigger = React.forwardRef<
 
 TooltipTrigger.displayName = "TooltipTrigger";
 
-const TooltipContent = React.forwardRef<
+export const TooltipContent = React.forwardRef<
   HTMLDivElement,
   { 
     children: React.ReactNode;
@@ -68,8 +59,6 @@ const TooltipContent = React.forwardRef<
   align = "center", 
   ...props 
 }, ref) => {
-  console.log('Custom TooltipContent rendering');
-  
   const positionClasses = {
     top: "bottom-full left-1/2 transform -translate-x-1/2 mb-1",
     bottom: "top-full left-1/2 transform -translate-x-1/2 mt-1", 
@@ -109,10 +98,3 @@ const TooltipContent = React.forwardRef<
 });
 
 TooltipContent.displayName = "TooltipContent";
-
-export { 
-  TooltipProvider,
-  Tooltip, 
-  TooltipTrigger, 
-  TooltipContent 
-};
