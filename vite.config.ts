@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-console.log('🔧 vite.config.ts - Fixed Radix elimination strategy');
+console.log('🔧 vite.config.ts - NUCLEAR tooltip elimination strategy');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -17,23 +17,29 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
-    // FIXED PLUGIN to properly block only TooltipProvider
+    mode === 'development' && componentTagger(),
+    // NUCLEAR PLUGIN - completely eliminate ANY tooltip references
     {
-      name: 'selective-radix-blocker',
-      resolveId(id: string) {
-        // Only block tooltip specifically
-        if (id.includes('@radix-ui/react-tooltip')) {
-          console.log('🚫 BLOCKED TOOLTIP IMPORT:', id);
+      name: 'nuclear-tooltip-eliminator',
+      enforce: 'pre',
+      resolveId(id: string, importer?: string) {
+        console.log('🔍 RESOLVE CHECK:', { id, importer });
+        
+        // Block ANY tooltip-related imports completely
+        if (id.includes('tooltip') || id.includes('@radix-ui/react-tooltip')) {
+          console.log('🚫 NUCLEAR BLOCK - TOOLTIP IMPORT:', id);
           return path.resolve(__dirname, "./src/components/ui/tooltip.tsx");
         }
         return null;
       },
       load(id: string) {
-        if (id.includes('@radix-ui/react-tooltip')) {
-          console.log('🚫 BLOCKED TOOLTIP LOAD:', id);
+        console.log('🔍 LOAD CHECK:', id);
+        
+        if (id.includes('tooltip') && !id.includes('src/components/ui/tooltip.tsx')) {
+          console.log('🚫 NUCLEAR BLOCK - TOOLTIP LOAD:', id);
+          // Return our custom tooltip implementation
           return `
+            console.log('🛡️ NUCLEAR REDIRECT - Loading custom tooltip');
             export { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "${path.resolve(__dirname, "./src/components/ui/tooltip.tsx")}";
             export default { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent };
           `;
@@ -50,8 +56,6 @@ export default defineConfig(({ mode }) => ({
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
       "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
-      // Only redirect tooltip
-      "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
@@ -78,6 +82,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: 'esnext',
     rollupOptions: {
+      external: ['@radix-ui/react-tooltip'],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],

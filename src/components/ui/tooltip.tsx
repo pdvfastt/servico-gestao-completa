@@ -2,24 +2,24 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('🛡️ tooltip.tsx - COMPLETELY STANDALONE - NO HOOKS');
+console.log('🛡️ tooltip.tsx - NUCLEAR CUSTOM TOOLTIP - ZERO DEPENDENCIES');
 
-// Completely standalone tooltip components with ZERO dependencies and NO HOOKS
+// Completely custom tooltip components with ZERO external dependencies
 const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ TooltipProvider - STANDALONE (NO HOOKS)');
+  console.log('✅ TooltipProvider - NUCLEAR CUSTOM (NO RADIX, NO HOOKS)');
   return React.createElement('div', { 
-    className: "tooltip-provider-standalone", 
-    'data-tooltip-provider': 'standalone',
+    className: "tooltip-provider-nuclear", 
+    'data-tooltip-provider': 'nuclear-custom',
     style: { width: '100%', height: '100%' },
     ...props 
   }, children);
 };
 
 const Tooltip = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
-  console.log('✅ Tooltip - STANDALONE wrapper (NO HOOKS)');
+  console.log('✅ Tooltip - NUCLEAR CUSTOM wrapper (NO RADIX, NO HOOKS)');
   return React.createElement('div', { 
-    className: "tooltip-wrapper-standalone",
-    'data-tooltip': 'standalone',
+    className: "tooltip-wrapper-nuclear",
+    'data-tooltip': 'nuclear-custom',
     style: { display: 'contents' },
     ...props
   }, children);
@@ -29,11 +29,11 @@ const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
 >(({ children, className, asChild, ...props }, ref) => {
-  console.log('✅ TooltipTrigger - STANDALONE trigger (NO HOOKS)');
+  console.log('✅ TooltipTrigger - NUCLEAR CUSTOM trigger (NO RADIX, NO HOOKS)');
   return React.createElement('div', {
     ref,
-    className: cn("cursor-pointer tooltip-trigger-standalone", className),
-    'data-tooltip-trigger': 'standalone',
+    className: cn("cursor-pointer tooltip-trigger-nuclear", className),
+    'data-tooltip-trigger': 'nuclear-custom',
     style: { display: 'contents' },
     ...props
   }, children);
@@ -49,14 +49,14 @@ const TooltipContent = React.forwardRef<
     [key: string]: any;
   }
 >(({ className, children, side, align, sideOffset, ...props }, ref) => {
-  console.log('✅ TooltipContent - STANDALONE content (NO HOOKS)');
+  console.log('✅ TooltipContent - NUCLEAR CUSTOM content (NO RADIX, NO HOOKS)');
   return React.createElement('div', {
     ref,
     className: cn(
-      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-standalone",
+      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 tooltip-content-nuclear",
       className
     ),
-    'data-tooltip-content': 'standalone',
+    'data-tooltip-content': 'nuclear-custom',
     'data-side': side,
     'data-align': align,
     style: { display: 'none' }, // Hidden by default since we're not implementing tooltip logic
@@ -65,7 +65,7 @@ const TooltipContent = React.forwardRef<
 });
 TooltipContent.displayName = "TooltipContent";
 
-console.log('🎯 tooltip.tsx - STANDALONE tooltip system ready - ZERO DEPENDENCIES - NO HOOKS');
+console.log('🎯 tooltip.tsx - NUCLEAR CUSTOM tooltip system ready - ZERO RADIX - ZERO HOOKS');
 
 // Export everything that Radix would export
 export { 
@@ -87,4 +87,4 @@ export default {
   TooltipContent
 };
 
-console.log('🏁 tooltip.tsx - STANDALONE custom tooltip marked as loaded');
+console.log('🏁 tooltip.tsx - NUCLEAR CUSTOM tooltip marked as loaded - NO RADIX DEPENDENCY');

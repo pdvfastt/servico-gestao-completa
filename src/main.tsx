@@ -1,10 +1,23 @@
 
-console.log('🚀 main.tsx - React application starting');
+console.log('🚀 main.tsx - React application starting with NUCLEAR tooltip protection');
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+
+// NUCLEAR protection - block any tooltip imports at runtime
+const originalImport = (window as any).__vitePreload;
+if (originalImport) {
+  (window as any).__vitePreload = (...args: any[]) => {
+    const [url] = args;
+    if (url && url.includes('tooltip')) {
+      console.log('🚫 NUCLEAR RUNTIME BLOCK - tooltip import:', url);
+      return Promise.resolve({});
+    }
+    return originalImport(...args);
+  };
+}
 
 console.log('🔍 main.tsx - React system check:', {
   React: !!React,
@@ -18,7 +31,7 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('🎯 main.tsx - Starting React application');
+console.log('🎯 main.tsx - Starting React application with NUCLEAR tooltip protection');
 
 const startApp = () => {
   try {
@@ -36,14 +49,14 @@ const startApp = () => {
     
     const root = ReactDOM.createRoot(rootElement);
     
-    console.log('🚀 main.tsx - Rendering App');
+    console.log('🚀 main.tsx - Rendering App with NUCLEAR tooltip protection');
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
     
-    console.log('✅ main.tsx - App rendered successfully');
+    console.log('✅ main.tsx - App rendered successfully with NUCLEAR tooltip protection');
   } catch (error) {
     console.error('❌ main.tsx - Render error:', error);
     
