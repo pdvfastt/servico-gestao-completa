@@ -3,7 +3,13 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 
 // Simple custom tooltip implementation with proper React usage
-export const TooltipProvider = ({ children }: { children: React.ReactNode }) => {
+export const TooltipProvider = ({ 
+  children, 
+  delayDuration 
+}: { 
+  children: React.ReactNode;
+  delayDuration?: number;
+}) => {
   return <>{children}</>;
 };
 
