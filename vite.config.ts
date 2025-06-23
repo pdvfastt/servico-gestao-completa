@@ -5,7 +5,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { PluginOption } from "vite";
 
-console.log('🔧 vite.config.ts - SIMPLE React configuration v4');
+console.log('🔧 vite.config.ts - Clean React configuration');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -28,6 +28,10 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "./src"),
       },
+      dedupe: ['react', 'react-dom']
+    },
+    optimizeDeps: {
+      include: ['react', 'react-dom']
     },
     define: {
       'global': 'globalThis',
