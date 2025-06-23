@@ -61,7 +61,6 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       jsxFactory: 'React.createElement',
       jsxFragment: 'React.Fragment',
-      jsxInject: 'import React from "react"',
     },
     build: {
       rollupOptions: {
