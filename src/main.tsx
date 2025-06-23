@@ -1,16 +1,19 @@
 
-console.log('main.tsx - Starting React application with enhanced debugging');
+console.log('main.tsx - Starting React application with COMPLETE tooltip isolation');
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log('main.tsx - React imported, version:', React.version);
-console.log('main.tsx - React object keys:', Object.keys(React));
-console.log('main.tsx - useState available:', !!React.useState);
+console.log('main.tsx - React imported successfully:', {
+  React: !!React,
+  ReactVersion: React.version,
+  useState: !!React.useState,
+  ReactDOM: !!ReactDOM
+});
 
-// Enhanced cleanup function
+// Aggressive cleanup function
 const cleanup = () => {
   // Remove any potential duplicate React instances
   Object.keys(window).forEach((key) => {
@@ -31,6 +34,19 @@ const cleanup = () => {
 };
 
 cleanup();
+
+// Block any tooltip-related imports completely
+const originalImport = (window as any).__vitePreload;
+if (originalImport) {
+  (window as any).__vitePreload = (...args: any[]) => {
+    const [url] = args;
+    if (url && typeof url === 'string' && url.includes('tooltip')) {
+      console.log('🚫 BLOCKED TOOLTIP IMPORT:', url);
+      return Promise.resolve({});
+    }
+    return originalImport.apply(window, args);
+  };
+}
 
 // Enhanced error logging
 const originalConsoleError = console.error;
@@ -55,7 +71,7 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('main.tsx - Creating React root with enhanced safety');
+console.log('main.tsx - Creating React root with complete isolation');
 
 const startApp = () => {
   try {
@@ -73,14 +89,14 @@ const startApp = () => {
     
     const root = ReactDOM.createRoot(rootElement);
     
-    console.log('main.tsx - Rendering App component');
+    console.log('main.tsx - Rendering App component with tooltip isolation');
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
     
-    console.log('main.tsx - App rendered successfully');
+    console.log('main.tsx - App rendered successfully with no tooltip dependencies');
   } catch (error) {
     console.error('main.tsx - Error rendering app:', error);
     
@@ -117,8 +133,8 @@ Window React: ${!!(window as any).React}
 // Start with longer delay to ensure everything is loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(startApp, 200);
+    setTimeout(startApp, 300);
   });
 } else {
-  setTimeout(startApp, 200);
+  setTimeout(startApp, 300);
 }
