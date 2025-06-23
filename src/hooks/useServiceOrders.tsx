@@ -7,6 +7,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 type ServiceOrder = Database['public']['Tables']['service_orders']['Row'];
 type ServiceOrderInsert = Database['public']['Tables']['service_orders']['Insert'];
+type ServiceOrderUpdate = Database['public']['Tables']['service_orders']['Update'];
 
 export const useServiceOrders = () => {
   const { user } = useAuth();
@@ -16,29 +17,29 @@ export const useServiceOrders = () => {
 
   const fetchOrders = async () => {
     if (!user) {
-      console.log('❌ Usuário não autenticado - service orders');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('🔍 Buscando todas as ordens de serviço');
+      console.log('Buscando ordens de serviço para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('service_orders')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('❌ Erro Supabase ao buscar ordens de serviço:', error);
+        console.error('Erro Supabase ao buscar ordens:', error);
         throw error;
       }
       
-      console.log('✅ Ordens de serviço encontradas:', data?.length || 0);
+      console.log('Ordens encontradas:', data?.length || 0);
       setOrders(data || []);
     } catch (error) {
-      console.error('❌ Erro geral ao buscar ordens de serviço:', error);
+      console.error('Erro ao buscar ordens de serviço:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar ordens de serviço.",
@@ -49,52 +50,126 @@ export const useServiceOrders = () => {
     }
   };
 
-  const createOrder = async (orderData: Omit<ServiceOrderInsert, 'user_id'>) => {
-    if (!user) {
-      toast({
-        title: "Erro",
-        description: "Usuário não autenticado.",
-        variant: "destructive",
-      });
-      return { success: false, error: 'User not authenticated' };
-    }
-
+  const getOrderById = async (orderId: string) => {
+    if (!user) return null;
+    
     try {
-      console.log('Criando ordem de serviço:', orderData);
-      
       const { data, error } = await supabase
         .from('service_orders')
-        .insert({
-          ...orderData,
-          user_id: user.id,
-        })
-        .select()
+        .select('*')
+        .eq('id', orderId)
+        .eq('user_id', user.id)
         .single();
 
-      if (error) {
-        console.error('Erro Supabase ao criar ordem de serviço:', error);
-        throw error;
-      }
-      
-      console.log('Ordem de serviço criada com sucesso:', data);
-      setOrders(prev => [data, ...prev]);
-      toast({
-        title: "OS Criada",
-        description: "A nova ordem de serviço foi criada com sucesso!",
-      });
-      return { success: true, data };
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Erro ao criar ordem de serviço:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar ordem de serviço.",
-        variant: "destructive",
-      });
-      return { success: false, error };
+      console.error('Erro ao buscar ordem:', error);
+      return null;
     }
   };
 
-  const updateOrder = async (id: string, orderData: Partial<ServiceOrderInsert>) => {
+  const createOrder = async (orderData: Omit<ServiceOrderInsert, 'user_id'>) => {
+    console.log('=== INÍCIO CRIAÇÃO ORDEM ===');
+    console.log('Dados recebidos:', orderData);
+    
+    if (!user) {
+      console.error('Usuário não autenticado');
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    // Validação obrigatória da descrição
+    if (!orderData.description || orderData.description.trim() === '') {
+      console.error('Descrição é obrigatória');
+      toast({
+        title: "Erro",
+        description: "Descrição é obrigatória.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'Description is required' };
+    }
+
+    try {
+      // Preparar dados para inserção
+      const insertData: ServiceOrderInsert = {
+        user_id: user.id,
+        client_id: orderData.client_id || null,
+        technician_id: orderData.technician_id || null,
+        description: orderData.description.trim(),
+        diagnosis: orderData.diagnosis || null,
+        observations: orderData.observations || null,
+        status: orderData.status || 'Aberta',
+        priority: orderData.priority || 'Média',
+        expected_date: orderData.expected_date || null,
+        service_value: Number(orderData.service_value) || 0,
+        parts_value: Number(orderData.parts_value) || 0,
+        total_value: Number(orderData.total_value) || 0,
+        payment_method: orderData.payment_method || null,
+      };
+
+      console.log('Dados preparados para inserção:', insertData);
+      
+      const { data, error } = await supabase
+        .from('service_orders')
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase detalhado:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        
+        // Tratamento específico de erros
+        if (error.message.includes('violates row-level security policy')) {
+          throw new Error('Erro de permissão. Verifique se você está logado corretamente.');
+        } else if (error.message.includes('null value in column')) {
+          throw new Error('Dados obrigatórios não fornecidos. Verifique todos os campos.');
+        } else if (error.message.includes('foreign key')) {
+          throw new Error('Erro de referência. Verifique se cliente, técnico ou serviço existem.');
+        } else {
+          throw new Error(`Erro do banco de dados: ${error.message}`);
+        }
+      }
+      
+      console.log('Ordem criada com sucesso:', data);
+      
+      // Atualizar lista local
+      setOrders(prev => [data, ...prev]);
+      
+      toast({
+        title: "Sucesso!",
+        description: "Ordem de serviço criada com sucesso!",
+      });
+      
+      console.log('=== FIM CRIAÇÃO ORDEM (SUCESSO) ===');
+      return { success: true, data };
+      
+    } catch (error: any) {
+      console.error('Erro durante criação da ordem:', error);
+      
+      const errorMessage = error.message || 'Erro desconhecido ao criar ordem de serviço';
+      
+      toast({
+        title: "Erro",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      console.log('=== FIM CRIAÇÃO ORDEM (ERRO) ===');
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const updateOrder = async (orderId: string, orderData: ServiceOrderUpdate) => {
     if (!user) {
       toast({
         title: "Erro",
@@ -105,39 +180,39 @@ export const useServiceOrders = () => {
     }
 
     try {
-      console.log('Atualizando ordem de serviço:', id, orderData);
-      
       const { data, error } = await supabase
         .from('service_orders')
         .update(orderData)
-        .eq('id', id)
+        .eq('id', orderId)
+        .eq('user_id', user.id)
         .select()
         .single();
 
-      if (error) {
-        console.error('Erro Supabase ao atualizar ordem de serviço:', error);
-        throw error;
-      }
-      
-      console.log('Ordem de serviço atualizada com sucesso:', data);
-      setOrders(prev => prev.map(order => order.id === id ? data : order));
+      if (error) throw error;
+
+      // Atualizar lista local
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? data : order
+      ));
+
       toast({
-        title: "OS Atualizada",
-        description: "A ordem de serviço foi atualizada com sucesso!",
+        title: "Sucesso!",
+        description: "Ordem de serviço atualizada com sucesso!",
       });
+
       return { success: true, data };
-    } catch (error) {
-      console.error('Erro ao atualizar ordem de serviço:', error);
+    } catch (error: any) {
+      console.error('Erro ao atualizar ordem:', error);
       toast({
         title: "Erro",
         description: "Erro ao atualizar ordem de serviço.",
         variant: "destructive",
       });
-      return { success: false, error };
+      return { success: false, error: error.message };
     }
   };
 
-  const deleteOrder = async (id: string) => {
+  const deleteOrder = async (orderId: string) => {
     if (!user) {
       toast({
         title: "Erro",
@@ -148,33 +223,31 @@ export const useServiceOrders = () => {
     }
 
     try {
-      console.log('Removendo ordem de serviço:', id);
-      
       const { error } = await supabase
         .from('service_orders')
         .delete()
-        .eq('id', id);
+        .eq('id', orderId)
+        .eq('user_id', user.id);
 
-      if (error) {
-        console.error('Erro Supabase ao remover ordem de serviço:', error);
-        throw error;
-      }
-      
-      console.log('Ordem de serviço removida com sucesso');
-      setOrders(prev => prev.filter(order => order.id !== id));
+      if (error) throw error;
+
+      // Atualizar lista local
+      setOrders(prev => prev.filter(order => order.id !== orderId));
+
       toast({
-        title: "OS Removida",
-        description: "A ordem de serviço foi removida com sucesso!",
+        title: "Sucesso!",
+        description: "Ordem de serviço excluída com sucesso!",
       });
+
       return { success: true };
-    } catch (error) {
-      console.error('Erro ao remover ordem de serviço:', error);
+    } catch (error: any) {
+      console.error('Erro ao excluir ordem:', error);
       toast({
         title: "Erro",
-        description: "Erro ao remover ordem de serviço.",
+        description: "Erro ao excluir ordem de serviço.",
         variant: "destructive",
       });
-      return { success: false, error };
+      return { success: false, error: error.message };
     }
   };
 
@@ -188,6 +261,7 @@ export const useServiceOrders = () => {
     createOrder,
     updateOrder,
     deleteOrder,
+    getOrderById,
     refetch: fetchOrders,
   };
 };

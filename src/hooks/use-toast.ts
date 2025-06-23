@@ -1,13 +1,9 @@
-
 import * as React from "react"
 
 import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
-
-console.log('use-toast.ts - React imported:', !!React);
-console.log('use-toast.ts - useState available:', !!React.useState);
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -173,8 +169,6 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  console.log('useToast hook called - React available:', !!React);
-  
   const [state, setState] = React.useState<State>(memoryState)
 
   React.useEffect(() => {
