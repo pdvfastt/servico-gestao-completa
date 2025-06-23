@@ -10,7 +10,7 @@ console.log('main.tsx - React instance:', React);
 console.log('main.tsx - React.useState available:', !!React.useState);
 console.log('main.tsx - React.useEffect available:', !!React.useEffect);
 
-// Ensure React is available globally and in window to prevent module resolution issues
+// Ensure React is available globally before any components load
 if (typeof window !== 'undefined') {
   (window as any).React = React;
   (window as any).ReactDOM = ReactDOM;
@@ -23,6 +23,18 @@ if (typeof globalThis !== 'undefined') {
   (globalThis as any).ReactDOM = ReactDOM;
   console.log('main.tsx - Set React on globalThis object');
 }
+
+// Additional safety check
+const reactCheck = () => {
+  console.log('React safety check:');
+  console.log('- React available:', !!React);
+  console.log('- React.useState available:', !!React?.useState);
+  console.log('- React.useEffect available:', !!React?.useEffect);
+  console.log('- Window.React available:', !!(window as any)?.React);
+  console.log('- GlobalThis.React available:', !!(globalThis as any)?.React);
+};
+
+reactCheck();
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

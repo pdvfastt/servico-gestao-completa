@@ -7,11 +7,10 @@ import { cn } from "@/lib/utils"
 console.log('Tooltip component - React available:', !!React);
 console.log('Tooltip component - React version:', React?.version);
 
-const TooltipProvider = React.forwardRef<
-  React.ElementRef<typeof TooltipPrimitive.Provider>,
-  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>
->((props, ref) => {
+// Simple wrapper that checks for React availability
+const TooltipProvider = (props: React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Provider>) => {
   console.log('TooltipProvider rendering - React available:', !!React);
+  console.log('TooltipProvider rendering - React.useState available:', !!React?.useState);
   
   // Safety check for React
   if (!React || !React.useState) {
@@ -19,8 +18,8 @@ const TooltipProvider = React.forwardRef<
     return null;
   }
   
-  return <TooltipPrimitive.Provider ref={ref} {...props} />;
-});
+  return <TooltipPrimitive.Provider {...props} />;
+};
 
 TooltipProvider.displayName = "TooltipProvider";
 
