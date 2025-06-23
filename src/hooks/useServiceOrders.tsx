@@ -7,6 +7,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 type ServiceOrder = Database['public']['Tables']['service_orders']['Row'];
 type ServiceOrderInsert = Database['public']['Tables']['service_orders']['Insert'];
+type ServiceOrderUpdate = Database['public']['Tables']['service_orders']['Update'];
 
 export const useServiceOrders = () => {
   const { user } = useAuth();
@@ -49,6 +50,25 @@ export const useServiceOrders = () => {
     }
   };
 
+  const getOrderById = async (orderId: string) => {
+    if (!user) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from('service_orders')
+        .select('*')
+        .eq('id', orderId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erro ao buscar ordem:', error);
+      return null;
+    }
+  };
+
   const createOrder = async (orderData: Omit<ServiceOrderInsert, 'user_id'>) => {
     console.log('=== INÍCIO CRIAÇÃO ORDEM ===');
     console.log('Dados recebidos:', orderData);
@@ -75,7 +95,7 @@ export const useServiceOrders = () => {
     }
 
     try {
-      // Preparar dados para inserção (removendo service_id que não existe)
+      // Preparar dados para inserção
       const insertData: ServiceOrderInsert = {
         user_id: user.id,
         client_id: orderData.client_id || null,
@@ -149,6 +169,88 @@ export const useServiceOrders = () => {
     }
   };
 
+  const updateOrder = async (orderId: string, orderData: ServiceOrderUpdate) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('service_orders')
+        .update(orderData)
+        .eq('id', orderId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Atualizar lista local
+      setOrders(prev => prev.map(order => 
+        order.id === orderId ? data : order
+      ));
+
+      toast({
+        title: "Sucesso!",
+        description: "Ordem de serviço atualizada com sucesso!",
+      });
+
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Erro ao atualizar ordem:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar ordem de serviço.",
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
+  };
+
+  const deleteOrder = async (orderId: string) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      const { error } = await supabase
+        .from('service_orders')
+        .delete()
+        .eq('id', orderId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Atualizar lista local
+      setOrders(prev => prev.filter(order => order.id !== orderId));
+
+      toast({
+        title: "Sucesso!",
+        description: "Ordem de serviço excluída com sucesso!",
+      });
+
+      return { success: true };
+    } catch (error: any) {
+      console.error('Erro ao excluir ordem:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir ordem de serviço.",
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
+  };
+
   useEffect(() => {
     fetchOrders();
   }, [user]);
@@ -157,6 +259,9 @@ export const useServiceOrders = () => {
     orders,
     loading,
     createOrder,
+    updateOrder,
+    deleteOrder,
+    getOrderById,
     refetch: fetchOrders,
   };
 };

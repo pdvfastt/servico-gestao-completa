@@ -20,12 +20,12 @@ import {
 } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from "@/components/Dashboard";
-import OrdersManager from "@/components/OrdersManager";
 import ClientsManager from "@/components/ClientsManager";
 import TechniciansManager from "@/components/TechniciansManager";
 import ServicesManager from "@/components/ServicesManager";
 import FinancialManager from "@/components/FinancialManager";
 import ReportsManager from "@/components/ReportsManager";
+import OrdersManager from "@/components/OrdersManager";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
