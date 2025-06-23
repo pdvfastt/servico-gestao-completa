@@ -2,19 +2,11 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('tooltip.tsx - Loading custom tooltip implementation');
+console.log('tooltip.tsx - Loading SAFE custom tooltip implementation');
 
-// Completely safe tooltip components that don't use any external libraries
-const TooltipProvider = ({ 
-  children, 
-  delayDuration, 
-  ...props 
-}: { 
-  children: React.ReactNode; 
-  delayDuration?: number;
-  [key: string]: any;
-}) => {
-  console.log('TooltipProvider - Custom implementation loaded');
+// Simple, safe tooltip components that don't use React hooks
+const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
+  console.log('TooltipProvider - Safe implementation without hooks');
   return <div className="tooltip-provider" {...props}>{children}</div>;
 };
 
@@ -62,19 +54,6 @@ const TooltipContent = React.forwardRef<
 });
 TooltipContent.displayName = "TooltipContent";
 
-// Export all the components that Radix UI would export
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
 
-// Also export as default for any default imports
-export default {
-  Provider: TooltipProvider,
-  Root: Tooltip,
-  Trigger: TooltipTrigger,
-  Content: TooltipContent,
-  TooltipProvider,
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-};
-
-console.log('tooltip.tsx - All exports ready');
+console.log('tooltip.tsx - SAFE exports ready without hooks');
