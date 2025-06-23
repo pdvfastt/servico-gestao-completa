@@ -1,10 +1,8 @@
 
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App.tsx";
-import "./index.css";
 
-console.log('🚀 main.tsx - NUCLEAR React setup');
+console.log('🚀 main.tsx - NUCLEAR React setup v2');
 
 // NUCLEAR: Ensure React is available globally BEFORE any other imports
 if (typeof window !== 'undefined') {
@@ -34,6 +32,10 @@ console.log('🔍 React nuclear validation:', {
   Component: !!React.Component
 });
 
+// Import App AFTER React is globally available
+import App from "./App.tsx";
+import "./index.css";
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error('Root element not found');
@@ -46,4 +48,4 @@ root.render(
   </React.StrictMode>
 );
 
-console.log('✅ main.tsx - App rendered with nuclear React setup');
+console.log('✅ main.tsx - App rendered with nuclear React setup v2');

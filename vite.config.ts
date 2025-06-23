@@ -5,7 +5,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { PluginOption } from "vite";
 
-console.log('🔧 vite.config.ts - NUCLEAR React resolution');
+console.log('🔧 vite.config.ts - NUCLEAR React resolution v2');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -29,15 +29,17 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        // NUCLEAR: Force all React-related packages to use the same instance
+        // NUCLEAR: Force ALL React-related packages to use the same instance
         "react": path.resolve(__dirname, "./node_modules/react"),
         "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
         "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
         "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
+        // NUCLEAR: Force React Query to use our React instance
+        "@tanstack/react-query": path.resolve(__dirname, "./node_modules/@tanstack/react-query"),
         // NUCLEAR: Replace ALL problematic Radix components
         "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       },
-      dedupe: ["react", "react-dom", "react/jsx-runtime"],
+      dedupe: ["react", "react-dom", "react/jsx-runtime", "@tanstack/react-query"],
     },
     optimizeDeps: {
       include: [
@@ -51,6 +53,11 @@ export default defineConfig(({ mode }) => {
         "@radix-ui/react-tooltip"
       ],
       force: true,
+      esbuildOptions: {
+        define: {
+          global: 'globalThis',
+        },
+      },
     },
     define: {
       'global': 'globalThis',
@@ -61,6 +68,9 @@ export default defineConfig(({ mode }) => {
     esbuild: {
       jsxFactory: 'React.createElement',
       jsxFragment: 'React.Fragment',
+      define: {
+        global: 'globalThis',
+      },
     },
     build: {
       rollupOptions: {
@@ -71,7 +81,11 @@ export default defineConfig(({ mode }) => {
             'react-dom': 'ReactDOM'
           }
         }
-      }
+      },
+      commonjsOptions: {
+        include: [/node_modules/],
+        transformMixedEsModules: true,
+      },
     }
   };
 });
