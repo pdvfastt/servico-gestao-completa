@@ -1,41 +1,26 @@
 
 import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
 
-console.log('🔧 SafeQueryProvider - Clean implementation with debug logging');
+console.log('🔧 SafeQueryProvider - CLEAN implementation without any Radix dependencies');
 
-// Create a stable query client instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-    mutations: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
       retry: 1,
     },
   },
 });
 
-interface SafeQueryProviderProps {
-  children: React.ReactNode;
-}
-
-const SafeQueryProvider = ({ children }: SafeQueryProviderProps) => {
-  console.log('✅ SafeQueryProvider - Rendering with React validation');
-  
-  // Add runtime React validation
-  if (!React || !React.useState) {
-    console.error('❌ SafeQueryProvider - React hooks not available!');
-    throw new Error('React environment is corrupted in SafeQueryProvider');
-  }
-  
-  console.log('🎯 SafeQueryProvider - React environment is valid, proceeding');
+const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
+  console.log('✅ SafeQueryProvider - Initializing with clean QueryClient');
   
   return (
     <QueryClientProvider client={queryClient}>
       {children}
+      <Toaster />
     </QueryClientProvider>
   );
 };
