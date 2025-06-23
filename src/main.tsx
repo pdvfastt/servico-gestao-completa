@@ -1,130 +1,95 @@
 
-console.log('🚀 main.tsx - React application starting with COMPLETE tooltip protection');
+console.log('🚀 main.tsx - ULTRA DEFENSIVE React application starting');
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// COMPLETE protection - block any tooltip imports at runtime
-const originalImport = (window as any).__vitePreload;
-if (originalImport) {
-  (window as any).__vitePreload = (...args: any[]) => {
-    const [url] = args;
-    if (url && (url.includes('tooltip') || url.includes('@radix-ui/react-tooltip') || url.includes('radix') && url.includes('tooltip'))) {
-      console.log('🚫 COMPLETE RUNTIME BLOCK - tooltip import:', url);
-      return Promise.resolve({});
-    }
-    return originalImport(...args);
-  };
-}
+// Ultra defensive React environment check
+console.log('🔍 main.tsx - ULTRA DEFENSIVE React system check:', {
+  React: !!React,
+  ReactVersion: React?.version,
+  useState: !!React?.useState,
+  ReactDOM: !!ReactDOM,
+  ReactDOMVersion: ReactDOM?.version,
+});
 
-// Block any dynamic imports of tooltip
-const originalDynamicImport = (window as any).__dynamicImportHandler;
-if (typeof window !== 'undefined') {
-  (window as any).__dynamicImportHandler = (specifier: string) => {
-    if (specifier.includes('tooltip') || specifier.includes('@radix-ui/react-tooltip') || (specifier.includes('radix') && specifier.includes('tooltip'))) {
-      console.log('🚫 COMPLETE DYNAMIC IMPORT BLOCK - tooltip:', specifier);
+// Block any tooltip imports at the module level
+const originalImport = (window as any).import;
+if (originalImport) {
+  (window as any).import = (...args: any[]) => {
+    const [specifier] = args;
+    if (specifier && (specifier.includes('tooltip') || specifier.includes('@radix-ui/react-tooltip'))) {
+      console.log('🚫 ULTRA DEFENSIVE - BLOCKED MODULE IMPORT:', specifier);
       return Promise.resolve({
         TooltipProvider: () => null,
         Tooltip: () => null,
         TooltipTrigger: () => null,
-        TooltipContent: () => null
+        TooltipContent: () => null,
+        default: {}
       });
     }
-    return originalDynamicImport ? originalDynamicImport(specifier) : import(specifier);
+    return originalImport(...args);
   };
 }
-
-// Block any CommonJS requires
-if (typeof window !== 'undefined') {
-  const originalRequire = (window as any).require;
-  if (originalRequire) {
-    (window as any).require = (id: string) => {
-      if (id.includes('tooltip') || id.includes('@radix-ui/react-tooltip') || (id.includes('radix') && id.includes('tooltip'))) {
-        console.log('🚫 COMPLETE REQUIRE BLOCK - tooltip:', id);
-        return {
-          TooltipProvider: () => null,
-          Tooltip: () => null,
-          TooltipTrigger: () => null,
-          TooltipContent: () => null
-        };
-      }
-      return originalRequire(id);
-    };
-  }
-}
-
-console.log('🔍 main.tsx - React system check:', {
-  React: !!React,
-  ReactVersion: React.version,
-  useState: !!React.useState,
-  ReactDOM: !!ReactDOM,
-});
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('🎯 main.tsx - Starting React application with COMPLETE tooltip protection');
+console.log('🎯 main.tsx - Starting ULTRA DEFENSIVE React application');
 
 const startApp = () => {
   try {
-    console.log('🔍 main.tsx - System check before render:', {
-      React: !!React,
-      ReactVersion: React.version,
-      useState: !!React.useState,
-      ReactDOM: !!ReactDOM,
-      tooltipBlocked: !!(window as any).__RADIX_TOOLTIP_BLOCKED__,
-      completeProtection: !!(window as any).__NO_RADIX_TOOLTIP__,
-    });
-    
-    // Ensure React is available
-    if (!React || !React.useState) {
-      throw new Error('React or useState not available');
+    // Ensure React is properly loaded
+    if (!React || !React.useState || !React.createElement) {
+      throw new Error('React not properly loaded');
     }
     
-    // Additional React environment validation
-    if (typeof React.createElement !== 'function') {
-      throw new Error('React.createElement not available');
+    if (!ReactDOM || !ReactDOM.createRoot) {
+      throw new Error('ReactDOM not properly loaded');
     }
+    
+    console.log('✅ main.tsx - React environment validated');
     
     const root = ReactDOM.createRoot(rootElement);
     
-    console.log('🚀 main.tsx - Rendering App with COMPLETE tooltip protection');
+    console.log('🚀 main.tsx - Rendering App with ULTRA DEFENSIVE protection');
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
     
-    console.log('✅ main.tsx - App rendered successfully with COMPLETE tooltip protection');
+    console.log('✅ main.tsx - App rendered successfully');
   } catch (error) {
     console.error('❌ main.tsx - Render error:', error);
     
-    // Simple fallback without StrictMode
+    // Ultra defensive fallback
     try {
       const root = ReactDOM.createRoot(rootElement);
       root.render(<App />);
-      console.log('✅ main.tsx - Fallback successful');
+      console.log('✅ main.tsx - Fallback render successful');
     } catch (fallbackError) {
-      console.error('💥 main.tsx - Fallback failed:', fallbackError);
+      console.error('💥 main.tsx - All renders failed:', fallbackError);
       rootElement.innerHTML = `
-        <div style="padding: 20px; color: red; font-family: Arial, sans-serif; background: #fff;">
+        <div style="padding: 20px; color: red; font-family: Arial, sans-serif;">
           <h1>Application Error</h1>
           <p><strong>Error:</strong> ${error}</p>
           <p><strong>Fallback Error:</strong> ${fallbackError}</p>
-          <p>React: ${!!React} | useState: ${!!React?.useState}</p>
-          <p>Tooltip Blocked: ${!!(window as any).__RADIX_TOOLTIP_BLOCKED__}</p>
-          <p>Complete Protection: ${!!(window as any).__NO_RADIX_TOOLTIP__}</p>
+          <p>React Available: ${!!React}</p>
+          <p>React Version: ${React?.version || 'Unknown'}</p>
+          <p>useState Available: ${!!React?.useState}</p>
+          <p>ReactDOM Available: ${!!ReactDOM}</p>
         </div>
       `;
     }
   }
 };
 
-// Start immediately
+// Start app when ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp);
 } else {
