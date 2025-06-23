@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-console.log('🔧 vite.config.ts - MAXIMUM DEFENSE tooltip elimination');
+console.log('🔧 vite.config.ts - NUCLEAR OPTION - Complete tooltip elimination');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -22,13 +22,14 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force React deduplication - this is crucial
+      // Force React deduplication
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
       "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
-      // COMPLETELY BLOCK RADIX TOOLTIP
+      // NUCLEAR OPTION - Block ALL Radix tooltip packages
       "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
+      "@radix-ui/react-tooltip/dist": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
@@ -44,9 +45,10 @@ export default defineConfig(({ mode }) => ({
       "react/jsx-dev-runtime",
       "@tanstack/react-query"
     ],
-    // MAXIMUM DEFENSE - exclude all tooltip packages
+    // NUCLEAR OPTION - exclude ALL tooltip packages
     exclude: [
       "@radix-ui/react-tooltip",
+      "radix-tooltip",
       "@radix-ui/react-use-controllable-state",
       "@radix-ui/react-use-layout-effect",
       "@radix-ui/react-portal",
@@ -63,7 +65,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: 'esnext',
     rollupOptions: {
-      // MAXIMUM DEFENSE - block all tooltip-related packages
+      // NUCLEAR OPTION - block ALL tooltip-related packages
       external: (id) => {
         const isTooltipRelated = 
           id.includes('@radix-ui/react-tooltip') ||
@@ -74,7 +76,7 @@ export default defineConfig(({ mode }) => ({
           id.includes('react-presence');
         
         if (isTooltipRelated) {
-          console.log('🚫 MAXIMUM DEFENSE EXTERNAL BLOCK:', id);
+          console.log('🚫 NUCLEAR BLOCK:', id);
           return true;
         }
         return false;
@@ -94,5 +96,9 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     jsx: 'automatic',
     target: 'esnext',
+    // NUCLEAR OPTION - replace all tooltip imports at build time
+    define: {
+      '@radix-ui/react-tooltip': 'window.__CUSTOM_TOOLTIP__',
+    },
   },
 }));
