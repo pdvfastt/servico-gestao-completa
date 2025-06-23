@@ -1,67 +1,24 @@
-
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sistema de Gestão de OS</title>
-    <meta name="description" content="Sistema completo para gestão de ordens de serviço" />
-    <meta name="author" content="Sistema de Gestão" />
+    <title>servico-gestao-completa</title>
+    <meta name="description" content="Lovable Generated Project" />
+    <meta name="author" content="Lovable" />
 
-    <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#FF4500" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Gestão OS" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="application-name" content="Gestão OS" />
-
-    <!-- Manifest -->
-    <link rel="manifest" href="/manifest.json" />
-
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
-    <link rel="apple-touch-icon" sizes="152x152" href="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
-    <link rel="apple-touch-icon" sizes="167x167" href="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
-
-    <!-- Favicon -->
-    <link rel="icon" href="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" type="image/png" />
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="Sistema de Gestão de OS" />
-    <meta property="og:description" content="Sistema completo para gestão de ordens de serviço" />
+    <meta property="og:title" content="servico-gestao-completa" />
+    <meta property="og:description" content="Lovable Generated Project" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sistema de Gestão de OS" />
-    <meta name="twitter:description" content="Sistema completo para gestão de ordens de serviço" />
-    <meta name="twitter:image" content="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
-
-    <!-- Microsoft Tiles -->
-    <meta name="msapplication-TileColor" content="#FF4500" />
-    <meta name="msapplication-TileImage" content="https://i.postimg.cc/VNvFbfJc/LOGOREDESATT.png" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <!-- PWA Service Worker -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then((registration) => {
-              console.log('SW registrado com sucesso: ', registration);
-            })
-            .catch((registrationError) => {
-              console.log('SW falhou no registro: ', registrationError);
-            });
-        });
-      }
-    </script>
   </body>
 </html>
