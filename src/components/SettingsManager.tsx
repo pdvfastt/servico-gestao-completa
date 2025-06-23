@@ -2,11 +2,12 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Shield, KeyRound } from 'lucide-react';
+import { Building2, Shield, KeyRound, Users } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import CompanySettingsForm from './CompanySettingsForm';
 import PermissionsManager from './PermissionsManager';
 import PasswordResetManager from './PasswordResetManager';
+import UserRegistrationManager from './UserRegistrationManager';
 
 const SettingsManager = () => {
   const { isAdmin } = useUserManagement();
@@ -36,10 +37,14 @@ const SettingsManager = () => {
       </div>
 
       <Tabs defaultValue="company" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="company" className="flex items-center space-x-2">
             <Building2 className="h-4 w-4" />
             <span>Empresa</span>
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center space-x-2">
+            <Users className="h-4 w-4" />
+            <span>Usuários</span>
           </TabsTrigger>
           <TabsTrigger value="permissions" className="flex items-center space-x-2">
             <Shield className="h-4 w-4" />
@@ -53,6 +58,10 @@ const SettingsManager = () => {
 
         <TabsContent value="company">
           <CompanySettingsForm />
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserRegistrationManager />
         </TabsContent>
 
         <TabsContent value="permissions">

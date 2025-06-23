@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,13 +90,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-500 via-gray-500 to-red-500 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">
             {settings?.company_name || 'Tecmax'}
           </h1>
-          <p className="text-red-100">
+          <p className="text-gray-600">
             {settings?.company_description || 'Sistema de Gestão de Ordens de Serviço'}
           </p>
         </div>
@@ -127,7 +128,7 @@ const Auth = () => {
             {isLoading && (
               <div className="mb-6 space-y-2">
                 <div className="flex items-center justify-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-red-600" />
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
                   <span className="text-sm text-gray-600">Autenticando...</span>
                 </div>
                 <Progress value={loadingProgress} className="w-full h-2" />
@@ -182,7 +183,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     onClick={() => handleSubmit('signin')} 
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -197,7 +198,7 @@ const Auth = () => {
                   <Button 
                     variant="link" 
                     onClick={handlePasswordReset}
-                    className="w-full text-red-600 hover:text-red-700"
+                    className="w-full text-blue-600 hover:text-blue-700"
                     disabled={isLoading}
                   >
                     Esqueceu a senha?
@@ -258,7 +259,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     onClick={() => handleSubmit('signup')} 
-                    className="w-full bg-red-600 hover:bg-red-700 text-white"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -276,7 +277,7 @@ const Auth = () => {
           </CardContent>
         </Card>
         
-        <footer className="bg-black text-white mt-8 p-4 rounded-lg text-center">
+        <footer className="bg-gray-800 text-white mt-8 p-4 rounded-lg text-center">
           <div className="flex items-center justify-center space-x-4">
             <p className="text-sm">&copy; 2024 {settings?.company_name || 'Tecmax'}. Todos os direitos reservados.</p>
           </div>
