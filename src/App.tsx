@@ -8,10 +8,10 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
-console.log('🚀 App.tsx - Clean app initialization');
+console.log('🚀 App.tsx - Starting with explicit React import');
 
 const App = () => {
-  console.log('✅ App component rendering');
+  console.log('✅ App component rendering with React:', !!React);
   
   return (
     <SafeQueryProvider>
