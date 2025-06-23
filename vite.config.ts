@@ -5,7 +5,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import type { PluginOption } from "vite";
 
-console.log('🔧 vite.config.ts - Clean configuration');
+console.log('🔧 vite.config.ts - NUCLEAR SAFE configuration');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -27,9 +27,11 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        // Force all packages to use the same React instance
+        // NUCLEAR APPROACH: Force single React instance
         "react": path.resolve(__dirname, "./node_modules/react"),
         "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+        // Disable problematic Radix components
+        "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
       },
       dedupe: ["react", "react-dom"],
     },
@@ -37,9 +39,9 @@ export default defineConfig(({ mode }) => {
       include: [
         "react", 
         "react-dom", 
-        "@tanstack/react-query",
-        "@radix-ui/react-tooltip"
+        "@tanstack/react-query"
       ],
+      // Remove @radix-ui/react-tooltip from here
       force: true,
     },
     define: {
