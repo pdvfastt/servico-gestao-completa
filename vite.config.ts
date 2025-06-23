@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
     // NUCLEAR PLUGIN - completely eliminate ANY tooltip references
     {
       name: 'nuclear-tooltip-eliminator',
-      enforce: 'pre',
+      enforce: 'pre' as const,
       resolveId(id: string, importer?: string) {
         console.log('🔍 RESOLVE CHECK:', { id, importer });
         
