@@ -14,6 +14,11 @@ if (typeof window !== 'undefined') {
   console.log('main.tsx - React set on window object');
 }
 
+// Force React to be available in the global scope to prevent Radix UI issues
+if (typeof globalThis !== 'undefined') {
+  (globalThis as any).React = React;
+}
+
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error('Root element not found');
