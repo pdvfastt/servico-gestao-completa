@@ -1,9 +1,8 @@
 
 import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { TooltipProvider } from "@/components/ui/tooltip";
 
-console.log('SafeQueryProvider - Starting with custom tooltip only');
+console.log('SafeQueryProvider - Starting WITHOUT any tooltip provider');
 
 const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
   console.log('SafeQueryProvider - Creating QueryClient');
@@ -17,13 +16,11 @@ const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
     },
   }));
 
-  console.log('SafeQueryProvider - Rendering with custom TooltipProvider');
+  console.log('SafeQueryProvider - Rendering WITHOUT TooltipProvider');
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {children}
-      </TooltipProvider>
+      {children}
     </QueryClientProvider>
   );
 };
