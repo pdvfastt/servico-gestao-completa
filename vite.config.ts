@@ -4,16 +4,13 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-console.log('🔧 vite.config.ts - Simplified config after tooltip removal');
+console.log('🔧 vite.config.ts - Clean config with complete tooltip blocking');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
-    watch: {
-      ignored: ['!**/node_modules/.vite/**']
-    }
   },
   plugins: [
     react(),
@@ -22,30 +19,25 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // Force React deduplication
+      // Force single React instance
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
-      "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
-      "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
     },
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
   optimizeDeps: {
     include: [
       "react", 
-      "react-dom", 
-      "react/jsx-runtime",
-      "react/jsx-dev-runtime",
+      "react-dom",
       "@tanstack/react-query"
     ],
+    exclude: [
+      "@radix-ui/react-tooltip"
+    ],
     force: true,
-    esbuildOptions: {
-      target: 'esnext',
-    },
   },
   build: {
-    target: 'esnext',
     rollupOptions: {
+      external: ["@radix-ui/react-tooltip"],
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
@@ -53,13 +45,5 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    commonjsOptions: {
-      include: [/node_modules/],
-      transformMixedEsModules: true,
-    },
-  },
-  esbuild: {
-    jsx: 'automatic',
-    target: 'esnext',
   },
 }));

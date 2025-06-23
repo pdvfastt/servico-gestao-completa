@@ -2,14 +2,13 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-console.log('🛡️ tooltip.tsx - Safe tooltip implementation (no Radix dependency)');
+console.log('🛡️ tooltip.tsx - Standalone tooltip implementation');
 
-// Safe tooltip components - completely standalone
+// Completely standalone tooltip components with no external dependencies
 const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
   console.log('✅ TooltipProvider - Safe implementation');
   return React.createElement('div', {
-    className: "tooltip-provider-safe",
-    'data-tooltip-provider': "safe",
+    className: "tooltip-provider-standalone",
     style: { display: 'contents' },
     ...props
   }, children);
@@ -18,8 +17,7 @@ const TooltipProvider = ({ children, ...props }: { children: React.ReactNode; [k
 const Tooltip = ({ children, ...props }: { children: React.ReactNode; [key: string]: any }) => {
   console.log('✅ Tooltip - Safe wrapper');
   return React.createElement('div', {
-    className: "tooltip-wrapper-safe",
-    'data-tooltip': "safe",
+    className: "tooltip-wrapper-standalone",
     style: { display: 'contents' },
     ...props
   }, children);
@@ -32,8 +30,7 @@ const TooltipTrigger = React.forwardRef<
   console.log('✅ TooltipTrigger - Safe trigger');
   return React.createElement('div', {
     ref,
-    className: cn("cursor-pointer tooltip-trigger-safe", className),
-    'data-tooltip-trigger': "safe",
+    className: cn("cursor-pointer", className),
     style: { display: 'contents' },
     ...props
   }, children);
@@ -53,19 +50,16 @@ const TooltipContent = React.forwardRef<
   return React.createElement('div', {
     ref,
     className: cn(
-      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground tooltip-content-safe",
+      "absolute z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground",
       className
     ),
-    'data-tooltip-content': "safe",
-    'data-side': side,
-    'data-align': align,
     style: { display: 'none' },
     ...props
   }, children);
 });
 TooltipContent.displayName = "TooltipContent";
 
-console.log('🎯 tooltip.tsx - Safe tooltip system ready');
+console.log('🎯 tooltip.tsx - Standalone tooltip system ready');
 
 export { 
   Tooltip, 
