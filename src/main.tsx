@@ -7,6 +7,8 @@ import App from "./App.tsx";
 import "./index.css";
 
 console.log('main.tsx - React imported, version:', React.version);
+console.log('main.tsx - React object:', React);
+console.log('main.tsx - useState available:', !!React.useState);
 
 // Ensure we have a clean state
 const cleanup = () => {
@@ -30,6 +32,13 @@ console.log('main.tsx - Creating React root');
 // Additional safety check
 const startApp = () => {
   try {
+    console.log('main.tsx - React check before render:', {
+      React: !!React,
+      ReactVersion: React.version,
+      useState: !!React.useState,
+      ReactDOM: !!ReactDOM
+    });
+    
     const root = ReactDOM.createRoot(rootElement);
     
     console.log('main.tsx - Rendering App component');
