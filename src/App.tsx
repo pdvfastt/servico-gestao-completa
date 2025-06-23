@@ -13,22 +13,31 @@ console.log('🚀 App.tsx - Clean app initialization');
 const App = () => {
   console.log('✅ App component rendering');
   
-  return (
-    <SafeQueryProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </SafeQueryProvider>
+  return React.createElement(
+    SafeQueryProvider,
+    null,
+    React.createElement(
+      AuthProvider,
+      null,
+      React.createElement(
+        BrowserRouter,
+        null,
+        React.createElement(
+          Routes,
+          null,
+          React.createElement(Route, { path: "/auth", element: React.createElement(Auth, null) }),
+          React.createElement(Route, { 
+            path: "/", 
+            element: React.createElement(
+              ProtectedRoute,
+              null,
+              React.createElement(Index, null)
+            )
+          }),
+          React.createElement(Route, { path: "*", element: React.createElement(NotFound, null) })
+        )
+      )
+    )
   );
 };
 
