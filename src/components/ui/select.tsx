@@ -205,19 +205,21 @@ const SelectLabel = React.forwardRef<HTMLDivElement, SelectLabelProps>(
 )
 SelectLabel.displayName = "SelectLabel"
 
-// SelectItem component
+// SelectItem component - now with disabled support
 interface SelectItemProps {
   className?: string
   children: React.ReactNode
   value: string
+  disabled?: boolean
 }
 
 const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
-  ({ className, children, value }, ref) => {
+  ({ className, children, value, disabled = false }, ref) => {
     const { value: selectedValue, onValueChange, setOpen } = useSelectContext()
     const isSelected = selectedValue === value
 
     const handleClick = () => {
+      if (disabled) return
       onValueChange(value)
       setOpen(false)
     }
@@ -227,7 +229,10 @@ const SelectItem = React.forwardRef<HTMLDivElement, SelectItemProps>(
         ref={ref}
         onClick={handleClick}
         className={cn(
-          "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground",
+          "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
+          disabled 
+            ? "opacity-50 cursor-not-allowed" 
+            : "focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground",
           className
         )}
       >
@@ -256,7 +261,7 @@ const SelectSeparator = React.forwardRef<HTMLDivElement, SelectSeparatorProps>(
 )
 SelectSeparator.displayName = "SelectSeparator"
 
-console.log('🎯 select.tsx - STANDALONE select system ready - NO RADIX DEPENDENCIES');
+console.log('🎯 select.tsx - STANDALONE select system ready with disabled support - NO RADIX DEPENDENCIES');
 
 export {
   Select,
@@ -273,4 +278,4 @@ export {
 
 // Mark as completely standalone implementation
 (window as any).__STANDALONE_SELECT__ = true;
-console.log('🏁 select.tsx - Standalone select marked as loaded');
+console.log('🏁 select.tsx - Standalone select with disabled support marked as loaded');
