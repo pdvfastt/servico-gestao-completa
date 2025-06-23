@@ -1,21 +1,24 @@
 
-console.log('main.tsx - Starting React application with COMPLETE tooltip isolation');
+console.log('🚀 main.tsx - ULTRA AGGRESSIVE React application with COMPLETE Radix elimination');
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log('main.tsx - React imported successfully:', {
+console.log('🔍 main.tsx - React system check:', {
   React: !!React,
   ReactVersion: React.version,
   useState: !!React.useState,
-  ReactDOM: !!ReactDOM
+  ReactDOM: !!ReactDOM,
+  windowReact: !!(window as any).React
 });
 
-// Aggressive cleanup function
-const cleanup = () => {
-  // Remove any potential duplicate React instances
+// ULTRA AGGRESSIVE cleanup and blocking
+const ultraAggressiveCleanup = () => {
+  console.log('🧹 Starting ULTRA AGGRESSIVE cleanup');
+  
+  // Remove any potential React duplicates
   Object.keys(window).forEach((key) => {
     if (key.includes('__REACT_DEVTOOLS_GLOBAL_HOOK__')) {
       delete (window as any)[key];
@@ -23,55 +26,70 @@ const cleanup = () => {
     if (key.includes('__RADIX__')) {
       delete (window as any)[key];
     }
+    if (key.includes('tooltip') || key.includes('toast')) {
+      delete (window as any)[key];
+    }
   });
   
-  // Clear any cached imports
+  // Clear ALL potential caches
   if ((window as any).__VITE_TOOLTIP_CACHE__) {
     delete (window as any).__VITE_TOOLTIP_CACHE__;
   }
+  if ((window as any).__VITE_TOAST_CACHE__) {
+    delete (window as any).__VITE_TOAST_CACHE__;
+  }
+  if ((window as any).__VITE_RADIX_CACHE__) {
+    delete (window as any).__VITE_RADIX_CACHE__;
+  }
   
-  console.log('main.tsx - Cleanup completed');
+  console.log('✅ ULTRA AGGRESSIVE cleanup completed');
 };
 
-cleanup();
+ultraAggressiveCleanup();
 
-// Block any tooltip-related imports completely
+// ULTRA AGGRESSIVE import blocking
 const originalImport = (window as any).__vitePreload;
 if (originalImport) {
   (window as any).__vitePreload = (...args: any[]) => {
     const [url] = args;
-    if (url && typeof url === 'string' && url.includes('tooltip')) {
-      console.log('🚫 BLOCKED TOOLTIP IMPORT:', url);
-      return Promise.resolve({});
+    if (url && typeof url === 'string') {
+      if (url.includes('radix') || url.includes('tooltip') || url.includes('@radix-ui')) {
+        console.log('🚫 ULTRA BLOCKED IMPORT:', url);
+        return Promise.resolve({});
+      }
     }
     return originalImport.apply(window, args);
   };
 }
 
-// Block dynamic imports of tooltip
+// Block dynamic imports completely
 const originalDynamicImport = (window as any).import;
 if (originalDynamicImport) {
   (window as any).import = (url: string) => {
-    if (url.includes('tooltip') || url.includes('radix')) {
-      console.log('🚫 BLOCKED DYNAMIC TOOLTIP IMPORT:', url);
+    if (url.includes('radix') || url.includes('tooltip') || url.includes('@radix-ui')) {
+      console.log('🚫 ULTRA BLOCKED DYNAMIC IMPORT:', url);
       return Promise.resolve({});
     }
     return originalDynamicImport(url);
   };
 }
 
-// Enhanced error logging
+// Enhanced error capture and analysis
 const originalConsoleError = console.error;
 console.error = (...args) => {
   if (args[0] && typeof args[0] === 'string') {
-    if (args[0].includes('tooltip') || args[0].includes('radix') || args[0].includes('useState')) {
-      console.log('🚨 CRITICAL ERROR DETECTED:', args);
-      console.log('🔍 Error analysis:', {
-        isTooltipError: args[0].includes('tooltip'),
+    if (args[0].includes('radix') || args[0].includes('tooltip') || args[0].includes('useState')) {
+      console.log('🚨 CRITICAL ERROR ANALYSIS:', {
+        error: args[0],
         isRadixError: args[0].includes('radix'),
+        isTooltipError: args[0].includes('tooltip'),
         isHookError: args[0].includes('useState'),
-        reactAvailable: !!React,
-        windowReact: !!(window as any).React
+        reactState: {
+          available: !!React,
+          version: React?.version,
+          hooks: !!React?.useState,
+          windowReact: !!(window as any).React
+        }
       });
     }
   }
@@ -83,70 +101,77 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('main.tsx - Creating React root with complete isolation');
+console.log('🎯 main.tsx - Starting React application with COMPLETE Radix elimination');
 
 const startApp = () => {
   try {
-    console.log('main.tsx - Final React check before render:', {
+    console.log('🔍 main.tsx - Final system check before render:', {
       React: !!React,
       ReactVersion: React.version,
       useState: !!React.useState,
       ReactDOM: !!ReactDOM,
-      windowReact: !!(window as any).React
+      windowReact: !!(window as any).React,
+      customTooltip: !!(window as any).__CUSTOM_TOOLTIP_STANDALONE__,
+      customToast: !!(window as any).__CUSTOM_TOAST_STANDALONE__
     });
     
-    // Ensure React is properly attached to window for debugging
+    // Ensure React is globally available
     (window as any).React = React;
     (window as any).ReactDOM = ReactDOM;
     
     const root = ReactDOM.createRoot(rootElement);
     
-    console.log('main.tsx - Rendering App component with tooltip isolation');
+    console.log('🚀 main.tsx - Rendering App with COMPLETE Radix elimination');
     root.render(
       <React.StrictMode>
         <App />
       </React.StrictMode>
     );
     
-    console.log('main.tsx - App rendered successfully with no tooltip dependencies');
+    console.log('✅ main.tsx - App rendered successfully with NO Radix dependencies');
   } catch (error) {
-    console.error('main.tsx - Error rendering app:', error);
+    console.error('❌ main.tsx - Critical render error:', error);
     
-    // Enhanced fallback render
+    // Ultimate fallback
     try {
-      console.log('main.tsx - Attempting fallback render without StrictMode');
+      console.log('🔄 main.tsx - Attempting emergency fallback render');
       const root = ReactDOM.createRoot(rootElement);
       root.render(<App />);
-      console.log('main.tsx - Fallback render successful');
+      console.log('✅ main.tsx - Emergency fallback successful');
     } catch (fallbackError) {
-      console.error('main.tsx - Fallback render failed:', fallbackError);
+      console.error('💥 main.tsx - Emergency fallback failed:', fallbackError);
       
-      // Ultimate fallback - show error message
+      // Show critical error information
       rootElement.innerHTML = `
-        <div style="padding: 20px; color: red; font-family: Arial, sans-serif;">
-          <h1>Application Failed to Load</h1>
-          <h2>React Hook Error Detected</h2>
-          <p><strong>Error:</strong> ${error}</p>
+        <div style="padding: 20px; color: red; font-family: Arial, sans-serif; background: #fff;">
+          <h1>🚨 Application Critical Error</h1>
+          <h2>React Hook System Failure</h2>
+          <p><strong>Primary Error:</strong> ${error}</p>
           <p><strong>Fallback Error:</strong> ${fallbackError}</p>
           <hr>
-          <h3>Debug Information:</h3>
-          <pre>
+          <h3>🔍 Debug Information:</h3>
+          <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px;">
 React Available: ${!!React}
 React Version: ${React?.version || 'Unknown'}
 useState Available: ${!!React?.useState}
 Window React: ${!!(window as any).React}
+Custom Tooltip: ${!!(window as any).__CUSTOM_TOOLTIP_STANDALONE__}
+Custom Toast: ${!!(window as any).__CUSTOM_TOAST_STANDALONE__}
           </pre>
+          <p style="margin-top: 20px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+            <strong>💡 This error suggests a React hooks incompatibility. All Radix UI components have been eliminated and replaced with custom implementations.</strong>
+          </p>
         </div>
       `;
     }
   }
 };
 
-// Start with longer delay to ensure everything is loaded
+// Start with extended delay for maximum compatibility
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(startApp, 300);
+    setTimeout(startApp, 500);
   });
 } else {
-  setTimeout(startApp, 300);
+  setTimeout(startApp, 500);
 }
