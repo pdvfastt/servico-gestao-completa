@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import type { Plugin } from "vite";
 
 console.log('🔧 vite.config.ts - NUCLEAR OPTION: Complete Radix elimination');
 
@@ -14,11 +15,11 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
+    mode === 'development' ? componentTagger() : false,
     // NUCLEAR OPTION: Block all Radix at the module resolution level
     {
       name: 'nuclear-radix-eliminator',
-      enforce: 'pre',
+      enforce: 'pre' as const,
       resolveId(id: string, importer?: string) {
         // Block ANY module that contains radix
         if (id.includes('radix') || id.includes('@radix-ui')) {
@@ -48,7 +49,7 @@ export default defineConfig(({ mode }) => ({
         }
         return null;
       }
-    }
+    } as Plugin
   ].filter(Boolean),
   resolve: {
     alias: {
