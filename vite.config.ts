@@ -32,8 +32,10 @@ export default defineConfig(({ mode }) => {
       force: true,
     },
     define: {
-      'global.React': 'React',
-      'window.React': 'React',
+      'global': 'globalThis',
+    },
+    esbuild: {
+      jsxInject: `import React from 'react'`
     },
   };
 });
