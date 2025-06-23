@@ -18,7 +18,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force all react imports to use the same instance
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
+    dedupe: ["react", "react-dom"],
   },
   // Force cache refresh by updating build configuration
   build: {
@@ -30,5 +34,7 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     force: true,
+    include: ["react", "react-dom"],
+    dedupe: ["react", "react-dom"],
   },
 }));

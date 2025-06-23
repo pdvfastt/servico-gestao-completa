@@ -6,6 +6,13 @@ import "./index.css";
 
 console.log('main.tsx - Starting React application');
 console.log('main.tsx - React version:', React.version);
+console.log('main.tsx - React instance:', React);
+
+// Ensure React is available globally to prevent module resolution issues
+if (typeof window !== 'undefined') {
+  (window as any).React = React;
+  (window as any).ReactDOM = ReactDOM;
+}
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
