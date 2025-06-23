@@ -1,69 +1,61 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { useAuth } from '@/hooks/useAuth';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Auth = () => {
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp, resetPassword, user } = useAuth();
   const { settings } = useCompanySettings();
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     fullName: ''
   });
 
-  const simulateProgress = () => {
-    setLoadingProgress(0);
-    const interval = setInterval(() => {
-      setLoadingProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(interval);
-          return prev;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 200);
-    return interval;
-  };
+  console.log('🔐 Auth component rendered');
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      console.log('🔐 User already authenticated, redirecting to home');
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (type: 'signin' | 'signup') => {
     setIsLoading(true);
-    const progressInterval = simulateProgress();
     
     try {
       if (type === 'signin') {
+        console.log('🔐 Attempting sign in');
         const result = await signIn(formData.email, formData.password);
-        // Só mostrar erro se realmente houver um erro
         if (result.error) {
           alert('Erro ao fazer login: ' + (result.error.message || 'Erro desconhecido'));
         }
       } else {
+        console.log('🔐 Attempting sign up');
         const result = await signUp(formData.email, formData.password, formData.fullName);
-        // Só mostrar erro se realmente houver um erro
         if (result.error) {
           alert('Erro ao criar conta: ' + (result.error.message || 'Erro desconhecido'));
+        } else {
+          alert('Conta criada com sucesso! Verifique seu email.');
         }
       }
     } catch (error) {
       console.error('Erro:', error);
       alert('Erro inesperado. Tente novamente.');
     } finally {
-      clearInterval(progressInterval);
-      setLoadingProgress(100);
-      setTimeout(() => {
-        setIsLoading(false);
-        setLoadingProgress(0);
-      }, 500);
+      setIsLoading(false);
     }
   };
 
@@ -101,7 +93,7 @@ const Auth = () => {
           </p>
         </div>
 
-        {/* Logo acima do formulário */}
+        {/* Logo */}
         <div className="flex justify-center mb-6">
           {settings?.company_logo_url ? (
             <img 
@@ -109,7 +101,6 @@ const Auth = () => {
               alt="Logo da Empresa" 
               className="h-16 w-auto"
               onError={(e) => {
-                // Fallback para logo padrão em caso de erro
                 e.currentTarget.src = "https://i.postimg.cc/CLbCMsnH/logotecm.png";
               }}
             />
@@ -124,17 +115,6 @@ const Auth = () => {
         
         <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
           <CardContent className="p-6">
-            {/* Loading Progress Bar */}
-            {isLoading && (
-              <div className="mb-6 space-y-2">
-                <div className="flex items-center justify-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                  <span className="text-sm text-gray-600">Autenticando...</span>
-                </div>
-                <Progress value={loadingProgress} className="w-full h-2" />
-              </div>
-            )}
-
             <Tabs defaultValue="signin" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="signin">Entrar</TabsTrigger>

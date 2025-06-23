@@ -3,7 +3,7 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 
-console.log('🔧 SafeQueryProvider - COMPLETELY CLEAN implementation - NO RADIX AT ALL');
+console.log('🔧 SafeQueryProvider - Clean implementation');
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 });
 
 const SafeQueryProvider = ({ children }: { children: React.ReactNode }) => {
-  console.log('✅ SafeQueryProvider - Clean provider without any tooltip dependencies');
+  console.log('✅ SafeQueryProvider - Clean provider');
   
   return (
     <QueryClientProvider client={queryClient}>
