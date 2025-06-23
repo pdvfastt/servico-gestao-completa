@@ -16,29 +16,29 @@ export const useClients = () => {
 
   const fetchClients = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando clientes para usuário:', user.id);
+      console.log('🔍 Buscando todos os clientes');
       
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar clientes:', error);
+        console.error('❌ Erro Supabase ao buscar clientes:', error);
         throw error;
       }
       
-      console.log('Clientes encontrados:', data?.length || 0);
+      console.log('✅ Clientes encontrados:', data?.length || 0);
       setClients(data || []);
     } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
+      console.error('❌ Erro geral ao buscar clientes:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar clientes.",
@@ -111,7 +111,6 @@ export const useClients = () => {
         .from('clients')
         .update(clientData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -154,8 +153,7 @@ export const useClients = () => {
       const { error } = await supabase
         .from('clients')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover cliente:', error);

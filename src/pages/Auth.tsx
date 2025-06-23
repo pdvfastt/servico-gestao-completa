@@ -1,45 +1,146 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useTechnicianAuth } from '@/hooks/useTechnicianAuth';
+import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from '@/hooks/useAuth';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, LogIn, UserPlus, AlertCircle, Wrench, Shield } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
-import { LogIn, UserPlus, Settings, Loader2, Eye, EyeOff, Shield, Users } from 'lucide-react';
 
 const Auth = () => {
-  const { signIn, signUp, user } = useAuth();
+  const { user, signIn, signUp, resetPassword } = useAuth();
+  const { signInAsTechnician, loading: technicianLoading } = useTechnicianAuth();
+  const { settings, loading: settingsLoading } = useCompanySettings();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [signUpEnabled, setSignUpEnabled] = useState(true);
+  const [activeTab, setActiveTab] = useState("signin");
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  // Redirect se já estiver logado
-  React.useEffect(() => {
+  // Form states
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Redirect authenticated users
+  useEffect(() => {
     if (user) {
-      console.log('Usuário já logado, redirecionando...');
       window.location.href = '/';
     }
   }, [user]);
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  // Debug settings
+  useEffect(() => {
+    console.log('Settings carregadas:', settings);
+    console.log('URL da logo:', settings?.company_logo_url);
+  }, [settings]);
+
+  const renderLogo = () => {
+    const logoUrl = settings?.company_logo_url;
+    const companyName = settings?.company_name || 'Sistema de Gestão OS';
+    
+    console.log('Renderizando logo com URL:', logoUrl);
+    console.log('Nome da empresa:', companyName);
+    
+    if (logoUrl) {
+      return (
+        <div className="flex justify-center mb-6">
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-white">
+            <img 
+              src={logoUrl} 
+              alt={companyName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.log('Erro ao carregar logo da URL:', logoUrl);
+                // Remover a imagem com erro e mostrar fallback
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-r from-orange-600 to-cyan-600 flex items-center justify-center">
+                      <svg class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                  `;
+                }
+              }}
+              onLoad={() => {
+                console.log('Logo carregada com sucesso da URL:', logoUrl);
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Default logo fallback
+    return (
+      <div className="flex justify-center mb-6">
+        <div className="w-20 h-20 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center shadow-lg">
+          <Shield className="h-10 w-10 text-white" />
+        </div>
+      </div>
+    );
+  };
+
+  const renderPasswordResetLogo = () => {
+    const logoUrl = settings?.company_logo_url;
+    const companyName = settings?.company_name || 'Sistema de Gestão OS';
+    
+    if (logoUrl) {
+      return (
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-white/20 bg-white">
+            <img 
+              src={logoUrl} 
+              alt={companyName}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.log('Erro ao carregar logo de reset de senha');
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                const parent = target.parentElement;
+                if (parent) {
+                  parent.innerHTML = `
+                    <div class="w-full h-full bg-gradient-to-r from-orange-600 to-cyan-600 flex items-center justify-center">
+                      <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                  `;
+                }
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex justify-center mb-4">
+        <div className="w-16 h-16 bg-gradient-to-r from-orange-600 to-cyan-600 rounded-full flex items-center justify-center">
+          <Shield className="h-8 w-8 text-white" />
+        </div>
+      </div>
+    );
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    console.log('Tentando fazer login...');
+    setError(null);
 
     try {
       const { error } = await signIn(email, password);
-      
       if (error) {
-        console.error('Erro no login:', error);
-        
         let errorMessage = 'Erro no login';
         
         if (error.message === 'Invalid login credentials') {
@@ -52,202 +153,242 @@ const Auth = () => {
           errorMessage = error.message;
         }
         
-        toast({
-          title: "Erro no login",
-          description: errorMessage,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login realizado com sucesso!",
-          description: "Redirecionando...",
-        });
+        setError(errorMessage);
       }
     } catch (error) {
-      console.error('Erro inesperado no login:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente em alguns instantes",
-        variant: "destructive",
-      });
+      console.error('Erro no login:', error);
+      setError('Erro inesperado no login');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleTechnicianSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!signUpEnabled) {
-      toast({
-        title: "Cadastro desabilitado",
-        description: "O cadastro de novos usuários está temporariamente desabilitado",
-        variant: "destructive",
-      });
-      return;
+    setError(null);
+
+    const { error } = await signInAsTechnician(email, password);
+    if (error) {
+      setError(error.message);
     }
-    
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const fullName = formData.get('fullName') as string;
-
-    console.log('Tentando fazer cadastro...');
-
-    // Validações simples
-    if (!fullName.trim()) {
-      toast({
-        title: "Nome obrigatório",
-        description: "Por favor, informe seu nome completo",
-        variant: "destructive",
-      });
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem');
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      toast({
-        title: "Senha muito curta",
-        description: "A senha deve ter pelo menos 6 caracteres",
-        variant: "destructive",
-      });
+      setError('A senha deve ter pelo menos 6 caracteres');
       setLoading(false);
       return;
     }
 
     try {
       const { error } = await signUp(email, password, fullName);
-      
       if (error) {
-        console.error('Erro no cadastro:', error);
-        
         let errorMessage = 'Erro no cadastro';
         
-        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
-          errorMessage = 'Este email já está cadastrado. Tente fazer login';
+        if (error.message.includes('already registered')) {
+          errorMessage = 'Este email já está cadastrado';
         } else if (error.message.includes('Password should be')) {
           errorMessage = 'A senha deve ter pelo menos 6 caracteres';
         } else if (error.message.includes('Invalid email')) {
           errorMessage = 'Email inválido';
+        } else if (error.message.includes('Signups not allowed')) {
+          errorMessage = 'Cadastros estão desabilitados pelo administrador';
         } else {
           errorMessage = error.message;
         }
         
-        toast({
-          title: "Erro no cadastro",
-          description: errorMessage,
-          variant: "destructive",
-        });
+        setError(errorMessage);
       } else {
-        toast({
-          title: "Cadastro realizado com sucesso!",
-          description: "Verifique seu email para confirmar a conta ou aguarde o redirecionamento",
-        });
+        setSuccess('Conta criada com sucesso! Verifique seu email para confirmar.');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setFullName('');
       }
     } catch (error) {
-      console.error('Erro inesperado no cadastro:', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente em alguns instantes",
-        variant: "destructive",
-      });
+      console.error('Erro no cadastro:', error);
+      setError('Erro inesperado no cadastro');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen gradient-bg flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 right-20 w-40 h-40 bg-white rounded-full blur-xl"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white rounded-full blur-lg"></div>
-      </div>
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-6">
-            <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl">
-              <Settings className="h-12 w-12 text-white" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-white mb-3 drop-shadow-lg">
-            Sistema de Gestão de OS
-          </h1>
-          <p className="text-white/90 text-lg drop-shadow">
-            Gerencie suas ordens de serviço com eficiência
-          </p>
-        </div>
+    try {
+      const { error } = await resetPassword(email);
+      if (error) {
+        setError('Erro ao enviar email de recuperação');
+      } else {
+        setSuccess('Email de recuperação enviado! Verifique sua caixa de entrada.');
+        setShowResetPassword(false);
+      }
+    } catch (error) {
+      console.error('Erro na recuperação de senha:', error);
+      setError('Erro inesperado na recuperação de senha');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        {/* Main Card */}
-        <Card className="backdrop-blur-sm bg-white/95 border-0 shadow-2xl">
-          <CardHeader className="text-center pb-4">
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-              Acesso ao Sistema
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
+        <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+          <CardHeader className="text-center">
+            {renderPasswordResetLogo()}
+            <CardTitle className="text-2xl font-bold text-gray-900 flex items-center justify-center gap-2">
+              Recuperar Senha
             </CardTitle>
-            <CardDescription className="text-gray-600 text-base">
-              Entre com sua conta ou crie uma nova
+            <CardDescription>
+              Digite seu email para receber um link de recuperação
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100">
-                <TabsTrigger value="login" className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                  <LogIn className="h-4 w-4" />
-                  <span>Login</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="signup" 
-                  className="flex items-center space-x-2 data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                  disabled={!signUpEnabled}
-                >
-                  <UserPlus className="h-4 w-4" />
-                  <span>Cadastro</span>
-                </TabsTrigger>
-              </TabsList>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              {success && (
+                <Alert className="border-green-200 bg-green-50 text-green-800">
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
 
-              <TabsContent value="login">
-                <form onSubmit={handleSignIn} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      disabled={loading}
-                      className="h-11 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Sua senha"
-                        required
-                        disabled={loading}
-                        className="h-11 pr-10 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : (
+                    'Enviar Email de Recuperação'
+                  )}
+                </Button>
+
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setShowResetPassword(false)}
+                  disabled={loading}
+                >
+                  Voltar ao Login
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-orange-50 to-cyan-50 p-4">
+      <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-0 shadow-xl">
+        <CardHeader className="text-center">
+          {renderLogo()}
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            {settings?.company_name || 'Sistema de Gestão OS'}
+          </CardTitle>
+          <CardDescription>
+            Entre em sua conta ou crie uma nova
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="signin" className="flex items-center gap-1">
+                <LogIn className="h-4 w-4" />
+                Login
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="flex items-center gap-1">
+                <UserPlus className="h-4 w-4" />
+                Cadastro
+              </TabsTrigger>
+              <TabsTrigger value="technician" className="flex items-center gap-1">
+                <Wrench className="h-4 w-4" />
+                Técnico
+              </TabsTrigger>
+            </TabsList>
+
+            {error && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {success && (
+              <Alert className="mt-4 border-green-200 bg-green-50 text-green-800">
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">Email</Label>
+                  <Input
+                    id="signin-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">Senha</Label>
+                  <Input
+                    id="signin-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-3">
                   <Button 
                     type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium" 
+                    className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
                     disabled={loading}
                   >
                     {loading ? (
@@ -256,110 +397,139 @@ const Auth = () => {
                         Entrando...
                       </>
                     ) : (
-                      "Entrar no Sistema"
+                      'Entrar'
                     )}
                   </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName" className="text-sm font-medium text-gray-700">Nome Completo</Label>
-                    <Input
-                      id="fullName"
-                      name="fullName"
-                      type="text"
-                      placeholder="Seu nome completo"
-                      required
-                      disabled={loading || !signUpEnabled}
-                      className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      required
-                      disabled={loading || !signUpEnabled}
-                      className="h-11 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700">Senha</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Mínimo 6 caracteres"
-                        minLength={6}
-                        required
-                        disabled={loading || !signUpEnabled}
-                        className="h-11 pr-10 border-gray-200 focus:border-green-500 focus:ring-green-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        disabled={!signUpEnabled}
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
                   <Button 
-                    type="submit" 
-                    className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-medium" 
-                    disabled={loading || !signUpEnabled}
+                    type="button" 
+                    variant="link" 
+                    className="w-full text-sm"
+                    onClick={() => setShowResetPassword(true)}
+                    disabled={loading}
                   >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Cadastrando...
-                      </>
-                    ) : !signUpEnabled ? (
-                      <>
-                        <Shield className="mr-2 h-4 w-4" />
-                        Cadastro Desabilitado
-                      </>
-                    ) : (
-                      "Criar Conta"
-                    )}
+                    Esqueci minha senha
                   </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-
-            {/* Admin Toggle */}
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Permitir novos cadastros</span>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSignUpEnabled(!signUpEnabled)}
-                  className={`${signUpEnabled ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-red-300 text-red-700 hover:bg-red-50'}`}
-                >
-                  {signUpEnabled ? 'Ativado' : 'Desativado'}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </form>
+            </TabsContent>
 
-        <div className="text-center mt-6 text-white/80">
-          <p className="text-sm drop-shadow">
-            Sistema seguro e confiável para gestão de ordens de serviço
-          </p>
-        </div>
-      </div>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Nome Completo</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Senha</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-confirm-password">Confirmar Senha</Label>
+                  <Input
+                    id="signup-confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={loading}
+                    minLength={6}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-orange-600 to-cyan-600 hover:from-orange-700 hover:to-cyan-700"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Criando conta...
+                    </>
+                  ) : (
+                    'Criar Conta'
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="technician">
+              <form onSubmit={handleTechnicianSignIn} className="space-y-4">
+                <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-cyan-700 flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    Área exclusiva para técnicos
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tech-email">Email</Label>
+                  <Input
+                    id="tech-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={technicianLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tech-password">Senha</Label>
+                  <Input
+                    id="tech-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={technicianLoading}
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-gradient-to-r from-cyan-600 to-orange-600 hover:from-cyan-700 hover:to-orange-700"
+                  disabled={technicianLoading}
+                >
+                  {technicianLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verificando...
+                    </>
+                  ) : (
+                    <>
+                      <Wrench className="mr-2 h-4 w-4" />
+                      Entrar como Técnico
+                    </>
+                  )}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 };

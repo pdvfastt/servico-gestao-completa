@@ -18,13 +18,17 @@ import {
   Mail,
   MapPin,
   Calendar,
-  Filter
+  Filter,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { useClients } from '@/hooks/useClients';
 
 const ClientsManager = () => {
-  const { clients, loading, createClient } = useClients();
+  const { clients, loading, createClient, updateClient, deleteClient } = useClients();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [newClient, setNewClient] = useState({
@@ -71,6 +75,28 @@ const ClientsManager = () => {
         birth_date: '',
         secondary_document: ''
       });
+    }
+  };
+
+  const handleEditClient = (client: any) => {
+    setEditingClient(client);
+    setIsEditOpen(true);
+  };
+
+  const handleUpdateClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClient) return;
+    
+    const result = await updateClient(editingClient.id, editingClient);
+    if (result.success) {
+      setIsEditOpen(false);
+      setEditingClient(null);
+    }
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (confirm('Tem certeza que deseja excluir este cliente?')) {
+      await deleteClient(clientId);
     }
   };
 
@@ -397,9 +423,24 @@ const ClientsManager = () => {
                   <div className="mt-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center justify-between">
                       {getTypeBadge(client.type)}
-                      <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-300">
-                        Ver Detalhes
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleEditClient(client)}
+                          className="hover:bg-blue-50 hover:border-blue-300"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDeleteClient(client.id)}
+                          className="hover:bg-red-50 hover:border-red-300"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -407,6 +448,100 @@ const ClientsManager = () => {
             ))}
           </div>
         )}
+
+        {/* Dialog de Edição */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Editar Cliente</DialogTitle>
+              <DialogDescription>
+                Atualize os dados do cliente
+              </DialogDescription>
+            </DialogHeader>
+            {editingClient && (
+              <form onSubmit={handleUpdateClient} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit_type">Tipo de Pessoa</Label>
+                    <Select value={editingClient.type} onValueChange={(value) => setEditingClient(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Física">Pessoa Física</SelectItem>
+                        <SelectItem value="Jurídica">Pessoa Jurídica</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_status">Status</Label>
+                    <Select value={editingClient.status} onValueChange={(value) => setEditingClient(prev => ({ ...prev, status: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Ativo">Ativo</SelectItem>
+                        <SelectItem value="Inativo">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit_name">{editingClient.type === 'Física' ? 'Nome Completo' : 'Razão Social'}</Label>
+                    <Input
+                      id="edit_name"
+                      value={editingClient.name}
+                      onChange={(e) => setEditingClient(prev => ({ ...prev, name: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_email">Email</Label>
+                    <Input
+                      id="edit_email"
+                      type="email"
+                      value={editingClient.email}
+                      onChange={(e) => setEditingClient(prev => ({ ...prev, email: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit_phone">Telefone</Label>
+                    <Input
+                      id="edit_phone"
+                      value={editingClient.phone}
+                      onChange={(e) => setEditingClient(prev => ({ ...prev, phone: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit_document">{editingClient.type === 'Física' ? 'CPF' : 'CNPJ'}</Label>
+                    <Input
+                      id="edit_document"
+                      value={editingClient.document}
+                      onChange={(e) => setEditingClient(prev => ({ ...prev, document: e.target.value }))}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" className="bg-gradient-to-r from-blue-600 to-green-600">
+                    Atualizar Cliente
+                  </Button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {!loading && filteredClients.length === 0 && (
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">

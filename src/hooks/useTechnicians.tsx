@@ -16,29 +16,29 @@ export const useTechnicians = () => {
 
   const fetchTechnicians = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - technicians');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando técnicos para usuário:', user.id);
+      console.log('🔍 Buscando todos os técnicos');
       
       const { data, error } = await supabase
         .from('technicians')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar técnicos:', error);
+        console.error('❌ Erro Supabase ao buscar técnicos:', error);
         throw error;
       }
       
-      console.log('Técnicos encontrados:', data?.length || 0);
+      console.log('✅ Técnicos encontrados:', data?.length || 0);
       setTechnicians(data || []);
     } catch (error) {
-      console.error('Erro ao buscar técnicos:', error);
+      console.error('❌ Erro geral ao buscar técnicos:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar técnicos.",
@@ -61,6 +61,12 @@ export const useTechnicians = () => {
 
     try {
       console.log('Criando técnico:', technicianData);
+      
+      // Validar o nível antes de enviar
+      const validLevels = ['Júnior', 'Pleno', 'Sênior', 'Especialista'];
+      if (!validLevels.includes(technicianData.level)) {
+        throw new Error(`Nível inválido: ${technicianData.level}. Deve ser um dos: ${validLevels.join(', ')}`);
+      }
       
       const { data, error } = await supabase
         .from('technicians')
@@ -87,7 +93,7 @@ export const useTechnicians = () => {
       console.error('Erro ao criar técnico:', error);
       toast({
         title: "Erro",
-        description: "Erro ao cadastrar técnico.",
+        description: error instanceof Error ? error.message : "Erro ao cadastrar técnico.",
         variant: "destructive",
       });
       return { success: false, error };
@@ -107,11 +113,18 @@ export const useTechnicians = () => {
     try {
       console.log('Atualizando técnico:', id, technicianData);
       
+      // Validar o nível se estiver sendo atualizado
+      if (technicianData.level) {
+        const validLevels = ['Júnior', 'Pleno', 'Sênior', 'Especialista'];
+        if (!validLevels.includes(technicianData.level)) {
+          throw new Error(`Nível inválido: ${technicianData.level}. Deve ser um dos: ${validLevels.join(', ')}`);
+        }
+      }
+      
       const { data, error } = await supabase
         .from('technicians')
         .update(technicianData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -131,7 +144,7 @@ export const useTechnicians = () => {
       console.error('Erro ao atualizar técnico:', error);
       toast({
         title: "Erro",
-        description: "Erro ao atualizar técnico.",
+        description: error instanceof Error ? error.message : "Erro ao atualizar técnico.",
         variant: "destructive",
       });
       return { success: false, error };
@@ -154,8 +167,7 @@ export const useTechnicians = () => {
       const { error } = await supabase
         .from('technicians')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover técnico:', error);

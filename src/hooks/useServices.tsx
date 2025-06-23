@@ -16,29 +16,29 @@ export const useServices = () => {
 
   const fetchServices = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - services');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando serviços para usuário:', user.id);
+      console.log('🔍 Buscando todos os serviços');
       
       const { data, error } = await supabase
         .from('services')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar serviços:', error);
+        console.error('❌ Erro Supabase ao buscar serviços:', error);
         throw error;
       }
       
-      console.log('Serviços encontrados:', data?.length || 0);
+      console.log('✅ Serviços encontrados:', data?.length || 0);
       setServices(data || []);
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('❌ Erro geral ao buscar serviços:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar serviços.",
@@ -111,7 +111,6 @@ export const useServices = () => {
         .from('services')
         .update(serviceData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -154,8 +153,7 @@ export const useServices = () => {
       const { error } = await supabase
         .from('services')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover serviço:', error);

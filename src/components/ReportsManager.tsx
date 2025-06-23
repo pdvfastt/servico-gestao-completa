@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,40 +19,164 @@ import {
   Clock
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RechartsPieChart, Cell, LineChart, Line, Pie } from 'recharts';
+import { useServiceOrders } from '@/hooks/useServiceOrders';
+import { useFinancialRecords } from '@/hooks/useFinancialRecords';
+import { useTechnicians } from '@/hooks/useTechnicians';
+
+// Interface para os dados dos técnicos no relatório
+interface TechnicianStats {
+  name: string;
+  orders: number;
+  rating: number;
+  revenue: number;
+}
 
 const ReportsManager = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('30');
-  
-  // Dados simulados para demonstração
-  const revenueData = [
-    { month: 'Jan', receitas: 45000, despesas: 32000 },
-    { month: 'Fev', receitas: 52000, despesas: 35000 },
-    { month: 'Mar', receitas: 48000, despesas: 33000 },
-    { month: 'Abr', receitas: 61000, despesas: 40000 },
-    { month: 'Mai', receitas: 55000, despesas: 38000 },
-    { month: 'Jun', receitas: 67000, despesas: 42000 },
-  ];
+  const { orders, loading: ordersLoading } = useServiceOrders();
+  const { records, loading: recordsLoading } = useFinancialRecords();
+  const { technicians, loading: techniciansLoading } = useTechnicians();
 
-  const servicesData = [
-    { name: 'Manutenção', value: 35, color: '#3B82F6' },
-    { name: 'Instalação', value: 25, color: '#10B981' },
-    { name: 'Reparo', value: 20, color: '#F59E0B' },
-    { name: 'Consultoria', value: 20, color: '#8B5CF6' },
-  ];
+  // Filtrar dados baseado no período selecionado
+  const filteredData = useMemo(() => {
+    const daysAgo = parseInt(selectedPeriod);
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
 
-  const ordersStatusData = [
-    { status: 'Concluídas', count: 156, percentage: 65 },
-    { status: 'Em Andamento', count: 45, percentage: 19 },
-    { status: 'Pendentes', count: 28, percentage: 12 },
-    { status: 'Canceladas', count: 10, percentage: 4 },
-  ];
+    const filteredOrders = orders.filter(order => 
+      new Date(order.created_at) >= cutoffDate
+    );
 
-  const topTechnicians = [
-    { name: 'João Silva', orders: 23, rating: 4.8, revenue: 15420 },
-    { name: 'Maria Santos', orders: 19, rating: 4.9, revenue: 13250 },
-    { name: 'Pedro Costa', orders: 17, rating: 4.7, revenue: 12100 },
-    { name: 'Ana Oliveira', orders: 15, rating: 4.6, revenue: 10850 },
-  ];
+    const filteredRecords = records.filter(record => 
+      new Date(record.created_at) >= cutoffDate
+    );
+
+    return { filteredOrders, filteredRecords };
+  }, [orders, records, selectedPeriod]);
+
+  // Calcular métricas financeiras
+  const financialMetrics = useMemo(() => {
+    const revenues = filteredData.filteredRecords.filter(record => record.type === 'receita');
+    const expenses = filteredData.filteredRecords.filter(record => record.type === 'despesa');
+    
+    const totalRevenue = revenues.reduce((sum, record) => sum + Number(record.amount), 0);
+    const totalExpenses = expenses.reduce((sum, record) => sum + Number(record.amount), 0);
+    const netProfit = totalRevenue - totalExpenses;
+    const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+    
+    const completedOrders = filteredData.filteredOrders.filter(order => order.status === 'Concluída');
+    const averageTicket = completedOrders.length > 0 
+      ? completedOrders.reduce((sum, order) => sum + Number(order.total_value || 0), 0) / completedOrders.length 
+      : 0;
+
+    return {
+      totalRevenue,
+      totalExpenses,
+      netProfit,
+      profitMargin,
+      averageTicket
+    };
+  }, [filteredData]);
+
+  // Dados para gráfico de receitas vs despesas (últimos 6 meses)
+  const revenueData = useMemo(() => {
+    const monthsData = [];
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      
+      const monthRecords = records.filter(record => {
+        const recordDate = new Date(record.created_at);
+        return recordDate >= monthStart && recordDate <= monthEnd;
+      });
+      
+      const revenues = monthRecords.filter(r => r.type === 'receita').reduce((sum, r) => sum + Number(r.amount), 0);
+      const expenses = monthRecords.filter(r => r.type === 'despesa').reduce((sum, r) => sum + Number(r.amount), 0);
+      
+      monthsData.push({
+        month: date.toLocaleDateString('pt-BR', { month: 'short' }),
+        receitas: revenues,
+        despesas: expenses
+      });
+    }
+    return monthsData;
+  }, [records]);
+
+  // Distribuição de status das ordens
+  const ordersStatusData = useMemo(() => {
+    const statusCount: { [key: string]: number } = {};
+    filteredData.filteredOrders.forEach(order => {
+      statusCount[order.status] = (statusCount[order.status] || 0) + 1;
+    });
+    
+    const total = filteredData.filteredOrders.length;
+    return Object.entries(statusCount).map(([status, count]) => ({
+      status,
+      count: count as number,
+      percentage: total > 0 ? Math.round((count as number / total) * 100) : 0
+    }));
+  }, [filteredData.filteredOrders]);
+
+  // Top técnicos por performance
+  const topTechnicians = useMemo((): TechnicianStats[] => {
+    const technicianStats: { [key: string]: { orders: number; revenue: number; technician: any } } = {};
+    
+    filteredData.filteredOrders.forEach(order => {
+      if (order.technician_id) {
+        if (!technicianStats[order.technician_id]) {
+          technicianStats[order.technician_id] = {
+            orders: 0,
+            revenue: 0,
+            technician: technicians.find(t => t.id === order.technician_id)
+          };
+        }
+        technicianStats[order.technician_id].orders += 1;
+        technicianStats[order.technician_id].revenue += Number(order.total_value || 0);
+      }
+    });
+    
+    return Object.values(technicianStats)
+      .filter(stat => stat.technician)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 4)
+      .map(stat => ({
+        name: stat.technician.name,
+        orders: stat.orders,
+        rating: Number(stat.technician.rating || 0),
+        revenue: stat.revenue
+      }));
+  }, [filteredData.filteredOrders, technicians]);
+
+  // Métricas de performance
+  const performanceMetrics = useMemo(() => {
+    const completedOrders = filteredData.filteredOrders.filter(order => order.status === 'Concluída');
+    
+    // Tempo médio de conclusão (em dias)
+    const avgCompletionTime = completedOrders.length > 0 
+      ? completedOrders.reduce((sum, order) => {
+          const created = new Date(order.created_at);
+          const updated = new Date(order.updated_at);
+          const days = Math.ceil((updated.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+          return sum + days;
+        }, 0) / completedOrders.length 
+      : 0;
+
+    // Taxa de satisfação simulada baseada na avaliação dos técnicos
+    const satisfactionRate = technicians.length > 0 
+      ? (technicians.reduce((sum, tech) => sum + Number(tech.rating || 4.5), 0) / technicians.length) * 20
+      : 94.8;
+
+    // Taxa de retrabalho simulada
+    const reworkRate = Math.max(0, 5 - (satisfactionRate / 20));
+
+    return {
+      avgCompletionTime,
+      satisfactionRate,
+      reworkRate
+    };
+  }, [filteredData.filteredOrders, technicians]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -59,6 +184,17 @@ const ReportsManager = () => {
       currency: 'BRL'
     }).format(value);
   };
+
+  if (ordersLoading || recordsLoading || techniciansLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Carregando dados dos relatórios...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-green-50 p-6">
@@ -122,8 +258,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-green-100 text-sm">Receita Total</p>
-                      <p className="text-2xl font-bold">R$ 328.000</p>
-                      <p className="text-green-200 text-xs mt-1">↗ +12% vs mês anterior</p>
+                      <p className="text-2xl font-bold">{formatCurrency(financialMetrics.totalRevenue)}</p>
+                      <p className="text-green-200 text-xs mt-1">Período selecionado</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-200" />
                   </div>
@@ -135,8 +271,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-blue-100 text-sm">Lucro Líquido</p>
-                      <p className="text-2xl font-bold">R$ 108.000</p>
-                      <p className="text-blue-200 text-xs mt-1">↗ +8% vs mês anterior</p>
+                      <p className="text-2xl font-bold">{formatCurrency(financialMetrics.netProfit)}</p>
+                      <p className="text-blue-200 text-xs mt-1">Receitas - Despesas</p>
                     </div>
                     <DollarSign className="h-8 w-8 text-blue-200" />
                   </div>
@@ -148,8 +284,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-purple-100 text-sm">Ticket Médio</p>
-                      <p className="text-2xl font-bold">R$ 1.367</p>
-                      <p className="text-purple-200 text-xs mt-1">↗ +5% vs mês anterior</p>
+                      <p className="text-2xl font-bold">{formatCurrency(financialMetrics.averageTicket)}</p>
+                      <p className="text-purple-200 text-xs mt-1">Por ordem concluída</p>
                     </div>
                     <BarChart3 className="h-8 w-8 text-purple-200" />
                   </div>
@@ -161,8 +297,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-orange-100 text-sm">Margem de Lucro</p>
-                      <p className="text-2xl font-bold">32.9%</p>
-                      <p className="text-orange-200 text-xs mt-1">↗ +2.1% vs mês anterior</p>
+                      <p className="text-2xl font-bold">{financialMetrics.profitMargin.toFixed(1)}%</p>
+                      <p className="text-orange-200 text-xs mt-1">Lucro / Receita</p>
                     </div>
                     <PieChart className="h-8 w-8 text-orange-200" />
                   </div>
@@ -192,44 +328,6 @@ const ReportsManager = () => {
 
           <TabsContent value="services" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Distribuição de Serviços */}
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
-                  <CardTitle>Distribuição de Serviços</CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <ResponsiveContainer width="100%" height={250}>
-                    <RechartsPieChart>
-                      <Pie
-                        data={servicesData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {servicesData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </RechartsPieChart>
-                  </ResponsiveContainer>
-                  <div className="mt-4 grid grid-cols-2 gap-2">
-                    {servicesData.map((item, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: item.color }}
-                        ></div>
-                        <span className="text-sm text-gray-600">{item.name} ({item.value}%)</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
               {/* Status das Ordens */}
               <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
                 <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
@@ -237,13 +335,13 @@ const ReportsManager = () => {
                 </CardHeader>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {ordersStatusData.map((item, index) => (
+                    {ordersStatusData.length > 0 ? ordersStatusData.map((item, index) => (
                       <div key={index} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Badge className={`${
-                            item.status === 'Concluídas' ? 'bg-green-100 text-green-800 border-green-200' :
+                            item.status === 'Concluída' ? 'bg-green-100 text-green-800 border-green-200' :
                             item.status === 'Em Andamento' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                            item.status === 'Pendentes' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                            item.status === 'Aberta' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                             'bg-red-100 text-red-800 border-red-200'
                           }`}>
                             {item.status}
@@ -252,7 +350,32 @@ const ReportsManager = () => {
                         </div>
                         <span className="text-sm text-gray-600">{item.percentage}%</span>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="text-gray-500 text-center py-4">Nenhuma ordem encontrada para o período selecionado</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Informações resumidas */}
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
+                  <CardTitle>Resumo do Período</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Total de Ordens:</span>
+                      <span className="font-semibold">{filteredData.filteredOrders.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Registros Financeiros:</span>
+                      <span className="font-semibold">{filteredData.filteredRecords.length}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Técnicos Ativos:</span>
+                      <span className="font-semibold">{technicians.filter(t => t.status === 'Ativo').length}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -267,8 +390,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-cyan-100 text-sm">Tempo Médio de Conclusão</p>
-                      <p className="text-2xl font-bold">3.2 dias</p>
-                      <p className="text-cyan-200 text-xs mt-1">↘ -0.5 dias vs mês anterior</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.avgCompletionTime.toFixed(1)} dias</p>
+                      <p className="text-cyan-200 text-xs mt-1">Baseado em ordens concluídas</p>
                     </div>
                     <Clock className="h-8 w-8 text-cyan-200" />
                   </div>
@@ -280,8 +403,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-indigo-100 text-sm">Taxa de Satisfação</p>
-                      <p className="text-2xl font-bold">94.8%</p>
-                      <p className="text-indigo-200 text-xs mt-1">↗ +1.2% vs mês anterior</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.satisfactionRate.toFixed(1)}%</p>
+                      <p className="text-indigo-200 text-xs mt-1">Baseado na avaliação dos técnicos</p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-indigo-200" />
                   </div>
@@ -293,8 +416,8 @@ const ReportsManager = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-teal-100 text-sm">Taxa de Retrabalho</p>
-                      <p className="text-2xl font-bold">2.1%</p>
-                      <p className="text-teal-200 text-xs mt-1">↘ -0.8% vs mês anterior</p>
+                      <p className="text-2xl font-bold">{performanceMetrics.reworkRate.toFixed(1)}%</p>
+                      <p className="text-teal-200 text-xs mt-1">Estimativa baseada na qualidade</p>
                     </div>
                     <BarChart3 className="h-8 w-8 text-teal-200" />
                   </div>
@@ -309,12 +432,12 @@ const ReportsManager = () => {
               <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Top Técnicos (Este mês)
+                  Top Técnicos (Período selecionado)
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {topTechnicians.map((technician, index) => (
+                  {topTechnicians.length > 0 ? topTechnicians.map((technician, index) => (
                     <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-green-500 text-white rounded-full font-semibold">
@@ -328,11 +451,13 @@ const ReportsManager = () => {
                       <div className="text-right">
                         <p className="font-semibold text-green-600">{formatCurrency(technician.revenue)}</p>
                         <div className="flex items-center gap-1">
-                          <span className="text-sm text-gray-600">★ {technician.rating}</span>
+                          <span className="text-sm text-gray-600">★ {technician.rating.toFixed(1)}</span>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-gray-500 text-center py-4">Nenhum técnico com ordens no período selecionado</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

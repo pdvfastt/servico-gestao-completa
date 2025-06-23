@@ -16,29 +16,29 @@ export const useFinancialRecords = () => {
 
   const fetchRecords = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - financial records');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando registros financeiros para usuário:', user.id);
+      console.log('🔍 Buscando todos os registros financeiros');
       
       const { data, error } = await supabase
         .from('financial_records')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar registros financeiros:', error);
+        console.error('❌ Erro Supabase ao buscar registros financeiros:', error);
         throw error;
       }
       
-      console.log('Registros financeiros encontrados:', data?.length || 0);
+      console.log('✅ Registros financeiros encontrados:', data?.length || 0);
       setRecords(data || []);
     } catch (error) {
-      console.error('Erro ao buscar registros financeiros:', error);
+      console.error('❌ Erro geral ao buscar registros financeiros:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar registros financeiros.",
@@ -111,7 +111,6 @@ export const useFinancialRecords = () => {
         .from('financial_records')
         .update(recordData)
         .eq('id', id)
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -154,8 +153,7 @@ export const useFinancialRecords = () => {
       const { error } = await supabase
         .from('financial_records')
         .delete()
-        .eq('id', id)
-        .eq('user_id', user.id);
+        .eq('id', id);
 
       if (error) {
         console.error('Erro Supabase ao remover registro financeiro:', error);
