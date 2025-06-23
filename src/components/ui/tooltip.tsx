@@ -2,13 +2,16 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
+// Ensure React is available globally for this component
+if (typeof window !== 'undefined' && !(window as any).React) {
+  (window as any).React = React;
+}
+
 // Simple custom tooltip implementation with proper React usage
 export const TooltipProvider = ({ 
-  children, 
-  delayDuration 
+  children
 }: { 
   children: React.ReactNode;
-  delayDuration?: number;
 }) => {
   return <>{children}</>;
 };
