@@ -1,22 +1,35 @@
 
-console.log('🚀 main.tsx - Safe startup');
+console.log('🚀 main.tsx - Safe startup with enhanced React validation');
 
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-console.log('✅ main.tsx - React environment check:', {
+// Enhanced React environment validation
+console.log('🔍 main.tsx - Comprehensive React environment check:', {
   React: !!React,
   ReactVersion: React?.version,
   useState: !!React?.useState,
   ReactDOM: !!ReactDOM,
+  createRoot: !!ReactDOM?.createRoot,
+  __REACT_DEVTOOLS_GLOBAL_HOOK__: !!(window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__,
 });
 
-// Ensure we have a valid React environment
-if (!React || !React.useState || !ReactDOM) {
-  console.error('❌ Invalid React environment detected');
-  throw new Error('React environment is not properly initialized');
+// Robust React validation
+if (!React) {
+  console.error('❌ React is not loaded');
+  throw new Error('React is not available');
+}
+
+if (!React.useState) {
+  console.error('❌ React hooks are not available');
+  throw new Error('React hooks are not properly initialized');
+}
+
+if (!ReactDOM || !ReactDOM.createRoot) {
+  console.error('❌ ReactDOM.createRoot is not available');
+  throw new Error('ReactDOM is not properly initialized');
 }
 
 const rootElement = document.getElementById("root");
@@ -25,13 +38,17 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-console.log('🚀 main.tsx - Starting React application safely');
+console.log('🚀 main.tsx - Starting React application with validated environment');
 
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
-
-console.log('✅ main.tsx - App rendered successfully');
+try {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+  console.log('✅ main.tsx - App rendered successfully');
+} catch (error) {
+  console.error('❌ Failed to render app:', error);
+  throw error;
+}

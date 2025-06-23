@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-console.log('🔧 vite.config.ts - Aggressive tooltip blocking configuration');
+console.log('🔧 vite.config.ts - Completely blocking tooltip dependencies with proper types');
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -15,13 +15,33 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === 'development' && componentTagger(),
-    // Custom plugin to block tooltip imports
+    // Custom plugin to completely block tooltip imports with proper typing
     {
-      name: 'block-tooltip-imports',
-      resolveId(id) {
-        if (id.includes('@radix-ui/react-tooltip')) {
-          console.log('🚫 Blocking tooltip import:', id);
-          return path.resolve(__dirname, './src/components/ui/tooltip.tsx');
+      name: 'block-tooltip-completely',
+      resolveId(id: string) {
+        if (id.includes('@radix-ui/react-tooltip') || id.includes('tooltip')) {
+          console.log('🚫 BLOCKING tooltip import completely:', id);
+          // Return a virtual module that exports safe defaults
+          return '\0virtual:safe-tooltip';
+        }
+        return null;
+      },
+      load(id: string) {
+        if (id === '\0virtual:safe-tooltip') {
+          // Return safe, non-functional tooltip components
+          return `
+            console.log('🛡️ Safe tooltip virtual module loaded');
+            export const TooltipProvider = ({ children }) => children;
+            export const Tooltip = ({ children }) => children;
+            export const TooltipTrigger = ({ children }) => children;
+            export const TooltipContent = () => null;
+            export default {
+              Provider: ({ children }) => children,
+              Root: ({ children }) => children,
+              Trigger: ({ children }) => children,
+              Content: () => null
+            };
+          `;
         }
         return null;
       }
@@ -33,8 +53,8 @@ export default defineConfig(({ mode }) => ({
       // Force single React instance
       "react": path.resolve(__dirname, "./node_modules/react"),
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
-      // Block any tooltip imports
-      "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
+      // Completely block tooltip
+      "@radix-ui/react-tooltip": '\0virtual:safe-tooltip',
     },
   },
   optimizeDeps: {
@@ -50,7 +70,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      external: (id) => {
+      external: (id: string) => {
         // Block any tooltip-related imports during build
         if (id.includes('@radix-ui/react-tooltip')) {
           console.log('🚫 Build: Blocking tooltip import:', id);
