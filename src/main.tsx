@@ -7,7 +7,7 @@ import App from "./App.tsx";
 import "./index.css";
 
 // ULTIMATE STRATEGY - Intercept and block ALL module loading
-const originalDynamicImport = window.__vitePreload || window.import;
+const originalDynamicImport = (window as any).__vitePreload || (window as any).import;
 
 // Override dynamic import completely
 if (typeof window !== 'undefined') {

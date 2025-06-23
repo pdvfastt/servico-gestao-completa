@@ -21,17 +21,17 @@ export default defineConfig(({ mode }) => ({
     // Custom plugin to intercept and block tooltip imports
     {
       name: 'ultimate-tooltip-blocker',
-      resolveId(id) {
+      resolveId(id: string) {
         if (id.includes('@radix-ui/react-tooltip') || 
-            id.includes('radix') && id.includes('tooltip')) {
+            (id.includes('radix') && id.includes('tooltip'))) {
           console.log('🚫 ULTIMATE PLUGIN BLOCK:', id);
           return path.resolve(__dirname, './src/components/ui/tooltip.tsx');
         }
         return null;
       },
-      load(id) {
+      load(id: string) {
         if (id.includes('@radix-ui/react-tooltip') || 
-            id.includes('radix') && id.includes('tooltip')) {
+            (id.includes('radix') && id.includes('tooltip'))) {
           console.log('🚫 ULTIMATE PLUGIN LOAD BLOCK:', id);
           return `
             export const TooltipProvider = ({ children }) => children;
@@ -61,10 +61,6 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
-  define: {
-    global: 'globalThis',
-    'process.env': {},
-  },
   optimizeDeps: {
     include: [
       "react", 
@@ -92,7 +88,7 @@ export default defineConfig(({ mode }) => ({
       plugins: [{
         name: 'ultimate-tooltip-esbuild-blocker',
         setup(build) {
-          build.onResolve({ filter: /.*tooltip.*/ }, args => {
+          build.onResolve({ filter: /.*tooltip.*/ }, (args) => {
             console.log('🚫 ULTIMATE ESBUILD BLOCK:', args.path);
             return {
               path: path.resolve(__dirname, './src/components/ui/tooltip.tsx'),
@@ -110,7 +106,7 @@ export default defineConfig(({ mode }) => ({
       external: (id) => {
         const isTooltipRelated = 
           id.includes('@radix-ui/react-tooltip') ||
-          id.includes('radix') && id.includes('tooltip') ||
+          (id.includes('radix') && id.includes('tooltip')) ||
           id.includes('use-controllable-state') ||
           id.includes('use-layout-effect') ||
           id.includes('react-portal') ||
