@@ -1,3 +1,3 @@
+import { useToast, toast } from "@/hooks/use-toast";
 
-// This file should only re-export the actual toast functionality
-export { useToast } from "@/hooks/use-toast";
+export { useToast, toast };
