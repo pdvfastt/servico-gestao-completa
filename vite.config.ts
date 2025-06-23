@@ -27,6 +27,8 @@ export default defineConfig(({ mode }) => ({
       "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
       "react/jsx-runtime": path.resolve(__dirname, "./node_modules/react/jsx-runtime"),
       "react/jsx-dev-runtime": path.resolve(__dirname, "./node_modules/react/jsx-dev-runtime"),
+      // Block any radix tooltip imports completely
+      "@radix-ui/react-tooltip": path.resolve(__dirname, "./src/components/ui/tooltip.tsx"),
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],
   },
@@ -42,7 +44,10 @@ export default defineConfig(({ mode }) => ({
       "react/jsx-dev-runtime",
       "@tanstack/react-query"
     ],
-    // Force rebuild of all dependencies
+    exclude: [
+      "@radix-ui/react-tooltip"
+    ],
+    // Force complete rebuild
     force: true,
     esbuildOptions: {
       target: 'esnext',
@@ -57,6 +62,13 @@ export default defineConfig(({ mode }) => ({
           'query-vendor': ['@tanstack/react-query'],
         },
       },
+      external: (id) => {
+        // Block radix tooltip completely
+        if (id.includes('@radix-ui/react-tooltip')) {
+          return false; // Don't externalize, let alias handle it
+        }
+        return false;
+      }
     },
     commonjsOptions: {
       include: [/node_modules/],
@@ -67,6 +79,6 @@ export default defineConfig(({ mode }) => ({
     jsx: 'automatic',
     target: 'esnext',
   },
-  // Force cache clearing
-  cacheDir: path.resolve(__dirname, '.vite-new'),
+  // Force complete cache clearing with new directory
+  cacheDir: path.resolve(__dirname, '.vite-clean-' + Date.now()),
 }));
