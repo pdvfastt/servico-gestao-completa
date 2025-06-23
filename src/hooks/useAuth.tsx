@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -15,31 +15,25 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-    
     console.log('🔐 AuthProvider - Setting up auth listener');
     
     // Get initial session
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (mounted) {
-          console.log('🔐 Initial session:', session?.user?.email || 'No session');
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        }
+        console.log('🔐 Initial session:', session?.user?.email || 'No session');
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       } catch (error) {
         console.error('🔐 Error getting initial session:', error);
-        if (mounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
@@ -48,23 +42,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (mounted) {
-          console.log('🔐 Auth state change:', event, session?.user?.email || 'No session');
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-          
-          // Redirect authenticated users away from auth page
-          if (session?.user && window.location.pathname === '/auth') {
-            console.log('🔐 Redirecting authenticated user to home');
-            window.location.href = '/';
-          }
+        console.log('🔐 Auth state change:', event, session?.user?.email || 'No session');
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        // Redirect authenticated users away from auth page
+        if (session?.user && window.location.pathname === '/auth') {
+          console.log('🔐 Redirecting authenticated user to home');
+          window.location.href = '/';
         }
       }
     );
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
