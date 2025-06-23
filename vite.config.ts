@@ -11,8 +11,7 @@ console.log('🔧 vite.config.ts - NUCLEAR React resolution');
 export default defineConfig(({ mode }) => {
   const plugins: PluginOption[] = [
     react({
-      jsxImportSource: 'react',
-      jsxRuntime: 'classic'
+      jsxImportSource: 'react'
     })
   ];
   
