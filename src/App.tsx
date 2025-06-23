@@ -1,9 +1,9 @@
 
 import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SafeQueryProvider from "@/components/SafeQueryProvider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -12,20 +12,11 @@ console.log('App.tsx - Starting application');
 console.log('App.tsx - React available:', !!React);
 console.log('App.tsx - React version:', React.version);
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 const App = () => {
   console.log('App component rendering');
   
   return (
-    <QueryClientProvider client={queryClient}>
+    <SafeQueryProvider>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
@@ -39,7 +30,7 @@ const App = () => {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </QueryClientProvider>
+    </SafeQueryProvider>
   );
 };
 
