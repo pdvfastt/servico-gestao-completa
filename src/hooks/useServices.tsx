@@ -16,29 +16,29 @@ export const useServices = () => {
 
   const fetchServices = async () => {
     if (!user) {
+      console.log('❌ Usuário não autenticado - services');
       setLoading(false);
       return;
     }
     
     try {
       setLoading(true);
-      console.log('Buscando serviços para usuário:', user.id);
+      console.log('🔍 Buscando todos os serviços');
       
       const { data, error } = await supabase
         .from('services')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Erro Supabase ao buscar serviços:', error);
+        console.error('❌ Erro Supabase ao buscar serviços:', error);
         throw error;
       }
       
-      console.log('Serviços encontrados:', data?.length || 0);
+      console.log('✅ Serviços encontrados:', data?.length || 0);
       setServices(data || []);
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('❌ Erro geral ao buscar serviços:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar serviços.",
@@ -94,6 +94,90 @@ export const useServices = () => {
     }
   };
 
+  const updateService = async (id: string, serviceData: Partial<ServiceInsert>) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Atualizando serviço:', id, serviceData);
+      
+      const { data, error } = await supabase
+        .from('services')
+        .update(serviceData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro Supabase ao atualizar serviço:', error);
+        throw error;
+      }
+      
+      console.log('Serviço atualizado com sucesso:', data);
+      setServices(prev => prev.map(service => service.id === id ? data : service));
+      toast({
+        title: "Serviço Atualizado",
+        description: "O serviço foi atualizado com sucesso!",
+      });
+      return { success: true, data };
+    } catch (error) {
+      console.error('Erro ao atualizar serviço:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar serviço.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
+  const deleteService = async (id: string) => {
+    if (!user) {
+      toast({
+        title: "Erro",
+        description: "Usuário não autenticado.",
+        variant: "destructive",
+      });
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    try {
+      console.log('Removendo serviço:', id);
+      
+      const { error } = await supabase
+        .from('services')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Erro Supabase ao remover serviço:', error);
+        throw error;
+      }
+      
+      console.log('Serviço removido com sucesso');
+      setServices(prev => prev.filter(service => service.id !== id));
+      toast({
+        title: "Serviço Removido",
+        description: "O serviço foi removido com sucesso!",
+      });
+      return { success: true };
+    } catch (error) {
+      console.error('Erro ao remover serviço:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover serviço.",
+        variant: "destructive",
+      });
+      return { success: false, error };
+    }
+  };
+
   useEffect(() => {
     fetchServices();
   }, [user]);
@@ -102,6 +186,8 @@ export const useServices = () => {
     services,
     loading,
     createService,
+    updateService,
+    deleteService,
     refetch: fetchServices,
   };
 };

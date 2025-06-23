@@ -81,6 +81,42 @@ export type Database = {
         }
         Relationships: []
       }
+      company_settings: {
+        Row: {
+          accent_color: string
+          company_logo_url: string | null
+          company_name: string
+          created_at: string
+          id: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accent_color?: string
+          company_logo_url?: string | null
+          company_name: string
+          created_at?: string
+          id?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accent_color?: string
+          company_logo_url?: string | null
+          company_name?: string
+          created_at?: string
+          id?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       financial_records: {
         Row: {
           amount: number
@@ -386,11 +422,49 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions: {
+        Row: {
+          created_at: string | null
+          granted: boolean
+          granted_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["permission_type"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          granted?: boolean
+          granted_by?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["permission_type"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          granted?: boolean
+          granted_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["permission_type"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_technician_id_by_user: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -400,6 +474,16 @@ export type Database = {
       }
     }
     Enums: {
+      permission_type:
+        | "dashboard"
+        | "orders"
+        | "clients"
+        | "technicians"
+        | "services"
+        | "financial"
+        | "reports"
+        | "settings"
+        | "technician_orders"
       user_role: "admin" | "technician" | "attendant"
     }
     CompositeTypes: {
@@ -516,6 +600,17 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      permission_type: [
+        "dashboard",
+        "orders",
+        "clients",
+        "technicians",
+        "services",
+        "financial",
+        "reports",
+        "settings",
+        "technician_orders",
+      ],
       user_role: ["admin", "technician", "attendant"],
     },
   },

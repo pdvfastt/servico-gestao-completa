@@ -1,29 +1,21 @@
-import { useTheme } from "next-themes"
-import { Toaster as Sonner, toast } from "sonner"
 
-type ToasterProps = React.ComponentProps<typeof Sonner>
+import React from "react"
 
-const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
+// Completely inert Sonner toaster that does absolutely nothing
+const Toaster = ({ ...props }) => {
+  console.log('Rendering completely inert Sonner - no hooks, no functionality');
+  // Return a simple div that doesn't call any hooks or functions
+  return <div style={{ display: 'none' }} />;
+}
 
-  return (
-    <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
-      toastOptions={{
-        classNames: {
-          toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          description: "group-[.toast]:text-muted-foreground",
-          actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
-          cancelButton:
-            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
-        },
-      }}
-      {...props}
-    />
-  )
+const toast = (message: string) => {
+  console.log('Inert toast message:', message);
+  // Return a dummy object without calling any functions
+  return {
+    id: 'dummy',
+    dismiss: () => {},
+    update: () => {}
+  };
 }
 
 export { Toaster, toast }
