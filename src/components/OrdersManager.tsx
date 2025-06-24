@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Plus, 
   Search, 
@@ -27,6 +27,7 @@ import { useServiceOrders } from '@/hooks/useServiceOrders';
 import { useClients } from '@/hooks/useClients';
 import { useTechnicians } from '@/hooks/useTechnicians';
 import { useServices } from '@/hooks/useServices';
+import { useEquipments } from '@/hooks/useEquipments';
 import OrderView from '@/components/OrderView';
 
 const OrdersManager = () => {
@@ -36,6 +37,7 @@ const OrdersManager = () => {
   const { clients } = useClients();
   const { technicians } = useTechnicians();
   const { services } = useServices();
+  const { equipments } = useEquipments();
   
   console.log('OrdersManager: Hooks carregados', { orders: orders?.length, clients: clients?.length, technicians: technicians?.length, services: services?.length, loading });
   
@@ -46,19 +48,13 @@ const OrdersManager = () => {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const generateOrderCode = (orderId: string) => {
-    // Extrair apenas números do ID e pegar os últimos 6 dígitos
-    const numbers = orderId.replace(/\D/g, '');
-    return numbers.slice(-6).padStart(6, '0');
-  };
-
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'Aberta': { className: 'bg-blue-100 text-blue-800', icon: FileText },
+      'Aberta': { className: 'bg-red-100 text-red-800', icon: FileText },
       'Em Andamento': { className: 'bg-yellow-100 text-yellow-800', icon: Clock },
       'Aguardando Peças': { className: 'bg-orange-100 text-orange-800', icon: AlertCircle },
       'Finalizada': { className: 'bg-green-100 text-green-800', icon: CheckCircle },
-      'Cancelada': { className: 'bg-red-100 text-red-800', icon: AlertCircle },
+      'Cancelada': { className: 'bg-gray-100 text-gray-800', icon: AlertCircle },
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['Aberta'];
@@ -74,8 +70,7 @@ const OrdersManager = () => {
 
   const filteredOrders = orders.filter(order => {
     const client = clients.find(c => c.id === order.client_id);
-    const orderCode = generateOrderCode(order.id);
-    const matchesSearch = orderCode.includes(searchTerm) ||
+    const matchesSearch = order.order_number?.includes(searchTerm) ||
                          client?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.description?.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -112,10 +107,9 @@ const OrdersManager = () => {
   const handleShareWhatsApp = (order: any) => {
     const client = clients.find(c => c.id === order.client_id);
     const technician = technicians.find(t => t.id === order.technician_id);
-    const orderCode = generateOrderCode(order.id);
     
     const message = `
-🔧 *ORDEM DE SERVIÇO #${orderCode}*
+🔧 *ORDEM DE SERVIÇO ${order.order_number}*
 
 👤 *Cliente:* ${client?.name || 'N/A'}
 📱 *Telefone:* ${client?.phone || 'N/A'}
@@ -146,7 +140,7 @@ Sistema de Gestão de OS
     console.log('OrdersManager: Mostrando loading');
     return (
       <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
       </div>
     );
   }
@@ -156,16 +150,16 @@ Sistema de Gestão de OS
   return (
     <div className="space-y-6">
       {/* Header com filtros */}
-      <Card>
+      <Card className="gradient-bg-red text-white">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Gestão de Ordens de Serviço</CardTitle>
-              <CardDescription>Controle e acompanhe todas as ordens de serviço</CardDescription>
+              <CardTitle className="text-white">Gestão de Ordens de Serviço</CardTitle>
+              <CardDescription className="text-red-100">Controle e acompanhe todas as ordens de serviço</CardDescription>
             </div>
             <Dialog open={isNewOrderOpen} onOpenChange={setIsNewOrderOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button className="bg-white text-red-600 hover:bg-red-50">
                   <Plus className="h-4 w-4 mr-2" />
                   Nova OS
                 </Button>
@@ -182,6 +176,7 @@ Sistema de Gestão de OS
                   clients={clients}
                   technicians={technicians}
                   services={services}
+                  equipments={equipments}
                 />
               </DialogContent>
             </Dialog>
@@ -190,16 +185,16 @@ Sistema de Gestão de OS
         <CardContent>
           <div className="flex items-center space-x-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-red-200" />
               <Input
                 placeholder="Buscar por número, cliente ou descrição..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white/10 border-red-300 text-white placeholder:text-red-200"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-48 bg-white/10 border-red-300 text-white">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
@@ -247,11 +242,10 @@ Sistema de Gestão de OS
                 {filteredOrders.map((order) => {
                   const client = clients.find(c => c.id === order.client_id);
                   const technician = technicians.find(t => t.id === order.technician_id);
-                  const orderCode = generateOrderCode(order.id);
                   
                   return (
                     <TableRow key={order.id}>
-                      <TableCell className="font-medium">#{orderCode}</TableCell>
+                      <TableCell className="font-medium">{order.order_number || order.id.slice(-8)}</TableCell>
                       <TableCell>{client?.name || 'N/A'}</TableCell>
                       <TableCell className="max-w-xs truncate">{order.description}</TableCell>
                       <TableCell>{getStatusBadge(order.status)}</TableCell>
@@ -311,6 +305,7 @@ Sistema de Gestão de OS
           clients={clients}
           technicians={technicians}
           services={services}
+          equipments={equipments}
           isOpen={isEditOpen}
           onClose={() => {
             setIsEditOpen(false);
@@ -323,17 +318,19 @@ Sistema de Gestão de OS
   );
 };
 
-// Componente do formulário de nova OS
+// Componente do formulário de nova OS com equipamentos
 const NewOrderForm = ({ 
   onSubmit, 
   clients, 
   technicians,
-  services 
+  services,
+  equipments 
 }: { 
   onSubmit: (data: any) => void;
   clients: any[];
   technicians: any[];
   services: any[];
+  equipments: any[];
 }) => {
   // Estados para persistir TODOS os dados do formulário
   const [formState, setFormState] = React.useState({
@@ -346,6 +343,7 @@ const NewOrderForm = ({
     serialReceiver: "",
     expectedDate: "",
     expectedTime: "",
+    selectedEquipments: [] as string[],
     
     // Dados Técnicos
     description: "",
@@ -376,6 +374,14 @@ const NewOrderForm = ({
     if (service) {
       updateFormState('serviceValue', service.price || 0);
       setShowSerialField(service.name?.toLowerCase().includes('instalação npd') || false);
+    }
+  };
+
+  const handleEquipmentToggle = (equipmentId: string, checked: boolean) => {
+    if (checked) {
+      updateFormState('selectedEquipments', [...formState.selectedEquipments, equipmentId]);
+    } else {
+      updateFormState('selectedEquipments', formState.selectedEquipments.filter(id => id !== equipmentId));
     }
   };
 
@@ -431,7 +437,8 @@ const NewOrderForm = ({
         parts_value: formState.partsValue || 0,
         total_value: totalValue || 0,
         payment_method: formState.selectedPaymentMethod || null,
-        status: 'Aberta'
+        status: 'Aberta',
+        equipments: formState.selectedEquipments
       };
 
       await onSubmit(data);
@@ -445,9 +452,10 @@ const NewOrderForm = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic">Dados Básicos</TabsTrigger>
           <TabsTrigger value="technical">Dados Técnicos</TabsTrigger>
+          <TabsTrigger value="equipments">Equipamentos</TabsTrigger>
           <TabsTrigger value="financial">Dados Financeiros</TabsTrigger>
         </TabsList>
         
@@ -603,6 +611,31 @@ const NewOrderForm = ({
           </div>
         </TabsContent>
         
+        <TabsContent value="equipments" className="space-y-4">
+          <div>
+            <Label>Equipamentos Vinculados</Label>
+            <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded p-3">
+              {equipments.length === 0 ? (
+                <p className="text-gray-500 text-sm">Nenhum equipamento cadastrado</p>
+              ) : (
+                equipments.map(equipment => (
+                  <div key={equipment.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={equipment.id}
+                      checked={formState.selectedEquipments.includes(equipment.id)}
+                      onCheckedChange={(checked) => handleEquipmentToggle(equipment.id, !!checked)}
+                    />
+                    <Label htmlFor={equipment.id} className="text-sm">
+                      {equipment.name} {equipment.model ? `(${equipment.model})` : ''} 
+                      {equipment.serial_number ? ` - S/N: ${equipment.serial_number}` : ''}
+                    </Label>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </TabsContent>
+        
         <TabsContent value="financial" className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -665,7 +698,7 @@ const NewOrderForm = ({
         </Button>
         <Button 
           type="submit" 
-          className="bg-blue-600 hover:bg-blue-700"
+          className="bg-red-600 hover:bg-red-700"
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Criando...' : 'Criar Ordem de Serviço'}
@@ -675,8 +708,8 @@ const NewOrderForm = ({
   );
 };
 
-// Modal para editar ordem
-const OrderEditModal = ({ order, clients, technicians, services, isOpen, onClose, onSave }: any) => {
+// Modal para editar ordem com equipamentos
+const OrderEditModal = ({ order, clients, technicians, services, equipments, isOpen, onClose, onSave }: any) => {
   const [serviceValue, setServiceValue] = useState(order?.service_value || 0);
   const [partsValue, setPartsValue] = useState(order?.parts_value || 0);
   const [selectedClient, setSelectedClient] = useState(order?.client_id || "");

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +12,8 @@ import {
   Phone,
   Mail,
   MapPin,
-  Printer
+  Printer,
+  Monitor
 } from "lucide-react";
 
 interface OrderViewProps {
@@ -28,11 +28,11 @@ interface OrderViewProps {
 const OrderView = ({ order, client, technician, isOpen, onClose, onEdit }: OrderViewProps) => {
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'Aberta': { className: 'bg-blue-100 text-blue-800' },
+      'Aberta': { className: 'bg-red-100 text-red-800' },
       'Em Andamento': { className: 'bg-yellow-100 text-yellow-800' },
       'Aguardando Peças': { className: 'bg-orange-100 text-orange-800' },
       'Finalizada': { className: 'bg-green-100 text-green-800' },
-      'Cancelada': { className: 'bg-red-100 text-red-800' },
+      'Cancelada': { className: 'bg-gray-100 text-gray-800' },
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig['Aberta'];
@@ -187,7 +187,7 @@ const OrderView = ({ order, client, technician, isOpen, onClose, onEdit }: Order
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle>OS #{generateOrderCode(order.id)}</DialogTitle>
+              <DialogTitle>OS {order.order_number || order.id.slice(-8)}</DialogTitle>
               <DialogDescription>
                 Criada em {new Date(order.created_at).toLocaleDateString('pt-BR')}
               </DialogDescription>
@@ -314,7 +314,7 @@ const OrderView = ({ order, client, technician, isOpen, onClose, onEdit }: Order
               <Separator />
               <div className="flex justify-between font-semibold text-lg">
                 <span>Total:</span>
-                <span className="text-green-600">R$ {(order.total_value || 0).toFixed(2)}</span>
+                <span className="text-red-600">R$ {(order.total_value || 0).toFixed(2)}</span>
               </div>
               {order.payment_method && (
                 <div className="flex justify-between">
@@ -340,7 +340,7 @@ const OrderView = ({ order, client, technician, isOpen, onClose, onEdit }: Order
               <Button variant="outline" onClick={onClose}>
                 Fechar
               </Button>
-              <Button onClick={onEdit}>
+              <Button onClick={onEdit} className="bg-red-600 hover:bg-red-700">
                 Editar OS
               </Button>
             </div>
