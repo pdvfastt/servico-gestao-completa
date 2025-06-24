@@ -9,54 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      client_equipments: {
-        Row: {
-          client_id: string
-          created_at: string | null
-          equipment_id: string
-          id: string
-          observations: string | null
-          status: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string | null
-          equipment_id: string
-          id?: string
-          observations?: string | null
-          status?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string | null
-          equipment_id?: string
-          id?: string
-          observations?: string | null
-          status?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "client_equipments_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_equipments_equipment_id_fkey"
-            columns: ["equipment_id"]
-            isOneToOne: false
-            referencedRelation: "equipments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       clients: {
         Row: {
           birth_date: string | null
@@ -124,75 +76,6 @@ export type Database = {
           status?: string
           street?: string | null
           type?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      company_settings: {
-        Row: {
-          accent_color: string
-          company_logo_url: string | null
-          company_name: string
-          created_at: string
-          id: string
-          primary_color: string
-          secondary_color: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          accent_color?: string
-          company_logo_url?: string | null
-          company_name: string
-          created_at?: string
-          id?: string
-          primary_color?: string
-          secondary_color?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          accent_color?: string
-          company_logo_url?: string | null
-          company_name?: string
-          created_at?: string
-          id?: string
-          primary_color?: string
-          secondary_color?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      equipments: {
-        Row: {
-          created_at: string | null
-          id: string
-          model: string | null
-          name: string
-          observations: string | null
-          serial_number: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          model?: string | null
-          name: string
-          observations?: string | null
-          serial_number?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          model?: string | null
-          name?: string
-          observations?: string | null
-          serial_number?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -341,42 +224,6 @@ export type Database = {
         }
         Relationships: []
       }
-      service_order_equipments: {
-        Row: {
-          created_at: string | null
-          equipment_id: string
-          id: string
-          service_order_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          equipment_id: string
-          id?: string
-          service_order_id: string
-        }
-        Update: {
-          created_at?: string | null
-          equipment_id?: string
-          id?: string
-          service_order_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "service_order_equipments_equipment_id_fkey"
-            columns: ["equipment_id"]
-            isOneToOne: false
-            referencedRelation: "equipments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "service_order_equipments_service_order_id_fkey"
-            columns: ["service_order_id"]
-            isOneToOne: false
-            referencedRelation: "service_orders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       service_orders: {
         Row: {
           client_id: string | null
@@ -386,7 +233,6 @@ export type Database = {
           expected_date: string | null
           id: string
           observations: string | null
-          order_number: string | null
           parts_value: number | null
           payment_method: string | null
           priority: string
@@ -405,7 +251,6 @@ export type Database = {
           expected_date?: string | null
           id?: string
           observations?: string | null
-          order_number?: string | null
           parts_value?: number | null
           payment_method?: string | null
           priority?: string
@@ -424,7 +269,6 @@ export type Database = {
           expected_date?: string | null
           id?: string
           observations?: string | null
-          order_number?: string | null
           parts_value?: number | null
           payment_method?: string | null
           priority?: string
@@ -542,49 +386,11 @@ export type Database = {
         }
         Relationships: []
       }
-      user_permissions: {
-        Row: {
-          created_at: string | null
-          granted: boolean
-          granted_by: string | null
-          id: string
-          permission: Database["public"]["Enums"]["permission_type"]
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          granted?: boolean
-          granted_by?: string | null
-          id?: string
-          permission: Database["public"]["Enums"]["permission_type"]
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          granted?: boolean
-          granted_by?: string | null
-          id?: string
-          permission?: Database["public"]["Enums"]["permission_type"]
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_technician_id_by_user: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
       has_role: {
         Args: {
           _user_id: string
@@ -594,16 +400,6 @@ export type Database = {
       }
     }
     Enums: {
-      permission_type:
-        | "dashboard"
-        | "orders"
-        | "clients"
-        | "technicians"
-        | "services"
-        | "financial"
-        | "reports"
-        | "settings"
-        | "technician_orders"
       user_role: "admin" | "technician" | "attendant"
     }
     CompositeTypes: {
@@ -720,17 +516,6 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      permission_type: [
-        "dashboard",
-        "orders",
-        "clients",
-        "technicians",
-        "services",
-        "financial",
-        "reports",
-        "settings",
-        "technician_orders",
-      ],
       user_role: ["admin", "technician", "attendant"],
     },
   },

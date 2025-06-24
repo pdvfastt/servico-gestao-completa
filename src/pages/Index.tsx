@@ -16,8 +16,7 @@ import {
   DollarSign,
   Calendar,
   User,
-  LogOut,
-  Monitor
+  LogOut
 } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from "@/components/Dashboard";
@@ -27,20 +26,19 @@ import ServicesManager from "@/components/ServicesManager";
 import FinancialManager from "@/components/FinancialManager";
 import ReportsManager from "@/components/ReportsManager";
 import OrdersManager from "@/components/OrdersManager";
-import EquipmentsManager from "@/components/EquipmentsManager";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const { user, signOut } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-red-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-gray-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
                 Sistema de Gestão de OS
               </h1>
               <p className="text-gray-600">
@@ -59,7 +57,7 @@ const Index = () => {
                 variant="outline" 
                 size="sm" 
                 onClick={signOut}
-                className="flex items-center space-x-2 hover:bg-red-50 hover:text-red-600"
+                className="flex items-center space-x-2"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sair</span>
@@ -70,36 +68,32 @@ const Index = () => {
 
         {/* Navigation Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8 mb-8 bg-white shadow-sm">
-            <TabsTrigger value="dashboard" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+          <TabsList className="grid w-full grid-cols-7 mb-8 bg-white shadow-sm">
+            <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Dashboard</span>
             </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+            <TabsTrigger value="orders" className="flex items-center space-x-2">
               <FileText className="h-4 w-4" />
               <span>Ordens de Serviço</span>
             </TabsTrigger>
-            <TabsTrigger value="clients" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+            <TabsTrigger value="clients" className="flex items-center space-x-2">
               <Users className="h-4 w-4" />
               <span>Clientes</span>
             </TabsTrigger>
-            <TabsTrigger value="technicians" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+            <TabsTrigger value="technicians" className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <span>Técnicos</span>
             </TabsTrigger>
-            <TabsTrigger value="services" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+            <TabsTrigger value="services" className="flex items-center space-x-2">
               <Settings className="h-4 w-4" />
               <span>Serviços</span>
             </TabsTrigger>
-            <TabsTrigger value="equipments" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
-              <Monitor className="h-4 w-4" />
-              <span>Equipamentos</span>
-            </TabsTrigger>
-            <TabsTrigger value="financial" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+            <TabsTrigger value="financial" className="flex items-center space-x-2">
               <DollarSign className="h-4 w-4" />
               <span>Financeiro</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center space-x-2 data-[state=active]:bg-red-50 data-[state=active]:text-red-600">
+            <TabsTrigger value="reports" className="flex items-center space-x-2">
               <BarChart3 className="h-4 w-4" />
               <span>Relatórios</span>
             </TabsTrigger>
@@ -123,10 +117,6 @@ const Index = () => {
 
           <TabsContent value="services">
             <ServicesManager />
-          </TabsContent>
-
-          <TabsContent value="equipments">
-            <EquipmentsManager />
           </TabsContent>
 
           <TabsContent value="financial">

@@ -7,7 +7,6 @@ import type { Database } from '@/integrations/supabase/types';
 
 type Client = Database['public']['Tables']['clients']['Row'];
 type ClientInsert = Database['public']['Tables']['clients']['Insert'];
-type ClientUpdate = Database['public']['Tables']['clients']['Update'];
 
 export const useClients = () => {
   const { user } = useAuth();
@@ -95,94 +94,6 @@ export const useClients = () => {
     }
   };
 
-  const updateClient = async (clientId: string, clientData: Omit<ClientUpdate, 'user_id'>) => {
-    if (!user) {
-      toast({
-        title: "Erro",
-        description: "Usuário não autenticado.",
-        variant: "destructive",
-      });
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    try {
-      console.log('Atualizando cliente:', clientId, clientData);
-      
-      const { data, error } = await supabase
-        .from('clients')
-        .update(clientData)
-        .eq('id', clientId)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Erro Supabase ao atualizar cliente:', error);
-        throw error;
-      }
-      
-      console.log('Cliente atualizado com sucesso:', data);
-      setClients(prev => prev.map(client => 
-        client.id === clientId ? data : client
-      ));
-      toast({
-        title: "Cliente Atualizado",
-        description: "As informações do cliente foram atualizadas com sucesso!",
-      });
-      return { success: true, data };
-    } catch (error) {
-      console.error('Erro ao atualizar cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar cliente.",
-        variant: "destructive",
-      });
-      return { success: false, error };
-    }
-  };
-
-  const deleteClient = async (clientId: string) => {
-    if (!user) {
-      toast({
-        title: "Erro",
-        description: "Usuário não autenticado.",
-        variant: "destructive",
-      });
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    try {
-      console.log('Excluindo cliente:', clientId);
-      
-      const { error } = await supabase
-        .from('clients')
-        .delete()
-        .eq('id', clientId)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Erro Supabase ao excluir cliente:', error);
-        throw error;
-      }
-      
-      console.log('Cliente excluído com sucesso');
-      setClients(prev => prev.filter(client => client.id !== clientId));
-      toast({
-        title: "Cliente Excluído",
-        description: "O cliente foi excluído com sucesso!",
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Erro ao excluir cliente:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir cliente.",
-        variant: "destructive",
-      });
-      return { success: false, error };
-    }
-  };
-
   useEffect(() => {
     fetchClients();
   }, [user]);
@@ -191,8 +102,6 @@ export const useClients = () => {
     clients,
     loading,
     createClient,
-    updateClient,
-    deleteClient,
     refetch: fetchClients,
   };
 };

@@ -147,7 +147,7 @@ export const useServiceOrders = () => {
       
       toast({
         title: "Sucesso!",
-        description: `Ordem de serviço ${data.order_number} criada com sucesso!`,
+        description: "Ordem de serviço criada com sucesso!",
       });
       
       console.log('=== FIM CRIAÇÃO ORDEM (SUCESSO) ===');
@@ -197,7 +197,7 @@ export const useServiceOrders = () => {
 
       toast({
         title: "Sucesso!",
-        description: `Ordem de serviço ${data.order_number} atualizada com sucesso!`,
+        description: "Ordem de serviço atualizada com sucesso!",
       });
 
       return { success: true, data };
