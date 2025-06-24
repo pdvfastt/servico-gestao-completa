@@ -1,15 +1,19 @@
 
 import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
 
 interface ClientPrintProps {
   client: any;
-  format: '80mm' | 'A4';
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const ClientPrint = ({ client, format }: ClientPrintProps) => {
-  const handlePrint = () => {
+const ClientPrint = ({ client, open, onOpenChange }: ClientPrintProps) => {
+  const handlePrint = (format: '80mm' | 'A4') => {
+    if (!client) return;
+    
     const printContent = `
       <html>
         <head>
@@ -157,13 +161,44 @@ const ClientPrint = ({ client, format }: ClientPrintProps) => {
         printWindow.close();
       }, 250);
     }
+    
+    onOpenChange(false);
   };
 
+  if (!client) return null;
+
   return (
-    <Button variant="outline" size="sm" onClick={handlePrint}>
-      <Printer className="h-4 w-4 mr-2" />
-      Imprimir {format}
-    </Button>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Imprimir Cliente</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <p>Selecione o formato de impressão para o cliente <strong>{client.name}</strong>:</p>
+          
+          <div className="flex flex-col gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => handlePrint('80mm')}
+              className="justify-start"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir 80mm (Térmica)
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => handlePrint('A4')}
+              className="justify-start"
+            >
+              <Printer className="h-4 w-4 mr-2" />
+              Imprimir A4 (Completo)
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
