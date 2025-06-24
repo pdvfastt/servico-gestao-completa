@@ -79,7 +79,7 @@ const ClientEquipmentManager: React.FC<ClientEquipmentManagerProps> = ({ client,
   };
 
   const handleStatusChange = async (clientEquipmentId: string, newStatus: string) => {
-    await updateClientEquipment(clientEquipmentId, { status: newStatus as 'ativo' | 'inativo' });
+    await updateClientEquipment(clientEquipmentId, { status: newStatus });
   };
 
   return (

@@ -46,14 +46,7 @@ export const useClientEquipments = (clientId?: string) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Type assertion to ensure status is correctly typed
-      const typedData = (data || []).map(item => ({
-        ...item,
-        status: item.status as 'ativo' | 'inativo'
-      }));
-      
-      setClientEquipments(typedData);
+      setClientEquipments(data || []);
     } catch (error) {
       console.error('Erro ao buscar equipamentos do cliente:', error);
       toast({
@@ -94,20 +87,14 @@ export const useClientEquipments = (clientId?: string) => {
 
       if (error) throw error;
 
-      // Type assertion to ensure status is correctly typed
-      const typedData = {
-        ...data,
-        status: data.status as 'ativo' | 'inativo'
-      };
-
-      setClientEquipments(prev => [typedData, ...prev]);
+      setClientEquipments(prev => [data, ...prev]);
       
       toast({
         title: "Sucesso!",
         description: "Equipamento vinculado ao cliente com sucesso!",
       });
       
-      return { success: true, data: typedData };
+      return { success: true, data };
     } catch (error: any) {
       console.error('Erro ao vincular equipamento:', error);
       
@@ -167,7 +154,7 @@ export const useClientEquipments = (clientId?: string) => {
     }
   };
 
-  const updateClientEquipment = async (clientEquipmentId: string, data: { status?: 'ativo' | 'inativo'; observations?: string }) => {
+  const updateClientEquipment = async (clientEquipmentId: string, data: { status?: string; observations?: string }) => {
     if (!user) {
       toast({
         title: "Erro",
@@ -191,14 +178,8 @@ export const useClientEquipments = (clientId?: string) => {
 
       if (error) throw error;
 
-      // Type assertion to ensure status is correctly typed
-      const typedData = {
-        ...updatedData,
-        status: updatedData.status as 'ativo' | 'inativo'
-      };
-
       setClientEquipments(prev => prev.map(item => 
-        item.id === clientEquipmentId ? typedData : item
+        item.id === clientEquipmentId ? updatedData : item
       ));
 
       toast({
@@ -206,7 +187,7 @@ export const useClientEquipments = (clientId?: string) => {
         description: "Equipamento atualizado com sucesso!",
       });
 
-      return { success: true, data: typedData };
+      return { success: true, data: updatedData };
     } catch (error: any) {
       console.error('Erro ao atualizar equipamento:', error);
       toast({
